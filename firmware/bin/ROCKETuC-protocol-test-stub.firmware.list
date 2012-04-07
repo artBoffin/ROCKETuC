@@ -1,0 +1,907 @@
+
+firmware.elf:     file format elf32-msp430
+
+
+Disassembly of section .text:
+
+0000c000 <__init_stack>:
+    c000:	31 40 00 04 	mov	#1024,	r1	;#0x0400
+
+0000c004 <__low_level_init>:
+    c004:	15 42 20 01 	mov	&0x0120,r5	
+    c008:	75 f3       	and.b	#-1,	r5	;r3 As==11
+    c00a:	35 d0 08 5a 	bis	#23048,	r5	;#0x5a08
+
+0000c00e <__do_copy_data>:
+    c00e:	3f 40 26 00 	mov	#38,	r15	;#0x0026
+    c012:	0f 93       	tst	r15		
+    c014:	07 24       	jz	$+16     	;abs 0xc024
+    c016:	82 45 20 01 	mov	r5,	&0x0120	
+    c01a:	2f 83       	decd	r15		
+    c01c:	9f 4f c6 c4 	mov	-15162(r15),512(r15);0xc4c6(r15), 0x0200(r15)
+    c020:	00 02 
+    c022:	f9 23       	jnz	$-12     	;abs 0xc016
+
+0000c024 <__do_clear_bss>:
+    c024:	3f 40 bc 00 	mov	#188,	r15	;#0x00bc
+    c028:	0f 93       	tst	r15		
+    c02a:	06 24       	jz	$+14     	;abs 0xc038
+    c02c:	82 45 20 01 	mov	r5,	&0x0120	
+    c030:	1f 83       	dec	r15		
+    c032:	cf 43 26 02 	mov.b	#0,	550(r15);r3 As==00, 0x0226(r15)
+    c036:	fa 23       	jnz	$-10     	;abs 0xc02c
+
+0000c038 <main>:
+    }
+}
+
+int main(void)
+{
+	clock_init();
+    c038:	b0 12 48 c1 	call	#0xc148	
+	serial_init(9600);
+    c03c:	3f 40 80 25 	mov	#9600,	r15	;#0x2580
+    c040:	b0 12 b8 c2 	call	#0xc2b8	
+	serirq_init();
+    c044:	b0 12 5c c1 	call	#0xc15c	
+
+	inp.start   = 0x24;
+    c048:	f2 40 24 00 	mov.b	#36,	&0x0226	;#0x0024
+    c04c:	26 02 
+	outp.start	= 0x43;
+    c04e:	f2 40 43 00 	mov.b	#67,	&0x023a	;#0x0043
+    c052:	3a 02 
+
+	while (1) {
+		// process packages endless ...
+		if(packet_receive(&inp, 0x24) == 0) {
+    c054:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
+    c058:	3f 40 26 02 	mov	#550,	r15	;#0x0226
+    c05c:	b0 12 ba c3 	call	#0xc3ba	
+    c060:	0b 4f       	mov	r15,	r11	
+    c062:	0f 93       	tst	r15		
+    c064:	11 20       	jnz	$+36     	;abs 0xc088
+			if(packet_process_received(&rcvh, &inp) != 0) {
+    c066:	3e 40 26 02 	mov	#550,	r14	;#0x0226
+    c06a:	3f 40 00 02 	mov	#512,	r15	;#0x0200
+    c06e:	b0 12 12 c4 	call	#0xc412	
+    c072:	0f 9b       	cmp	r11,	r15	
+    c074:	ef 27       	jz	$-32     	;abs 0xc054
+				// send ERROR packet (invalid packet type)
+				outp.length 	= 0x05;
+    c076:	f2 40 05 00 	mov.b	#5,	&0x023b	;#0x0005
+    c07a:	3b 02 
+				outp.type 		= 0x01;
+    c07c:	d2 43 3c 02 	mov.b	#1,	&0x023c	;r3 As==01
+				outp.data[0]	= 0x03;
+    c080:	f2 40 03 00 	mov.b	#3,	&0x023d	;#0x0003
+    c084:	3d 02 
+    c086:	07 3c       	jmp	$+16     	;abs 0xc096
+				packet_send(&outp);
+			}
+		}
+		else {
+				// send ERROR packet (invalid CRC)
+				outp.length 	= 0x05;
+    c088:	f2 40 05 00 	mov.b	#5,	&0x023b	;#0x0005
+    c08c:	3b 02 
+				outp.type 		= 0x01;
+    c08e:	d2 43 3c 02 	mov.b	#1,	&0x023c	;r3 As==01
+				outp.data[0]	= 0x02;
+    c092:	e2 43 3d 02 	mov.b	#2,	&0x023d	;r3 As==10
+				outp.crc		= packet_calc_crc(&outp);
+    c096:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c09a:	b0 12 2c c3 	call	#0xc32c	
+    c09e:	c2 4f 4d 02 	mov.b	r15,	&0x024d	
+
+				packet_send(&outp);
+    c0a2:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c0a6:	b0 12 6a c3 	call	#0xc36a	
+    c0aa:	d4 3f       	jmp	$-86     	;abs 0xc054
+
+0000c0ac <__stop_progExec__>:
+    c0ac:	32 d0 f0 00 	bis	#240,	r2	;#0x00f0
+    c0b0:	fd 3f       	jmp	$-4      	;abs 0xc0ac
+
+0000c0b2 <__ctors_end>:
+    c0b2:	30 40 c4 c4 	br	#0xc4c4	
+
+0000c0b6 <ph_null>:
+	packet_send(&outp);
+
+	return 0;
+}
+
+int ph_null(unsigned char length, unsigned char *data) {
+    c0b6:	0b 12       	push	r11		
+
+	outp.length 	= 0x04;
+    c0b8:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c0bc:	eb 42 00 00 	mov.b	#4,	0(r11)	;r2 As==10, 0x0000(r11)
+	outp.type 		= 0x00;
+    c0c0:	cb 43 01 00 	mov.b	#0,	1(r11)	;r3 As==00, 0x0001(r11)
+	outp.crc		= packet_calc_crc(&outp);
+    c0c4:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c0c8:	b0 12 2c c3 	call	#0xc32c	
+    c0cc:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+
+	packet_send(&outp);
+    c0d0:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c0d4:	b0 12 6a c3 	call	#0xc36a	
+
+	return 0;
+}
+    c0d8:	0f 43       	clr	r15		
+    c0da:	3b 41       	pop	r11		
+    c0dc:	30 41       	ret			
+
+0000c0de <ph_system_info>:
+	packet_send(&outp);
+
+	return 0;
+}
+
+int ph_system_info(unsigned char length, unsigned char *data) {
+    c0de:	0b 12       	push	r11		
+
+	outp.length 	= 0x07;
+    c0e0:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c0e4:	fb 40 07 00 	mov.b	#7,	0(r11)	;#0x0007, 0x0000(r11)
+    c0e8:	00 00 
+	outp.type 		= 0x02;
+    c0ea:	eb 43 01 00 	mov.b	#2,	1(r11)	;r3 As==10, 0x0001(r11)
+	outp.data[0]	= 0xaa;
+    c0ee:	fb 40 aa ff 	mov.b	#-86,	2(r11)	;#0xffaa, 0x0002(r11)
+    c0f2:	02 00 
+	outp.data[1]	= 0xbb;
+    c0f4:	fb 40 bb ff 	mov.b	#-69,	3(r11)	;#0xffbb, 0x0003(r11)
+    c0f8:	03 00 
+	outp.data[2]	= 0xcc;
+    c0fa:	fb 40 cc ff 	mov.b	#-52,	4(r11)	;#0xffcc, 0x0004(r11)
+    c0fe:	04 00 
+	outp.crc		= packet_calc_crc(&outp);
+    c100:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c104:	b0 12 2c c3 	call	#0xc32c	
+    c108:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+
+	packet_send(&outp);
+    c10c:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c110:	b0 12 6a c3 	call	#0xc36a	
+
+	return 0;
+}
+    c114:	0f 43       	clr	r15		
+    c116:	3b 41       	pop	r11		
+    c118:	30 41       	ret			
+
+0000c11a <ph_dummy_ack>:
+static serial_rb stx;
+
+static packet outp;
+static packet inp;
+
+int ph_dummy_ack(unsigned char length, unsigned char *data) {
+    c11a:	0b 12       	push	r11		
+
+	// send ACK packet
+	outp.length 	= 0x05;
+    c11c:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c120:	fb 40 05 00 	mov.b	#5,	0(r11)	;#0x0005, 0x0000(r11)
+    c124:	00 00 
+	outp.type 		= 0x01;
+    c126:	db 43 01 00 	mov.b	#1,	1(r11)	;r3 As==01, 0x0001(r11)
+	outp.data[0]	= 0x01;
+    c12a:	db 43 02 00 	mov.b	#1,	2(r11)	;r3 As==01, 0x0002(r11)
+	outp.crc		= packet_calc_crc(&outp);
+    c12e:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c132:	b0 12 2c c3 	call	#0xc32c	
+    c136:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+
+	packet_send(&outp);
+    c13a:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c13e:	b0 12 6a c3 	call	#0xc36a	
+
+	return 0;
+}
+    c142:	0f 43       	clr	r15		
+    c144:	3b 41       	pop	r11		
+    c146:	30 41       	ret			
+
+0000c148 <clock_init>:
+	}
+};
+
+void clock_init(void)
+{
+	WDTCTL = WDTPW + WDTHOLD;
+    c148:	b2 40 80 5a 	mov	#23168,	&0x0120	;#0x5a80
+    c14c:	20 01 
+    BCSCTL1 = CALBC1_1MHZ;
+    c14e:	d2 42 ff 10 	mov.b	&0x10ff,&0x0057	
+    c152:	57 00 
+    DCOCTL  = CALDCO_1MHZ;
+    c154:	d2 42 fe 10 	mov.b	&0x10fe,&0x0056	
+    c158:	56 00 
+}
+    c15a:	30 41       	ret			
+
+0000c15c <serirq_init>:
+void serirq_init(void)
+{
+    c15c:	0b 12       	push	r11		
+    serial_rb_init(&srx, &(srx_buf[0]), RB_SIZE);
+    c15e:	3b 40 40 00 	mov	#64,	r11	;#0x0040
+    c162:	0d 4b       	mov	r11,	r13	
+    c164:	3e 40 62 02 	mov	#610,	r14	;#0x0262
+    c168:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c16c:	b0 12 56 c2 	call	#0xc256	
+    serial_rb_init(&stx, &(stx_buf[0]), RB_SIZE);
+    c170:	0d 4b       	mov	r11,	r13	
+    c172:	3e 40 a2 02 	mov	#674,	r14	;#0x02a2
+    c176:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c17a:	b0 12 56 c2 	call	#0xc256	
+
+    IE2 |= UCA0RXIE; 
+    c17e:	d2 d3 01 00 	bis.b	#1,	&0x0001	;r3 As==01
+	__bis_SR_register(GIE);
+    c182:	32 d2       	eint			
+}
+    c184:	3b 41       	pop	r11		
+    c186:	30 41       	ret			
+
+0000c188 <packet_byte_to_sendq>:
+
+int packet_byte_to_sendq(unsigned char pkt_byte) {
+    c188:	0b 12       	push	r11		
+    c18a:	0a 12       	push	r10		
+    c18c:	4a 4f       	mov.b	r15,	r10	
+    c18e:	01 3c       	jmp	$+4      	;abs 0xc192
+	// wait until buffer empties 
+	while(serial_rb_full(&stx)) {
+		__asm__("nop");
+    c190:	03 43       	nop			
+	__bis_SR_register(GIE);
+}
+
+int packet_byte_to_sendq(unsigned char pkt_byte) {
+	// wait until buffer empties 
+	while(serial_rb_full(&stx)) {
+    c192:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c196:	b0 12 38 c2 	call	#0xc238	
+    c19a:	0b 4f       	mov	r15,	r11	
+    c19c:	0f 93       	tst	r15		
+    c19e:	f8 23       	jnz	$-14     	;abs 0xc190
+		__asm__("nop");
+	}
+
+	serial_rb_write(&stx, pkt_byte);
+    c1a0:	4e 4a       	mov.b	r10,	r14	
+    c1a2:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c1a6:	b0 12 6c c2 	call	#0xc26c	
+	IE2 |= UCA0TXIE;
+    c1aa:	e2 d3 01 00 	bis.b	#2,	&0x0001	;r3 As==10
+
+	return 0;
+}
+    c1ae:	0f 4b       	mov	r11,	r15	
+    c1b0:	3a 41       	pop	r10		
+    c1b2:	3b 41       	pop	r11		
+    c1b4:	30 41       	ret			
+
+0000c1b6 <packet_byte_from_rcvq>:
+
+unsigned char packet_byte_from_rcvq() {
+    c1b6:	01 3c       	jmp	$+4      	;abs 0xc1ba
+
+	// wait until data arrived in buffer
+	while(serial_rb_empty(&srx)) {
+		__asm__("nop");
+    c1b8:	03 43       	nop			
+}
+
+unsigned char packet_byte_from_rcvq() {
+
+	// wait until data arrived in buffer
+	while(serial_rb_empty(&srx)) {
+    c1ba:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1be:	b0 12 48 c2 	call	#0xc248	
+    c1c2:	0f 93       	tst	r15		
+    c1c4:	f9 23       	jnz	$-12     	;abs 0xc1b8
+		__asm__("nop");
+	}
+
+	return serial_rb_read(&srx);
+    c1c6:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1ca:	b0 12 92 c2 	call	#0xc292	
+}
+    c1ce:	30 41       	ret			
+
+0000c1d0 <USCI0RX_ISR>:
+
+interrupt(USCIAB0RX_VECTOR) USCI0RX_ISR(void)
+{
+    c1d0:	0f 12       	push	r15		
+    c1d2:	0e 12       	push	r14		
+    c1d4:	0d 12       	push	r13		
+    c1d6:	0c 12       	push	r12		
+	if (!serial_rb_full(&srx)) {
+    c1d8:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1dc:	b0 12 38 c2 	call	#0xc238	
+    c1e0:	0f 93       	tst	r15		
+    c1e2:	06 20       	jnz	$+14     	;abs 0xc1f0
+        serial_rb_write(&srx, UCA0RXBUF);
+    c1e4:	5e 42 66 00 	mov.b	&0x0066,r14	
+    c1e8:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1ec:	b0 12 6c c2 	call	#0xc26c	
+	}
+}
+    c1f0:	3c 41       	pop	r12		
+    c1f2:	3d 41       	pop	r13		
+    c1f4:	3e 41       	pop	r14		
+    c1f6:	3f 41       	pop	r15		
+    c1f8:	00 13       	reti			
+
+0000c1fa <USCI0TX_ISR>:
+
+interrupt(USCIAB0TX_VECTOR) USCI0TX_ISR(void)
+{
+    c1fa:	0f 12       	push	r15		
+    c1fc:	0e 12       	push	r14		
+    c1fe:	0d 12       	push	r13		
+    c200:	0c 12       	push	r12		
+	if(!serial_rb_empty(&stx)) {
+    c202:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c206:	b0 12 48 c2 	call	#0xc248	
+    c20a:	0f 93       	tst	r15		
+    c20c:	07 20       	jnz	$+16     	;abs 0xc21c
+    	serial_send(serial_rb_read(&stx));
+    c20e:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c212:	b0 12 92 c2 	call	#0xc292	
+    c216:	b0 12 04 c3 	call	#0xc304	
+    c21a:	03 3c       	jmp	$+8      	;abs 0xc222
+    }
+    else {
+    	/* Disable the TX interrupt, it's no longer needed. */
+		IE2 &= ~UCA0TXIE; 
+    c21c:	f2 f0 fd ff 	and.b	#-3,	&0x0001	;#0xfffd
+    c220:	01 00 
+    }
+}
+    c222:	3c 41       	pop	r12		
+    c224:	3d 41       	pop	r13		
+    c226:	3e 41       	pop	r14		
+    c228:	3f 41       	pop	r15		
+    c22a:	00 13       	reti			
+
+0000c22c <serial_rb_free>:
+#include "serial_rb.h"
+
+unsigned short serial_rb_free(serial_rb *rb)
+{
+    return (rb->elements - rb->entries);
+}
+    c22c:	1e 4f 06 00 	mov	6(r15),	r14	;0x0006(r15)
+    c230:	1e 8f 08 00 	sub	8(r15),	r14	;0x0008(r15)
+    c234:	0f 4e       	mov	r14,	r15	
+    c236:	30 41       	ret			
+
+0000c238 <serial_rb_full>:
+
+int serial_rb_full(serial_rb *rb)
+{
+    return (rb->elements == rb->entries);
+    c238:	1e 43       	mov	#1,	r14	;r3 As==01
+    c23a:	9f 9f 08 00 	cmp	8(r15),	6(r15)	;0x0008(r15), 0x0006(r15)
+    c23e:	06 00 
+    c240:	01 24       	jz	$+4      	;abs 0xc244
+    c242:	0e 43       	clr	r14		
+}
+    c244:	0f 4e       	mov	r14,	r15	
+    c246:	30 41       	ret			
+
+0000c248 <serial_rb_empty>:
+
+int serial_rb_empty(serial_rb *rb)
+{
+    return (rb->entries == 0);
+    c248:	1e 43       	mov	#1,	r14	;r3 As==01
+    c24a:	8f 93 08 00 	tst	8(r15)		;0x0008(r15)
+    c24e:	01 24       	jz	$+4      	;abs 0xc252
+    c250:	0e 43       	clr	r14		
+}
+    c252:	0f 4e       	mov	r14,	r15	
+    c254:	30 41       	ret			
+
+0000c256 <serial_rb_init>:
+
+void serial_rb_init(serial_rb *rb, SERIAL_RB_Q *buffer, unsigned short elements)
+{
+    rb->buffer      = buffer;
+    c256:	8f 4e 00 00 	mov	r14,	0(r15)	;0x0000(r15)
+    rb->read        = &(rb->buffer[0]);
+    c25a:	8f 4e 02 00 	mov	r14,	2(r15)	;0x0002(r15)
+    rb->write       = &(rb->buffer[0]);
+    c25e:	8f 4e 04 00 	mov	r14,	4(r15)	;0x0004(r15)
+    rb->elements    = elements;
+    c262:	8f 4d 06 00 	mov	r13,	6(r15)	;0x0006(r15)
+    rb->entries     = 0;
+    c266:	8f 43 08 00 	mov	#0,	8(r15)	;r3 As==00, 0x0008(r15)
+}
+    c26a:	30 41       	ret			
+
+0000c26c <serial_rb_write>:
+
+void serial_rb_write(serial_rb *rb, SERIAL_RB_Q element)
+{
+  rb->entries++;
+    c26c:	9f 53 08 00 	inc	8(r15)		;0x0008(r15)
+
+  if (rb->write > &(rb->buffer[rb->elements - 1])) {
+    c270:	1d 4f 06 00 	mov	6(r15),	r13	;0x0006(r15)
+    c274:	3d 53       	add	#-1,	r13	;r3 As==11
+    c276:	2d 5f       	add	@r15,	r13	
+    c278:	1d 9f 04 00 	cmp	4(r15),	r13	;0x0004(r15)
+    c27c:	02 2c       	jc	$+6      	;abs 0xc282
+      rb->write = &(rb->buffer[0]);
+    c27e:	af 4f 04 00 	mov	@r15,	4(r15)	;0x0004(r15)
+  }
+
+  *(rb->write++) = element;
+    c282:	1d 4f 04 00 	mov	4(r15),	r13	;0x0004(r15)
+    c286:	cd 4e 00 00 	mov.b	r14,	0(r13)	;0x0000(r13)
+    c28a:	1d 53       	inc	r13		
+    c28c:	8f 4d 04 00 	mov	r13,	4(r15)	;0x0004(r15)
+}
+    c290:	30 41       	ret			
+
+0000c292 <serial_rb_read>:
+
+SERIAL_RB_Q serial_rb_read(serial_rb *rb)
+{
+  rb->entries--;
+    c292:	bf 53 08 00 	add	#-1,	8(r15)	;r3 As==11, 0x0008(r15)
+
+  if (rb->read > &(rb->buffer[rb->elements - 1])) {
+    c296:	1e 4f 06 00 	mov	6(r15),	r14	;0x0006(r15)
+    c29a:	3e 53       	add	#-1,	r14	;r3 As==11
+    c29c:	2e 5f       	add	@r15,	r14	
+    c29e:	1e 9f 02 00 	cmp	2(r15),	r14	;0x0002(r15)
+    c2a2:	02 2c       	jc	$+6      	;abs 0xc2a8
+      rb->read = &(rb->buffer[0]);
+    c2a4:	af 4f 02 00 	mov	@r15,	2(r15)	;0x0002(r15)
+  }
+
+  return *(rb->read++);
+    c2a8:	1d 4f 02 00 	mov	2(r15),	r13	;0x0002(r15)
+    c2ac:	6e 4d       	mov.b	@r13,	r14	
+    c2ae:	1d 53       	inc	r13		
+    c2b0:	8f 4d 02 00 	mov	r13,	2(r15)	;0x0002(r15)
+}
+    c2b4:	4f 4e       	mov.b	r14,	r15	
+    c2b6:	30 41       	ret			
+
+0000c2b8 <serial_init>:
+ * TXD pin
+ */
+#define UART_TXD   		BIT2	
+
+void serial_init(unsigned int baudrate)
+{
+    c2b8:	0b 12       	push	r11		
+    c2ba:	0a 12       	push	r10		
+    c2bc:	09 12       	push	r9		
+    c2be:	08 12       	push	r8		
+    c2c0:	07 12       	push	r7		
+	P1SEL    |= UART_RXD + UART_TXD;                       
+    c2c2:	f2 d0 06 00 	bis.b	#6,	&0x0026	;#0x0006
+    c2c6:	26 00 
+  	P1SEL2   |= UART_RXD + UART_TXD;                       
+    c2c8:	f2 d0 06 00 	bis.b	#6,	&0x0041	;#0x0006
+    c2cc:	41 00 
+  	UCA0CTL1 |= UCSSEL_2;                   // SMCLK
+    c2ce:	f2 d0 80 ff 	bis.b	#-128,	&0x0061	;#0xff80
+    c2d2:	61 00 
+
+	unsigned char br = (unsigned char)(1000000 / (long)baudrate);
+    c2d4:	07 43       	clr	r7		
+    c2d6:	3c 40 40 42 	mov	#16960,	r12	;#0x4240
+    c2da:	3d 40 0f 00 	mov	#15,	r13	;#0x000f
+    c2de:	0a 4f       	mov	r15,	r10	
+    c2e0:	0b 47       	mov	r7,	r11	
+    c2e2:	b0 12 50 c4 	call	#0xc450	
+
+  	UCA0BR0  = br;                          // 1MHz / baudrate 
+    c2e6:	c2 4c 62 00 	mov.b	r12,	&0x0062	
+  	UCA0BR1  = 0;                           // 
+    c2ea:	c2 47 63 00 	mov.b	r7,	&0x0063	
+  	UCA0MCTL = UCBRS0;                      // Modulation UCBRSx = 1
+    c2ee:	e2 43 64 00 	mov.b	#2,	&0x0064	;r3 As==10
+  	UCA0CTL1 &= ~UCSWRST;                   // Initialize USCI state machine
+    c2f2:	f2 f0 fe ff 	and.b	#-2,	&0x0061	;#0xfffe
+    c2f6:	61 00 
+}
+    c2f8:	37 41       	pop	r7		
+    c2fa:	38 41       	pop	r8		
+    c2fc:	39 41       	pop	r9		
+    c2fe:	3a 41       	pop	r10		
+    c300:	3b 41       	pop	r11		
+    c302:	30 41       	ret			
+
+0000c304 <serial_send>:
+
+void serial_send(unsigned char data)
+{
+  	UCA0TXBUF = data;                 		
+    c304:	c2 4f 67 00 	mov.b	r15,	&0x0067	
+}
+    c308:	30 41       	ret			
+
+0000c30a <serial_send_blocking>:
+
+void serial_send_blocking(unsigned char data)
+{
+	while (!(IFG2&UCA0TXIFG));              // USCI_A0 TX buffer ready?
+    c30a:	5e 42 03 00 	mov.b	&0x0003,r14	
+    c30e:	2e f3       	and	#2,	r14	;r3 As==10
+    c310:	fc 27       	jz	$-6      	;abs 0xc30a
+  	UCA0TXBUF = data;                  
+    c312:	c2 4f 67 00 	mov.b	r15,	&0x0067	
+}
+    c316:	30 41       	ret			
+
+0000c318 <serial_recv>:
+
+unsigned char serial_recv()
+{
+	return UCA0RXBUF;
+}
+    c318:	5f 42 66 00 	mov.b	&0x0066,r15	
+    c31c:	30 41       	ret			
+
+0000c31e <serial_recv_blocking>:
+
+unsigned char serial_recv_blocking()
+{
+    while (!(IFG2&UCA0RXIFG));         		// USCI_A0 RX buffer ready?
+    c31e:	5f 42 03 00 	mov.b	&0x0003,r15	
+    c322:	1f f3       	and	#1,	r15	;r3 As==01
+    c324:	fc 27       	jz	$-6      	;abs 0xc31e
+	return UCA0RXBUF;
+}
+    c326:	5f 42 66 00 	mov.b	&0x0066,r15	
+    c32a:	30 41       	ret			
+
+0000c32c <packet_calc_crc>:
+#include "packet.h"
+
+unsigned char packet_calc_crc(packet *pkt) {
+    c32c:	0b 12       	push	r11		
+
+	unsigned char i;
+	unsigned char crc = 0;
+
+	crc += pkt->length;
+    c32e:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
+	crc += pkt->type;
+    c332:	5e 4f 02 00 	mov.b	2(r15),	r14	;0x0002(r15)
+    c336:	4e 5d       	add.b	r13,	r14	
+
+	for(i = 0; i < pkt->length - 4; i++) {
+    c338:	4c 43       	clr.b	r12		
+    c33a:	2d 82       	sub	#4,	r13	;r2 As==10
+    c33c:	04 3c       	jmp	$+10     	;abs 0xc346
+		crc += pkt->data[i];
+    c33e:	0b 5f       	add	r15,	r11	
+    c340:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
+	unsigned char crc = 0;
+
+	crc += pkt->length;
+	crc += pkt->type;
+
+	for(i = 0; i < pkt->length - 4; i++) {
+    c344:	5c 53       	inc.b	r12		
+    c346:	4b 4c       	mov.b	r12,	r11	
+    c348:	0b 9d       	cmp	r13,	r11	
+    c34a:	f9 3b       	jl	$-12     	;abs 0xc33e
+		crc += pkt->data[i];
+	} 
+
+	return crc;
+}
+    c34c:	4f 4e       	mov.b	r14,	r15	
+    c34e:	3b 41       	pop	r11		
+    c350:	30 41       	ret			
+
+0000c352 <packet_check_crc>:
+
+int	packet_check_crc(packet *pkt) {
+    c352:	0b 12       	push	r11		
+    c354:	0b 4f       	mov	r15,	r11	
+
+	return (packet_calc_crc(pkt) != pkt->crc);
+    c356:	b0 12 2c c3 	call	#0xc32c	
+    c35a:	1e 43       	mov	#1,	r14	;r3 As==01
+    c35c:	5f 9b 13 00 	cmp.b	19(r11),r15	;0x0013(r11)
+    c360:	01 20       	jnz	$+4      	;abs 0xc364
+    c362:	0e 43       	clr	r14		
+}
+    c364:	0f 4e       	mov	r14,	r15	
+    c366:	3b 41       	pop	r11		
+    c368:	30 41       	ret			
+
+0000c36a <packet_send>:
+
+int packet_send(packet *pkt) {
+    c36a:	0b 12       	push	r11		
+    c36c:	0a 12       	push	r10		
+    c36e:	0b 4f       	mov	r15,	r11	
+
+	unsigned char  i;
+
+	// write start byte
+	packet_byte_to_sendq(pkt->start);
+    c370:	6f 4f       	mov.b	@r15,	r15	
+    c372:	b0 12 88 c1 	call	#0xc188	
+
+	// write length
+	packet_byte_to_sendq(pkt->length);
+    c376:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c37a:	b0 12 88 c1 	call	#0xc188	
+
+	// write type
+	packet_byte_to_sendq(pkt->type);
+    c37e:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
+    c382:	b0 12 88 c1 	call	#0xc188	
+
+	// TODO: check length
+	
+	// write data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c386:	4a 43       	clr.b	r10		
+    c388:	08 3c       	jmp	$+18     	;abs 0xc39a
+		if(packet_byte_to_sendq(pkt->data[i]) != 0) {
+    c38a:	0e 5b       	add	r11,	r14	
+    c38c:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
+    c390:	b0 12 88 c1 	call	#0xc188	
+    c394:	0f 93       	tst	r15		
+    c396:	0d 20       	jnz	$+28     	;abs 0xc3b2
+	packet_byte_to_sendq(pkt->type);
+
+	// TODO: check length
+	
+	// write data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c398:	5a 53       	inc.b	r10		
+    c39a:	4e 4a       	mov.b	r10,	r14	
+    c39c:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c3a0:	2f 82       	sub	#4,	r15	;r2 As==10
+    c3a2:	0e 9f       	cmp	r15,	r14	
+    c3a4:	f2 3b       	jl	$-26     	;abs 0xc38a
+			return -1;
+		}
+	}
+
+	// write crc 
+	packet_byte_to_sendq(pkt->crc);
+    c3a6:	5f 4b 13 00 	mov.b	19(r11),r15	;0x0013(r11)
+    c3aa:	b0 12 88 c1 	call	#0xc188	
+	
+	// TODO define constant for "all ok"
+	return 0;
+    c3ae:	0f 43       	clr	r15		
+    c3b0:	01 3c       	jmp	$+4      	;abs 0xc3b4
+	
+	// write data
+	for(i = 0; i < pkt->length - 4; i++) {	
+		if(packet_byte_to_sendq(pkt->data[i]) != 0) {
+			// TODO define constant for case "unable to push byte to buffer"
+			return -1;
+    c3b2:	3f 43       	mov	#-1,	r15	;r3 As==11
+	// write crc 
+	packet_byte_to_sendq(pkt->crc);
+	
+	// TODO define constant for "all ok"
+	return 0;
+}
+    c3b4:	3a 41       	pop	r10		
+    c3b6:	3b 41       	pop	r11		
+    c3b8:	30 41       	ret			
+
+0000c3ba <packet_receive>:
+
+int packet_receive(packet *pkt, unsigned char start) {
+    c3ba:	0b 12       	push	r11		
+    c3bc:	0a 12       	push	r10		
+    c3be:	09 12       	push	r9		
+    c3c0:	0b 4f       	mov	r15,	r11	
+    c3c2:	4a 4e       	mov.b	r14,	r10	
+
+	unsigned char  i;
+
+	// discard everything until start byte found in buffer
+	while(packet_byte_from_rcvq() != start);
+    c3c4:	b0 12 b6 c1 	call	#0xc1b6	
+    c3c8:	4f 9a       	cmp.b	r10,	r15	
+    c3ca:	fc 23       	jnz	$-6      	;abs 0xc3c4
+
+	pkt->start = start;
+    c3cc:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
+
+	// read length
+	pkt->length = packet_byte_from_rcvq();
+    c3d0:	b0 12 b6 c1 	call	#0xc1b6	
+    c3d4:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
+
+	// TODO: check length
+	//
+	// read type
+	pkt->type = packet_byte_from_rcvq();
+    c3d8:	b0 12 b6 c1 	call	#0xc1b6	
+    c3dc:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
+ 	
+	// read data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c3e0:	4a 43       	clr.b	r10		
+    c3e2:	06 3c       	jmp	$+14     	;abs 0xc3f0
+		pkt->data[i] = packet_byte_from_rcvq();
+    c3e4:	b0 12 b6 c1 	call	#0xc1b6	
+    c3e8:	09 5b       	add	r11,	r9	
+    c3ea:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
+	//
+	// read type
+	pkt->type = packet_byte_from_rcvq();
+ 	
+	// read data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c3ee:	5a 53       	inc.b	r10		
+    c3f0:	49 4a       	mov.b	r10,	r9	
+    c3f2:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c3f6:	2f 82       	sub	#4,	r15	;r2 As==10
+    c3f8:	09 9f       	cmp	r15,	r9	
+    c3fa:	f4 3b       	jl	$-22     	;abs 0xc3e4
+		pkt->data[i] = packet_byte_from_rcvq();
+	}
+	
+	// read crc 
+	pkt->crc = packet_byte_from_rcvq();
+    c3fc:	b0 12 b6 c1 	call	#0xc1b6	
+    c400:	cb 4f 13 00 	mov.b	r15,	19(r11)	;0x0013(r11)
+	
+	// check crc
+	return packet_check_crc(pkt);
+    c404:	0f 4b       	mov	r11,	r15	
+    c406:	b0 12 52 c3 	call	#0xc352	
+}
+    c40a:	39 41       	pop	r9		
+    c40c:	3a 41       	pop	r10		
+    c40e:	3b 41       	pop	r11		
+    c410:	30 41       	ret			
+
+0000c412 <packet_process_received>:
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+    c412:	0b 12       	push	r11		
+    c414:	0a 12       	push	r10		
+    c416:	0c 4e       	mov	r14,	r12	
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c418:	6b 4f       	mov.b	@r15,	r11	
+	
+	// check crc
+	return packet_check_crc(pkt);
+}
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+    c41a:	0e 4f       	mov	r15,	r14	
+    c41c:	2e 53       	incd	r14		
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c41e:	0d 43       	clr	r13		
+    c420:	11 3c       	jmp	$+36     	;abs 0xc444
+		if(rh->handlers[i].type == pkt->type) {
+    c422:	6a 4e       	mov.b	@r14,	r10	
+    c424:	2e 52       	add	#4,	r14	;r2 As==10
+    c426:	1d 53       	inc	r13		
+    c428:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
+    c42c:	0b 20       	jnz	$+24     	;abs 0xc444
+			// call handler function
+    		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
+    c42e:	0d 5d       	rla	r13		
+    c430:	0d 5d       	rla	r13		
+    c432:	0d 5f       	add	r15,	r13	
+    c434:	0e 4c       	mov	r12,	r14	
+    c436:	3e 50 03 00 	add	#3,	r14	;#0x0003
+    c43a:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
+    c43e:	6f 82       	sub.b	#4,	r15	;r2 As==10
+    c440:	ad 12       	call	@r13		
+    c442:	03 3c       	jmp	$+8      	;abs 0xc44a
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c444:	0d 9b       	cmp	r11,	r13	
+    c446:	ed 3b       	jl	$-36     	;abs 0xc422
+    		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
+		}
+    }
+
+	// TODO define constant for case "unknown packet type"
+	return -1;
+    c448:	3f 43       	mov	#-1,	r15	;r3 As==11
+}
+    c44a:	3a 41       	pop	r10		
+    c44c:	3b 41       	pop	r11		
+    c44e:	30 41       	ret			
+
+0000c450 <__divmodsi4>:
+    c450:	08 43       	clr	r8		
+    c452:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
+    c456:	05 24       	jz	$+12     	;abs 0xc462
+    c458:	3d e3       	inv	r13		
+    c45a:	3c e3       	inv	r12		
+    c45c:	1c 53       	inc	r12		
+    c45e:	0d 63       	adc	r13		
+    c460:	28 d2       	bis	#4,	r8	;r2 As==10
+    c462:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
+    c466:	05 24       	jz	$+12     	;abs 0xc472
+    c468:	3b e3       	inv	r11		
+    c46a:	3a e3       	inv	r10		
+    c46c:	1a 53       	inc	r10		
+    c46e:	0b 63       	adc	r11		
+    c470:	38 d2       	bis	#8,	r8	;r2 As==11
+    c472:	b0 12 9a c4 	call	#0xc49a	
+    c476:	08 10       	rrc	r8		
+    c478:	28 b2       	bit	#4,	r8	;r2 As==10
+    c47a:	08 24       	jz	$+18     	;abs 0xc48c
+    c47c:	3e e3       	inv	r14		
+    c47e:	3f e3       	inv	r15		
+    c480:	1e 53       	inc	r14		
+    c482:	0f 63       	adc	r15		
+    c484:	3c e3       	inv	r12		
+    c486:	3d e3       	inv	r13		
+    c488:	1c 53       	inc	r12		
+    c48a:	0d 63       	adc	r13		
+    c48c:	38 b2       	bit	#8,	r8	;r2 As==11
+    c48e:	04 24       	jz	$+10     	;abs 0xc498
+    c490:	3c e3       	inv	r12		
+    c492:	3d e3       	inv	r13		
+    c494:	1c 53       	inc	r12		
+    c496:	0d 63       	adc	r13		
+    c498:	30 41       	ret			
+
+0000c49a <__udivmodsi4>:
+    c49a:	0f ef       	xor	r15,	r15	
+    c49c:	0e ee       	xor	r14,	r14	
+    c49e:	39 40 21 00 	mov	#33,	r9	;#0x0021
+    c4a2:	0a 3c       	jmp	$+22     	;abs 0xc4b8
+    c4a4:	08 10       	rrc	r8		
+    c4a6:	0e 6e       	rlc	r14		
+    c4a8:	0f 6f       	rlc	r15		
+    c4aa:	0f 9b       	cmp	r11,	r15	
+    c4ac:	05 28       	jnc	$+12     	;abs 0xc4b8
+    c4ae:	02 20       	jnz	$+6      	;abs 0xc4b4
+    c4b0:	0e 9a       	cmp	r10,	r14	
+    c4b2:	02 28       	jnc	$+6      	;abs 0xc4b8
+    c4b4:	0e 8a       	sub	r10,	r14	
+    c4b6:	0f 7b       	subc	r11,	r15	
+    c4b8:	0c 6c       	rlc	r12		
+    c4ba:	0d 6d       	rlc	r13		
+    c4bc:	08 68       	rlc	r8		
+    c4be:	19 83       	dec	r9		
+    c4c0:	f1 23       	jnz	$-28     	;abs 0xc4a4
+    c4c2:	30 41       	ret			
+
+0000c4c4 <_unexpected_>:
+    c4c4:	00 13       	reti			
+
+Disassembly of section .vectors:
+
+0000ffe0 <__ivtbl_16>:
+    ffe0:	b2 c0 b2 c0 b2 c0 b2 c0 b2 c0 b2 c0 fa c1 d0 c1     ................
+    fff0:	b2 c0 b2 c0 b2 c0 b2 c0 b2 c0 b2 c0 b2 c0 00 c0     ................

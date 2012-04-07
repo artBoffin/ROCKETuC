@@ -1,0 +1,40 @@
+ROCKETuC firmware README
+07.04.2012 Stefan Wendler
+sw@kaltpost.de
+=====================================
+
+*** ALPHA *** 
+
+Currently only the tests provide something useful!!
+
+*** ALPHA *** 
+
+Compilation
+------------
+
+The firmware depends on "libemb".  The compilation steps described here assume, that you installed "libemb" for your target platform.  
+
+For MSP430, it is assumed you have installed a working msp430-gcc along with ths mspdebug tool (newer Ubuntu distributions provide packages for both).
+
+To compile the firmware, change to the toplevel directory "firmware" and issue:
+
+make
+
+This will produce the firmware binary in various formats in the "bin" subdirectory as well es test firmwarfe binaries under "test/*"
+
+Flashing
+------------
+
+make flash-target
+
+For the MSP430 target on a Launchpad, the "mspdebug" tool is used for flashing. 
+
+Doxygen Docs
+------------
+
+If you installed doxygen on your system, you could generate the HTML-based API documentation by calling:
+
+make gen-docs
+
+This will create the API documentation under "doc/gen/html".
+

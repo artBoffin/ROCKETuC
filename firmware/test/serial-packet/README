@@ -1,0 +1,3 @@
+* Flash firmware to Launchpad with MSP430G2553 inserted
+* Connect to Launchpad on "/dev/ttyACM0" at 9600 Bauds
+* Send ROCKETuC protocol packets, receive dummy responses
