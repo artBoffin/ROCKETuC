@@ -1,5 +1,5 @@
 LIBNAME  = libprocessing
-# OBJS    += 
+OBJS    += pin_msp430.o
 
 include ../../common_lib.mk
 

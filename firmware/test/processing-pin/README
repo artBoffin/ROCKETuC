@@ -1,0 +1,7 @@
+simple test firmware to do basic testing of pin setup and control functions
+
+add additional LED to P2.5
+add additional button btw. P2.3 and VDD
+add additional button btw. P2.4 and GND 
+
+connect to /dev/ttyACM0@9600,8,N,1 to see test results

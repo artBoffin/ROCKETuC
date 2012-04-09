@@ -16,6 +16,7 @@ lib:
 test-target: lib
 	make -C test/packet 
 	make -C test/serial-packet
+	make -C test/processing-pin
 
 clean-lib: 
 	make -C libpacket clean
@@ -25,6 +26,7 @@ clean-lib:
 clean-test: 
 	make -C test/packet clean 
 	make -C test/serial-packet clean
+	make -C test/processing-pin clean
 
 gen-docs: lib
 	make -C libpacket gen-docs 
