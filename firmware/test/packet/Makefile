@@ -15,7 +15,10 @@ TARGET		= libpacket-test_v$(VERSION)
 
 all: target
 
-target:
+prepare:
+	test -d bin || mkdir bin 
+
+target: prepare
 	make -C $(SRCDIR)
 
 style:

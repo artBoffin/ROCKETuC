@@ -17,7 +17,11 @@ all: target
 
 world: target gen-docs
 
-target:
+prepare:
+	test -d bin || mkdir bin 
+	test -d doc || mkdir doc 
+
+target: prepare
 	make -C $(SRCDIR)
 
 gen-docs: target
