@@ -10,7 +10,6 @@
 #define PIN_1_6		0x16
 #define PIN_1_7		0x17
 
-// TODO not available on all MCUs
 #define PIN_2_0		0x20
 #define PIN_2_1		0x21
 #define PIN_2_2		0x22

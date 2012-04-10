@@ -37,6 +37,16 @@ int main(void)
 
 	dump_regs("initial");
 
+	// invalid port
+	if(processing_pin_setup(0x30, PIN_FUNCTION_OUTPUT) == PIN_STAT_ERR_INVALPORT) {
+		cio_print("0x30 is an invalid port\n\r");
+	}
+	
+	// invalid pin
+	if(processing_pin_setup(0x2A, PIN_FUNCTION_OUTPUT) == PIN_STAT_ERR_INVALPIN) {
+		cio_print("0x2A is an invalid pin\n\r");
+	}
+
 	// set P1.0 + P1.6 + P2.5 to output (the build in LEDs)
 	processing_pin_setup(PIN_1_0, PIN_FUNCTION_OUTPUT);
 	processing_pin_setup(PIN_1_6, PIN_FUNCTION_OUTPUT);

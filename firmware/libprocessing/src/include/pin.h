@@ -21,19 +21,43 @@
 
 #define PIN_FUNCTION_UARTTX			0x07
 
-#define PIN_LOW						0x00
 
-#define PIN_HIGH					0x01
+#define PIN_CAP_INPUT				0b00000001
 
-void processing_pin_setup(unsigned char pin, unsigned char function);
+#define PIN_CAP_INPUT_RE			0b00000010
 
-void processing_pin_clear(unsigned char pin);
+#define PIN_CAP_OUTPUT				0b00000100
 
-void processing_pin_set(unsigned char pin);
+#define PIN_CAP_ANALOGIN			0b00001000
 
-void processing_pin_toggle(unsigned char pin);
+#define PIN_CAP_PWM					0b00001000
 
-unsigned char processing_pin_digital_read(unsigned char pin);
+#define PIN_CAP_UARTRX				0b00010000
+
+#define PIN_CAP_UARTTX				0b00010000
+
+
+#define PIN_STAT_OK					0
+
+#define PIN_STAT_ERR_UNSUPFUNC		-1
+
+#define PIN_STAT_ERR_INVALPORT		-2
+
+#define PIN_STAT_ERR_INVALPIN		-3
+
+int processing_pin_capabilities(unsigned char pin); 
+
+int processing_pin_has_capabilities(unsigned char pin, int capabilities); 
+
+int processing_pin_setup(unsigned char pin, unsigned char function);
+
+int processing_pin_clear(unsigned char pin);
+
+int processing_pin_set(unsigned char pin);
+
+int processing_pin_toggle(unsigned char pin);
+
+int processing_pin_digital_read(unsigned char pin);
 
 int processing_pin_analog_read(unsigned char pin);
 
