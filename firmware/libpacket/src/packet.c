@@ -24,6 +24,11 @@ int packet_send(packet *pkt) {
 
 	unsigned char  i;
 
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+		return PACKET_STAT_ERR_LENGTH;
+	}
+ 
 	// write start byte
 	packet_byte_to_sendq(pkt->start);
 
@@ -33,21 +38,15 @@ int packet_send(packet *pkt) {
 	// write type
 	packet_byte_to_sendq(pkt->type);
 
-	// TODO: check length
-	
 	// write data
 	for(i = 0; i < pkt->length - 4; i++) {	
-		if(packet_byte_to_sendq(pkt->data[i]) != 0) {
-			// TODO define constant for case "unable to push byte to buffer"
-			return -1;
-		}
+		packet_byte_to_sendq(pkt->data[i]); 
 	}
 
 	// write crc 
 	packet_byte_to_sendq(pkt->crc);
 	
-	// TODO define constant for "all ok"
-	return 0;
+	return PACKET_STAT_OK;
 }
 
 int packet_receive(packet *pkt, unsigned char start) {
@@ -61,9 +60,12 @@ int packet_receive(packet *pkt, unsigned char start) {
 
 	// read length
 	pkt->length = packet_byte_from_rcvq();
-
-	// TODO: check length
-	//
+	
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+		return PACKET_STAT_ERR_LENGTH;
+	}
+ 
 	// read type
 	pkt->type = packet_byte_from_rcvq();
  	
@@ -76,7 +78,7 @@ int packet_receive(packet *pkt, unsigned char start) {
 	pkt->crc = packet_byte_from_rcvq();
 	
 	// check crc
-	return packet_check_crc(pkt);
+	return (packet_check_crc(pkt) ? PACKET_STAT_OK : PACKET_STAT_ERR_CRC);
 }
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
@@ -90,6 +92,5 @@ int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
 		}
     }
 
-	// TODO define constant for case "unknown packet type"
-	return -1;
+	return PACKET_STAT_ERR_UNKPACK;
 }

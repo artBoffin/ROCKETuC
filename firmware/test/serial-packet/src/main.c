@@ -17,44 +17,11 @@ static serial_rb stx;
 static packet outp;
 static packet inp;
 
-int ph_dummy_ack(unsigned char length, unsigned char *data) {
+int ph_dummy_ack(unsigned char length, unsigned char *data);
 
-	// send ACK packet
-	outp.length 	= 0x05;
-	outp.type 		= 0x01;
-	outp.data[0]	= 0x01;
-	outp.crc		= packet_calc_crc(&outp);
+int ph_system_info(unsigned char length, unsigned char *data);
 
-	packet_send(&outp);
-
-	return 0;
-}
-
-int ph_system_info(unsigned char length, unsigned char *data) {
-
-	outp.length 	= 0x07;
-	outp.type 		= 0x02;
-	outp.data[0]	= 0xaa;
-	outp.data[1]	= 0xbb;
-	outp.data[2]	= 0xcc;
-	outp.crc		= packet_calc_crc(&outp);
-
-	packet_send(&outp);
-
-	return 0;
-}
-
-int ph_null(unsigned char length, unsigned char *data) {
-
-	outp.length 	= 0x04;
-	outp.type 		= 0x00;
-	outp.crc		= packet_calc_crc(&outp);
-
-	packet_send(&outp);
-
-	return 0;
-}
-
+int ph_null(unsigned char length, unsigned char *data);
 
 packet_rcv_handlers rcvh = {
 	.count = 9,
@@ -98,12 +65,50 @@ packet_rcv_handlers rcvh = {
 	}
 };
 
+int ph_dummy_ack(unsigned char length, unsigned char *data) 
+{
+	outp.length 	= 0x05;
+	outp.type 		= 0x01;
+	outp.data[0]	= 0x01;
+	outp.crc		= packet_calc_crc(&outp);
+
+	packet_send(&outp);
+
+	return 0;
+}
+
+int ph_system_info(unsigned char length, unsigned char *data) 
+{
+	outp.length 	= 0x07;
+	outp.type 		= 0x02;
+	outp.data[0]	= 0xaa;
+	outp.data[1]	= 0xbb;
+	outp.data[2]	= 0xcc;
+	outp.crc		= packet_calc_crc(&outp);
+
+	packet_send(&outp);
+
+	return 0;
+}
+
+int ph_null(unsigned char length, unsigned char *data) 
+{
+	outp.length 	= 0x04;
+	outp.type 		= 0x00;
+	outp.crc		= packet_calc_crc(&outp);
+
+	packet_send(&outp);
+
+	return 0;
+}
+
 void clock_init(void)
 {
 	WDTCTL = WDTPW + WDTHOLD;
     BCSCTL1 = CALBC1_1MHZ;
     DCOCTL  = CALDCO_1MHZ;
 }
+
 void serirq_init(void)
 {
     serial_rb_init(&srx, &(srx_buf[0]), RB_SIZE);
@@ -113,7 +118,8 @@ void serirq_init(void)
 	__bis_SR_register(GIE);
 }
 
-int packet_byte_to_sendq(unsigned char pkt_byte) {
+void packet_byte_to_sendq(unsigned char pkt_byte) 
+{
 	// wait until buffer empties 
 	while(serial_rb_full(&stx)) {
 		__asm__("nop");
@@ -121,12 +127,10 @@ int packet_byte_to_sendq(unsigned char pkt_byte) {
 
 	serial_rb_write(&stx, pkt_byte);
 	IE2 |= UCA0TXIE;
-
-	return 0;
 }
 
-unsigned char packet_byte_from_rcvq() {
-
+unsigned char packet_byte_from_rcvq() 
+{
 	// wait until data arrived in buffer
 	while(serial_rb_empty(&srx)) {
 		__asm__("nop");
@@ -164,8 +168,8 @@ int main(void)
 
 	while (1) {
 		// process packages endless ...
-		if(packet_receive(&inp, 0x24) == 0) {
-			if(packet_process_received(&rcvh, &inp) != 0) {
+		if(packet_receive(&inp, 0x24) == PACKET_STAT_OK) {
+			if(packet_process_received(&rcvh, &inp) == PACKET_STAT_ERR_UNKPACK) {
 				// send ERROR packet (invalid packet type)
 				outp.length 	= 0x05;
 				outp.type 		= 0x01;
@@ -176,13 +180,13 @@ int main(void)
 			}
 		}
 		else {
-				// send ERROR packet (invalid CRC)
-				outp.length 	= 0x05;
-				outp.type 		= 0x01;
-				outp.data[0]	= 0x02;
-				outp.crc		= packet_calc_crc(&outp);
+			// send ERROR packet (invalid CRC/maleformed packet)
+			outp.length 	= 0x05;
+			outp.type 		= 0x01;
+			outp.data[0]	= 0x02;
+			outp.crc		= packet_calc_crc(&outp);
 
-				packet_send(&outp);
+			packet_send(&outp);
 		}
 	}
 

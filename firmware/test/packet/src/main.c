@@ -5,6 +5,24 @@
 
 #include "packet.h"
 
+int ph_pin_setup(unsigned char length, unsigned char *data);
+
+int ph_system_info(unsigned char length, unsigned char *data);
+
+packet_rcv_handlers rcvh = {
+	.count = 2,
+	.handlers = {
+		{ 
+			.type = 0x04,			// pin setup packet
+			.func = ph_pin_setup,	// handler func
+		},
+		{ 
+			.type = 0x02,			// system info packet 
+			.func = ph_system_info,	// handler func
+		},
+	}
+};
+
 void print_packet_data(unsigned char length, unsigned char *data) {
 
 	unsigned char i;
@@ -43,20 +61,6 @@ int ph_system_info(unsigned char length, unsigned char *data) {
 	return 0;
 }
 
-packet_rcv_handlers rcvh = {
-	.count = 2,
-	.handlers = {
-		{ 
-			.type = 0x04,			// pin setup packet
-			.func = ph_pin_setup,	// handler func
-		},
-		{ 
-			.type = 0x02,			// system info packet 
-			.func = ph_system_info,	// handler func
-		},
-	}
-};
-
 void clock_init(void)
 {
 	WDTCTL = WDTPW + WDTHOLD;
@@ -64,11 +68,9 @@ void clock_init(void)
     DCOCTL  = CALDCO_1MHZ;
 }
 
-int packet_byte_to_sendq(unsigned char pkt_byte) {
+void packet_byte_to_sendq(unsigned char pkt_byte) {
 
 	cio_printf("[%x] ", pkt_byte);
-
-	return 0;
 }
 
 unsigned char packet_byte_from_rcvq() {
@@ -107,7 +109,6 @@ int main(void)
 	cio_print("** ROCKETuC - libpacket test **\n\r");
 
 	// assemble and dummy-send NULL packet 
-
 	outp.start 		= 0x43;
 	outp.length 	= 0x04;
 	outp.type 		= 0x00;
@@ -132,24 +133,24 @@ int main(void)
 	s = packet_receive(&inp, 0x24);
 
 	print_packet(&inp);
-	if(s == 0) cio_print("OK\n\r"); else cio_print("FAIL CRC\n\r");
+	if(s == PACKET_STAT_OK) cio_print("OK\n\r"); else cio_printf("FAIL: %i\n\r", s);
 	
 	// receveive pin config package 
 	s = packet_receive(&inp, 0x24);
 
 	print_packet(&inp);
-	if(s == 0) cio_print("OK\n\r"); else cio_print("FAIL CRC\n\r");
+	if(s == PACKET_STAT_OK) cio_print("OK\n\r"); else cio_printf("FAIL: %i\n\r", s);
 	
 	// receveive pin config package whith wron CRC 
 	s = packet_receive(&inp, 0x24);
 
 	print_packet(&inp);
-	if(s == 0) cio_print("OK\n\r"); else cio_print("FAIL CRC\n\r");
-	
+	if(s == PACKET_STAT_OK) cio_print("OK\n\r"); else cio_printf("FAIL: %i\n\r", s);
+
 	// receveive and prcoess system info 
-	if(packet_receive(&inp, 0x24) == 0) {
+	if((s = packet_receive(&inp, 0x24)) == PACKET_STAT_OK) {
 		print_packet(&inp);
-		if(packet_process_received(&rcvh, &inp) == 0) {
+		if(packet_process_received(&rcvh, &inp) != PACKET_STAT_ERR_UNKPACK) {
 			cio_print("OK\n\r"); 	
 		}
 		else {
@@ -157,13 +158,13 @@ int main(void)
 		}
 	}
 	else {
-		cio_print("FAIL CRC\n\r");
+		cio_printf("FAIL: %s\n\r", s);
 	}
 	
 	// receveive and prcoess pin setup 
-	if(packet_receive(&inp, 0x24) == 0) {
+	if((s = packet_receive(&inp, 0x24)) == PACKET_STAT_OK) {
 		print_packet(&inp);
-		if(packet_process_received(&rcvh, &inp) == 0) {
+		if(packet_process_received(&rcvh, &inp) != PACKET_STAT_ERR_UNKPACK) {
 			cio_print("OK\n\r"); 	
 		}
 		else {
@@ -171,13 +172,13 @@ int main(void)
 		}
 	}
 	else {
-		cio_print("FAIL CRC\n\r");
+		cio_printf("FAIL: %s\n\r", s);
 	}
 	
 	// receveive and prcoess NULL (unknown) 
-	if(packet_receive(&inp, 0x24) == 0) {
+	if((s = packet_receive(&inp, 0x24)) == PACKET_STAT_OK) {
 		print_packet(&inp);
-		if(packet_process_received(&rcvh, &inp) == 0) {
+		if(packet_process_received(&rcvh, &inp) != PACKET_STAT_ERR_UNKPACK) {
 			cio_print("OK\n\r"); 	
 		}
 		else {
@@ -185,7 +186,7 @@ int main(void)
 		}
 	}
 	else {
-		cio_print("FAIL CRC\n\r");
+		cio_printf("FAIL: %s\n\r", s);
 	}
 
 	while (1) {
