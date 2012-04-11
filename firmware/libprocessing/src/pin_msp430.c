@@ -2,13 +2,13 @@
 #include "pin.h"
 
 unsigned char pin_curr_func[] = {
-	PIN_FUNCTION_OUTPUT,				// P1.0
+	PIN_FUNCTION_INPUT_FLOAT,    		// P1.0
 	0,									// P1.1 - reserved int.
 	0,									// P1.2 - reserved int. 
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.3
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.4
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.5
-	PIN_FUNCTION_OUTPUT,				// P1.6
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.6
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.7
 	PIN_FUNCTION_INPUT_FLOAT,			// P2.0
 	PIN_FUNCTION_INPUT_FLOAT,			// P2.1
@@ -38,7 +38,7 @@ int pin2bit(unsigned char pin)
 
 	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
 	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
-		return PIN_STAT_ERR_INVALPIN;	
+		return PIN_STAT_ERR_INVALPIN;
 	}
 
 	return bit;
@@ -48,7 +48,7 @@ void pin_set_curr_func(unsigned char pin, unsigned char func)
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
-	int idx  	= port * bit_num;
+	int idx  	= (port - 1) * 8 + bit_num;
 
 	if((unsigned int)idx > sizeof(pin_curr_func)) {
 		return;
@@ -61,7 +61,7 @@ unsigned char processing_pin_function(unsigned char pin)
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
-	int idx  	= port * bit_num;
+	int idx  	= (port - 1) * 8 + bit_num;
 
 	if((unsigned int)idx > sizeof(pin_curr_func)) {
 		return 0;
@@ -74,7 +74,7 @@ unsigned char processing_pin_with_function(unsigned char pin, unsigned char func
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
-	int idx  	= port * bit_num;
+	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
 	int i;
 
 	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
@@ -120,7 +120,7 @@ int processing_pin_capabilities(unsigned char pin)
         pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
 		pin == PIN_2_6 || pin == PIN_2_7) {
 	
-		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTTX;
+		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTRX;
 	} 
 
 	// PIN_CAP_ANALOG_IN
@@ -144,7 +144,7 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-	if((bit  = pin2port(pin)) < 0) return bit;
+	if((bit  = pin2bit(pin))  < 0) return bit;
 
 	// see if PIN is already configured for the given function
 	if(processing_pin_function(pin) == function) { 
@@ -222,14 +222,14 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		break;
 	case PIN_FUNCTION_UARTRX:
 		if(!processing_pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
-			processing_pin_with_function(pin, function)) { 
+			processing_pin_with_function(0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!processing_pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-			processing_pin_with_function(pin, function)) { 
+			processing_pin_with_function(0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO
@@ -245,11 +245,17 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 
 int processing_pin_clear(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-	if((bit  = pin2port(pin)) < 0) return bit;
+	if((bit  = pin2bit(pin))  < 0) return bit;
 
 	if(port == 1) {
   		P1OUT &= ~bit;					// set to LOW                   
@@ -263,11 +269,17 @@ int processing_pin_clear(unsigned char pin)
 
 int processing_pin_set(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-	if((bit  = pin2port(pin)) < 0) return bit;
+	if((bit  = pin2bit(pin))  < 0) return bit;
 
 	if(port == 1) {
   		P1OUT |= bit;					// set to HIGH 
@@ -281,11 +293,17 @@ int processing_pin_set(unsigned char pin)
 
 int processing_pin_toggle(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT)  { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-	if((bit  = pin2port(pin)) < 0) return bit;
+	if((bit  = pin2bit(pin))  < 0) return bit;
 
 	if(port == 1) {
   		P1OUT ^= bit;					// toggle 
@@ -299,11 +317,18 @@ int processing_pin_toggle(unsigned char pin)
 
 int processing_pin_digital_read(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
+	   && pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-	if((bit  = pin2port(pin)) < 0) return bit;
+	if((bit  = pin2bit(pin))  < 0) return bit;
 
 	if(port == 1) {
   		return ((P1IN & bit) == bit ? 1 : 0);	// read and return 
@@ -314,12 +339,24 @@ int processing_pin_digital_read(unsigned char pin)
 
 int processing_pin_analog_read(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_ANALOG_IN) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	// TODO
 	return 0;
 }
 
 int processing_pin_pulselength_read(unsigned char pin)
 {
+	unsigned char pf = processing_pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
 	// TODO
 	return 0;
 }

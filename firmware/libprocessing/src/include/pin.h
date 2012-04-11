@@ -74,17 +74,17 @@
 /**
  * PIN has capability PWM output 
  */
-#define PIN_CAP_PWM					0b00001000
+#define PIN_CAP_PWM					0b00010000
 
 /**
  * PIN has capability UART RX 
  */
-#define PIN_CAP_UARTRX				0b00010000
+#define PIN_CAP_UARTRX				0b00100000
 
 /**
  * PIN has capability UART TX 
  */
-#define PIN_CAP_UARTTX				0b00010000
+#define PIN_CAP_UARTTX				0b01000000
 
 
 /**
@@ -177,12 +177,55 @@ int processing_pin_clear(unsigned char pin);
  */
 int processing_pin_set(unsigned char pin);
 
+/**
+ * Toggle the output for a given PIN
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @return					PIN_STAT_OK if function assigned
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as OUTPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int processing_pin_toggle(unsigned char pin);
 
+/**
+ * Read the digital state of an input/output for a given PIN
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @return					PIN_STAT_OK if function assigned
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as INPUT/OUTPUT/PWM)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int processing_pin_digital_read(unsigned char pin);
 
+/**
+ * Read the analog state of an input/output for a given PIN
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @return				    analog value sampled on success (positive value)	
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as ANALOG INPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int processing_pin_analog_read(unsigned char pin);
 
+/**
+ * Read the digital pulselengh for a given PIN. If PIN is LOW when function is called,
+ * the function waits for next raising edge, then measures the time until a falling
+ * edge is detected. If PIN is HIGH when functino is called, the function waits for next
+ * falling edge, then measures the time until a rising edge is detexted. 
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @return				    pulse lenght in ms on succes (positive value)	
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as INPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int processing_pin_pulselength_read(unsigned char pin);
 
 #endif

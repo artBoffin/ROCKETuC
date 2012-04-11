@@ -47,11 +47,36 @@ int main(void)
 		cio_print("0x2A is an invalid pin\n\r");
 	}
 
+	// P1.1 + P1.2 are reserved for UART1
+	if(processing_pin_setup(PIN_1_1, PIN_FUNCTION_OUTPUT) == PIN_STAT_ERR_INVALPIN) {
+		cio_print("0x11 is an invalid (reserved) pin\n\r");
+	}
+	if(processing_pin_setup(PIN_1_2, PIN_FUNCTION_OUTPUT) == PIN_STAT_ERR_INVALPIN) {
+		cio_print("0x12 is an invalid (reserved) pin\n\r");
+	}
+
+	// pins on port 2 do not support ADC
+	int p;
+
+	for(p = 0; p < 8; p++) { 
+		if(processing_pin_setup(PIN_2_0 + p, PIN_FUNCTION_ANALOG_IN) == PIN_STAT_ERR_UNSUPFUNC) {
+			cio_printf("0x2%i does not support ADC\n\r", p);
+		}
+	}
+	
+	// onyl one PIN at a time is allowed to be soft UART RX/TX
+	cio_printf("Set UARTTX p1.4: %x\n\r",processing_pin_setup(PIN_1_4, PIN_FUNCTION_UARTTX));
+	cio_printf("Set UARTTX p1.5: %x\n\r",processing_pin_setup(PIN_1_5, PIN_FUNCTION_UARTTX));
+	cio_printf("Set UARTRX p1.4: %x\n\r",processing_pin_setup(PIN_1_4, PIN_FUNCTION_UARTRX));
+	cio_printf("Set UARTRX p1.5: %x\n\r",processing_pin_setup(PIN_1_5, PIN_FUNCTION_UARTRX));
+
+
 	// set P1.0 + P1.6 + P2.5 to output (the build in LEDs)
 	processing_pin_setup(PIN_1_0, PIN_FUNCTION_OUTPUT);
 	processing_pin_setup(PIN_1_6, PIN_FUNCTION_OUTPUT);
 	processing_pin_setup(PIN_2_5, PIN_FUNCTION_OUTPUT);
 
+	
 	dump_regs("p1.0+p1.6+p2.5 output");
 
 	// set P1.0 + P1.6i + P2.5 to HIGH
@@ -89,6 +114,19 @@ int main(void)
 	cio_printf("P1.0 is %x\n\r", processing_pin_digital_read(PIN_1_0));	
 	cio_printf("P1.6 is %x\n\r", processing_pin_digital_read(PIN_1_6));	
 	cio_printf("P2.5 is %x\n\r", processing_pin_digital_read(PIN_2_5));	
+
+	// toggle P1.0 + P1.6 + P2.5
+	processing_pin_toggle(PIN_1_0);
+	processing_pin_toggle(PIN_1_6);
+	processing_pin_toggle(PIN_2_5);
+
+	dump_regs("p1.0+p1.6+p2.5 toggle");
+
+	// read P1.0 + P1.6 states
+	cio_printf("P1.0 is %x\n\r", processing_pin_digital_read(PIN_1_0));	
+	cio_printf("P1.6 is %x\n\r", processing_pin_digital_read(PIN_1_6));	
+	cio_printf("P2.5 is %x\n\r", processing_pin_digital_read(PIN_2_5));	
+
 
 	// set P1.3 to input float
 	processing_pin_setup(PIN_1_3, PIN_FUNCTION_INPUT_FLOAT);
@@ -132,15 +170,15 @@ int main(void)
 	while (1) {
 		delay();
 
-		processing_pin_toggle(PIN_1_0);
-		processing_pin_toggle(PIN_1_6);
+		cio_printf("tog p1.0: %x\n\r", processing_pin_toggle(PIN_1_0));
+		cio_printf("tog p1.6: %x\n\r", processing_pin_toggle(PIN_1_6));
 
 		if(i++ % 2 == 0) {
-			processing_pin_toggle(PIN_2_5);
+			cio_printf("tog p2.5: %x\n\r", processing_pin_toggle(PIN_2_5));
 		}
 
 		if(!processing_pin_digital_read(PIN_1_3)) {
-			processing_pin_toggle(PIN_1_6);
+			cio_printf("tog p1.6: %x\n\r", processing_pin_toggle(PIN_1_6));
 			while(!processing_pin_digital_read(PIN_1_3)) __asm__("nop");
 		}
 	}
