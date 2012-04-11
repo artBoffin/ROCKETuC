@@ -1,6 +1,25 @@
 #include <msp430.h>
 #include "pin.h"
 
+unsigned char pin_curr_func[] = {
+	PIN_FUNCTION_OUTPUT,				// P1.0
+	0,									// P1.1 - reserved int.
+	0,									// P1.2 - reserved int. 
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.3
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.4
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.5
+	PIN_FUNCTION_OUTPUT,				// P1.6
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.7
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.0
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.1
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.2
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.3
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.4
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.5
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.6
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.7
+};
+
 int pin2port(unsigned char pin) 
 {
 	int port = (0xF0 & pin) >> 4;
@@ -25,14 +44,98 @@ int pin2bit(unsigned char pin)
 	return bit;
 }
 
+void pin_set_curr_func(unsigned char pin, unsigned char func) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= port * bit_num;
+
+	if((unsigned int)idx > sizeof(pin_curr_func)) {
+		return;
+	}
+
+	pin_curr_func[idx] = func;
+}
+
+unsigned char processing_pin_function(unsigned char pin) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= port * bit_num;
+
+	if((unsigned int)idx > sizeof(pin_curr_func)) {
+		return 0;
+	}
+
+	return pin_curr_func[idx];
+}
+
+unsigned char processing_pin_with_function(unsigned char pin, unsigned char function) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= port * bit_num;
+	int i;
+
+	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
+		if(pin_curr_func[i] == function) {
+			return (((i / 8 + 1) << 4) + (i % 8));
+		}
+	}
+
+	return 0;
+}
+
 int processing_pin_capabilities(unsigned char pin) 
 {
-	return 0;
+	int caps = 0;
+
+	// PIN_CAP_INPUT
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+		pin == PIN_2_6 || pin == PIN_2_7) {
+	
+		caps |= PIN_CAP_INPUT;
+	} 
+
+	// PIN_CAP_INPUT_RE
+	if( pin == PIN_1_0 || pin == PIN_1_4 ||
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+		pin == PIN_2_6 || pin == PIN_2_7) {
+	
+		caps |= PIN_CAP_INPUT_RE;
+	} 
+
+	// PIN_CAP_OUTPUT
+	// PIN_CAP_PWM
+	// PIN_CAP_UARTRX
+	// PIN_CAP_UARTTX
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+		pin == PIN_2_6 || pin == PIN_2_7) {
+	
+		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTTX;
+	} 
+
+	// PIN_CAP_ANALOG_IN
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7) {
+	
+		caps |= PIN_CAP_ANALOG_IN;
+	} 
+
+	return caps;
 }
 
 int processing_pin_has_capabilities(unsigned char pin, int capabilities) 
 {
-	return 0;
+	return ((processing_pin_capabilities(pin) & capabilities) == capabilities ? 1 : 0);
 }
 
 int processing_pin_setup(unsigned char pin, unsigned char function)
@@ -43,8 +146,16 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2port(pin)) < 0) return bit;
 
+	// see if PIN is already configured for the given function
+	if(processing_pin_function(pin) == function) { 
+		return PIN_STAT_OK;
+	}
+
 	switch(function) {
 	case PIN_FUNCTION_INPUT_FLOAT:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_INPUT)) {
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		if(port == 1) {
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
 		}
@@ -53,6 +164,9 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLUP:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		if(port == 1) {
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P1OUT |=  bit;					// setting out to HIGH enables pull-up                     
@@ -65,6 +179,9 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLDOWN:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		if(port == 1) {
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P1OUT &= ~bit;					// setting out to LOW enables pull-down                     
@@ -77,6 +194,9 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		}
 		break;
 	case PIN_FUNCTION_OUTPUT:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_OUTPUT)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		if(port == 1) {
 			P1DIR |=  bit;					// set direction to out                 
   			P1OUT &= ~bit;					// set to LOW initially                     
@@ -89,20 +209,36 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		}
 		break;
 	case PIN_FUNCTION_ANALOG_IN:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_ANALOG_IN)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		// TODO
 		break;
 	case PIN_FUNCTION_PWM:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_PWM)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		// TODO
 		break;
 	case PIN_FUNCTION_UARTRX:
-		// TODO
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
+			processing_pin_with_function(pin, function)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		
 		break;
 	case PIN_FUNCTION_UARTTX:
+		if(!processing_pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
+			processing_pin_with_function(pin, function)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
 		// TODO
 		break;
 	default:
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
+
+	pin_set_curr_func(pin, function);
 
 	return PIN_STAT_OK;
 }
