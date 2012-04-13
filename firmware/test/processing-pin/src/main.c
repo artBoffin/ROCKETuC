@@ -22,7 +22,7 @@ void dump_regs(const char *msg)
 
 void delay() 
 {
-	volatile unsigned long i = 59999;
+	volatile unsigned long i = 15000;
 
 	do (i--);
 	while (i != 0);
@@ -165,21 +165,37 @@ int main(void)
 	processing_pin_clear(PIN_1_6);
 	processing_pin_clear(PIN_2_5);
 
+	// set P1.5 to analog in
 	int i = 0;
+
+	cio_printf("setup 1.5 for analog in: %x\n\r", processing_pin_setup(PIN_1_5, PIN_FUNCTION_ANALOG_IN));
+	dump_regs("p1.5 analog in");
+	
+	int adcin1 = processing_pin_analog_read(PIN_1_5); 
+	int adcin2 = 0; 
+	cio_printf("Analog read p1.5: %x\n\r", adcin1);
 
 	while (1) {
 		delay();
 
-		cio_printf("tog p1.0: %x\n\r", processing_pin_toggle(PIN_1_0));
-		cio_printf("tog p1.6: %x\n\r", processing_pin_toggle(PIN_1_6));
+		processing_pin_toggle(PIN_1_0);
+		processing_pin_toggle(PIN_1_6);
 
 		if(i++ % 2 == 0) {
-			cio_printf("tog p2.5: %x\n\r", processing_pin_toggle(PIN_2_5));
+			processing_pin_toggle(PIN_2_5);
 		}
 
 		if(!processing_pin_digital_read(PIN_1_3)) {
-			cio_printf("tog p1.6: %x\n\r", processing_pin_toggle(PIN_1_6));
+			processing_pin_toggle(PIN_1_6);
 			while(!processing_pin_digital_read(PIN_1_3)) __asm__("nop");
+		}
+
+		adcin2 = processing_pin_analog_read(PIN_1_5); 
+
+		// only output ADC value if delta was more then 5
+		if(adcin2 - adcin1 > 5 || adcin1 - adcin2 > 5) {
+			adcin1 = adcin2;
+			cio_printf("Analog read at p1.5: %x (%i)\n\r", adcin2, adcin2);
 		}
 	}
 

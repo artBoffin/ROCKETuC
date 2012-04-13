@@ -3,8 +3,8 @@
 
 unsigned char pin_curr_func[] = {
 	PIN_FUNCTION_INPUT_FLOAT,    		// P1.0
-	0,									// P1.1 - reserved int.
-	0,									// P1.2 - reserved int. 
+	0,									// P1.1 - reserved/internal
+	0,									// P1.2 - reserved/internal
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.3
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.4
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.5
@@ -215,7 +215,8 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		P1DIR    &= ~bit;					// make sure to clear OUT flag for the pin                 
-		
+		P1REN &= ~bit; 	                	// disable pull-up/down 
+
 		// VCC as +VRef, VSS as -VRef, 16 x ADC10CLKs
    		ADC10CTL0 = SREF_0 + ADC10SHT_2 + REFON + ADC10ON;
 
@@ -358,7 +359,7 @@ int processing_pin_analog_read(unsigned char pin)
 	if((s = pin2bit(pin))  < 0) return s;
 
 	// configure channel
-   	ADC10CTL1 = 0xF000 & (pin << 16); 
+   	ADC10CTL1 = 0xF000 & (pin << 12); 
 
     ADC10CTL0 |= ENC + ADC10SC;             // sample 
     while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
