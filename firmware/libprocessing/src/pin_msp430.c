@@ -158,9 +158,11 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		}
 		if(port == 1) {
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+			P1REN &= ~bit; 	                // disable pull-up/down 
 		}
 		else if(port == 2) {
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+			P2REN &= ~bit; 	                // disable pull-up/down 
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLUP:
@@ -212,7 +214,11 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 		if(!processing_pin_has_capabilities(pin, PIN_CAP_ANALOG_IN)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		// TODO
+		P1DIR    &= ~bit;					// make sure to clear OUT flag for the pin                 
+		
+		// VCC as +VRef, VSS as -VRef, 16 x ADC10CLKs
+   		ADC10CTL0 = SREF_0 + ADC10SHT_2 + REFON + ADC10ON;
+
 		break;
 	case PIN_FUNCTION_PWM:
 		if(!processing_pin_has_capabilities(pin, PIN_CAP_PWM)) { 
@@ -225,7 +231,7 @@ int processing_pin_setup(unsigned char pin, unsigned char function)
 			processing_pin_with_function(0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		
+		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!processing_pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
@@ -319,7 +325,8 @@ int processing_pin_digital_read(unsigned char pin)
 {
 	unsigned char pf = processing_pin_function(pin);
  
-	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && 
+	   pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
 	   && pf != PIN_FUNCTION_PWM) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
@@ -345,15 +352,26 @@ int processing_pin_analog_read(unsigned char pin)
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
-	// TODO
-	return 0;
+	int s;
+
+	if((s = pin2port(pin)) < 0) return s;
+	if((s = pin2bit(pin))  < 0) return s;
+
+	// configure channel
+   	ADC10CTL1 = 0xF000 & (pin << 16); 
+
+    ADC10CTL0 |= ENC + ADC10SC;             // sample 
+    while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
+
+	return ADC10MEM;
 }
 
 int processing_pin_pulselength_read(unsigned char pin)
 {
 	unsigned char pf = processing_pin_function(pin);
  
-	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
+	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && 
+	   pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
