@@ -1,13 +1,13 @@
 ##
-# Toplevel Makefile libpacket 
+# Toplevel Makefile libemb/libserial 
 #
-# 07.04.2012, Stefan Wendler, sw@kaltpost.de 
+# Stefan Wendler, sw@kaltpost.de 
 ##
 
 BASEDIR 	= .
 SRCDIR  	= src
 VERSION		= 0.1
-TARGET		= libpacket_v$(VERSION)
+TARGET		= libserial_v$(VERSION)
 
 all: target
 

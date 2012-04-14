@@ -2,11 +2,11 @@ BINARY	 = firmware
 OBJS	+= main.o 
 INCDIR  += -I../../../libserial/src/include 
 INCDIR  += -I../../../libconio/src/include 
-INCDIR  += -I../../../libpacket/src/include 
+INCDIR  += -I../../../librocketcore/src/include 
 LIBDIR  += -L../../../libserial/lib
 LIBDIR  += -L../../../libconio/lib
-LIBDIR  += -L../../../libpacket/lib
-LIBS	+= -lserial -lconio -lpacket
+LIBDIR  += -L../../../librocketcore/lib
+LIBS	+= -lserial -lconio -lrocketcore
 
 include ../../../common.mk
 

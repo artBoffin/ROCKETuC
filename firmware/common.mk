@@ -12,7 +12,6 @@ OBJCOPY		 = $(PREFIX)objcopy
 OBJDUMP		 = $(PREFIX)objdump
 
 INCDIR      += -I./include -I$(HOME)/msp430/include
-LIBDIR      += -L$(HOME)/msp430/lib
 
 CFLAGS		+= -Os -g -mmcu=msp430g2553 -Wall -Wextra $(INCDIR) 
 LDFLAGS     += -mmcu=msp430g2553 $(LIBDIR) $(LIBS)

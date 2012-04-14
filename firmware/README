@@ -12,10 +12,6 @@ Currently only the tests provide something useful!!
 Compilation
 ------------
 
-The firmware depends on "libemb".  The compilation steps described here assume, that you installed "libemb" for your target platform. For more details see:
-
-https://github.com/wendlers/libemb  
-
 For MSP430, it is assumed you have installed a working msp430-gcc along with the mspdebug tool (newer Ubuntu distributions provide packages for both).
 
 To compile the firmware, change to the toplevel directory "firmware" and issue:

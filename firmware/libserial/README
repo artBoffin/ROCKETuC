@@ -1,0 +1,9 @@
+ROCKETuC Serial Access
+14.04.2012 Stefan Wendler
+sw@kaltpost.de
+http://gpio.kaltpost.de/
+
+Serial communication C-library for MSP430G2553 MCUs
+===================================================
+
+"libserial" provides a simple to use API for configuring and using the USCI_A UART on the MSP430G2553.  
