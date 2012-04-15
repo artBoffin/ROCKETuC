@@ -1,0 +1,12 @@
+RPCKETuC Console IO
+14.04.2012 Stefan Wendler
+sw@kaltpost.de
+http://gpio.kaltpost.de/
+
+
+Console IO C-library for MSP430G2553 MCUs
+==========================================
+
+
+"libconio" provides a simple to use API for writing text to a console. Currently the console is theUART on USCI_A on the MSP430.  The library is not HW dependend since the HW part is provided by "libserial". Thus, this library is dependend on "libserial". 
+
