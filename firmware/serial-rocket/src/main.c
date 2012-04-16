@@ -21,8 +21,7 @@
 
 #include <msp430.h>
 
-#include <libemb/serial/serial.h>
-#include <libemb/conio/conio.h>
+#include "packet_handler.h"
 
 void clock_init(void)
 {
@@ -34,12 +33,12 @@ void clock_init(void)
 int main(void)
 {
 	clock_init();
-	serial_init(9600);
+	packet_handler_init();
 
-	cio_print("** ROCKETuC - just a test **\n\r");
-
+	// packet handler does all the work from IRQs
 	while (1) {
 		__asm__("nop");
 	}
+
 	return 0;
 }
