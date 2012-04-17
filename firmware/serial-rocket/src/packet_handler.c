@@ -20,65 +20,72 @@
  */
 
 #include "packet_handler.h"
+#include "core_proto.h"
 #include "core_handlers.h"
 
-// TODO: use constands form core_protocol.h for type
 packet_rcv_handlers packet_handlers = {
 	.count = 12,
 	.handlers = {
 		{ 
-			.type = 0x00,					// null 
+			.type = PACKET_IN_NULL,	
 			.func = handle_packet_null,		
 		},
 		{ 
-			.type = 0x01,					// reserved 
+			.type = PACKET_IN_RESERVED,
 			.func = handle_packet_reserved,		
 		},
 		{ 
-			.type = 0x02,					// system info  
+			.type = PACKET_IN_SYSTEM_INFO,
 			.func = handle_packet_system_info,	
 		},
 		{ 
-			.type = 0x03,					// device control 
+			.type = PACKET_IN_DEVICE_CONTROL, 
 			.func = handle_packet_device_control,	
 		},
 		{ 
-			.type = 0x04,					// pin function 
+			.type = PACKET_IN_PIN_FUNCTION,
 			.func = handle_packet_pin_function,	
 		},
 		{ 
-			.type = 0x05,					// pin control
+			.type = PACKET_IN_PIN_CONTROL,
 			.func = handle_packet_pin_control,	
 		},
 		{ 
-			.type = 0x06,					// PWM function 
+			.type = PACKET_IN_PWM_FUNCTION, 
 			.func = handle_packet_pwm_function,
 		},
 		{ 
-			.type = 0x07,					// PWM control
+			.type = PACKET_IN_PWM_CONTROL,
 			.func = handle_packet_pwm_control,
 		},
 		{ 
-			.type = 0x08,					// serial function 
+			.type = PACKET_IN_SERIAL_FUNCTION, 
 			.func = handle_packet_serial_function,
 		},
 		{ 
-			.type = 0x09,					// serial control 
+			.type = PACKET_IN_SERIAL_DATA, 
 			.func = handle_packet_serial_data,
 		},
 		{ 
-			.type = 0x0A,					// EXTI function 
+			.type = PACKET_IN_EXTERNAL_INTERRUPT_FUNCTION, 
 			.func = handle_packet_external_interrupt_function,
 		},
 		{ 
-			.type = 0xFF,					// reset 
+			.type = PACKET_IN_RESET, 
 			.func = handle_packet_reset,
 		},
 	}
 };
 
-int packet_handle(packet *pkt) 
+int packet_do_handle()
 {
-	return packet_process_received(&packet_handlers, pkt);
+	// process packages endless ...
+	if(packet_receive(&inp, PACKET_INBOUND_START) == PACKET_STAT_OK) {
+		if(packet_process_received(&packet_handlers, &inp) == PACKET_STAT_ERR_UNKPACK) {
+			send_status_packet(PACKET_RETURN_INVALID_PACKET);
+		}
+	}
+	else {
+		send_status_packet(PACKET_RETURN_BAD_PACKET);
+	}
 }
-

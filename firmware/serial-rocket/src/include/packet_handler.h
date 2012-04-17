@@ -24,10 +24,13 @@
 
 #include "packet.h"
 
+#define PACKET_INBOUND_START	0x24
+#define PACKET_OUTBOUND_START	0x43
+
 extern packet_rcv_handlers packet_handlers;
 
 void packet_handler_init();
 
-int packet_handle(packet *pkt);
+int packet_do_handle();
 
 #endif

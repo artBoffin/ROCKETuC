@@ -24,27 +24,25 @@
 
 #include "serial.h"
 #include "serial_rb.h"
-
-#include "packet.h"
+#include "core_proto.h"
+#include "packet_handler.h"
 
 #define RB_SIZE		64 
+#define BAUDRATE	9600
 
-static SERIAL_RB_Q srx_buf[RB_SIZE];
-static serial_rb srx;
+SERIAL_RB_Q srx_buf[RB_SIZE];
+serial_rb srx;
 
-static SERIAL_RB_Q stx_buf[RB_SIZE];
-static serial_rb stx;
-
-static packet outp;
-static packet inp;
+SERIAL_RB_Q stx_buf[RB_SIZE];
+serial_rb stx;
 
 void packet_handler_init()
 {
-	// TODO add constant to configure BR
-	serial_init(9600);
+	serial_init(BAUDRATE);
 
     serial_rb_init(&srx, &(srx_buf[0]), RB_SIZE);
     serial_rb_init(&stx, &(stx_buf[0]), RB_SIZE);
+
 
     IE2 |= UCA0RXIE; 
 	__bis_SR_register(GIE);
@@ -64,7 +62,6 @@ void packet_byte_to_sendq(unsigned char pkt_byte)
 unsigned char packet_byte_from_rcvq() 
 {
 	// wait until data arrived in buffer
-
 	while(serial_rb_empty(&srx)) {
 		__asm__("nop");
 	}
