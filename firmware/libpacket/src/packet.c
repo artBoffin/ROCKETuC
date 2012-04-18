@@ -38,7 +38,11 @@ unsigned char packet_calc_crc(packet *pkt) {
 
 int	packet_check_crc(packet *pkt) {
 
-	return (packet_calc_crc(pkt) != pkt->crc);
+	if(packet_calc_crc(pkt) == pkt->crc) {
+		return 1;
+	}
+
+	return 0;
 }
 
 int packet_send(packet *pkt) {
@@ -99,7 +103,11 @@ int packet_receive(packet *pkt, unsigned char start) {
 	pkt->crc = packet_byte_from_rcvq();
 	
 	// check crc
-	return (packet_check_crc(pkt) ? PACKET_STAT_OK : PACKET_STAT_ERR_CRC);
+	if(!packet_check_crc(pkt)) {
+		return PACKET_STAT_ERR_CRC;
+	}
+
+	return PACKET_STAT_OK;
 }
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {

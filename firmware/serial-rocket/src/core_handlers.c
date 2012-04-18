@@ -45,7 +45,7 @@ int handle_packet_system_info(unsigned char length, unsigned char *data)
 	packet_data_out_system_info *pd = (packet_data_out_system_info *)&outp.data[0];
 
 	outp.start	= PACKET_OUTBOUND_START;
-	outp.length	= 4 + sizeof(packet_data_out_system_info);
+	outp.length	= 7;
 	outp.type 	= PACKET_OUT_SYSTEM_INFO;
 	
 	// TODO replace 0xCAFFEE with data from constants
@@ -73,7 +73,7 @@ int handle_packet_pin_function(unsigned char length, unsigned char *data)
 	int s;
 
 	// check if length matches for packet-data
-	if(length != sizeof(packet_data_in_pin_function)) {
+	if(length != 2) {
 		send_status_packet(PACKET_RETURN_INAVLID_DATA);
 		return PACKET_STAT_ERR_DATA;
 	}
@@ -95,7 +95,7 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 	int s = PACKET_STAT_OK;
 
 	// check if length matches for packet-data
-	if(length != sizeof(packet_data_in_pin_control)) {
+	if(length != 2) {
 		send_status_packet(PACKET_RETURN_INAVLID_DATA);
 		return PACKET_STAT_ERR_DATA;
 	}
@@ -135,9 +135,10 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 				packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
 
 				outp.start	= PACKET_OUTBOUND_START;
-				outp.length	= 4 + sizeof(packet_data_out_system_info);
+				outp.length	= 6;
 				outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
 	
+				pdo->pin   = pd->pin;
 				pdo->state = s;
 
 				outp.crc = packet_calc_crc(&outp);
@@ -150,7 +151,19 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
 			}
 			else {
-				// TODO response packet
+				packet_data_out_analog_pin_read *pdo = (packet_data_out_analog_pin_read *)&outp.data[0];
+
+				outp.start	= PACKET_OUTBOUND_START;
+				outp.length	= 7;
+				outp.type 	= PACKET_OUT_ANALOG_PIN_READ;
+	
+				pdo->pin       = pd->pin;
+				pdo->value_lsb = (0x00FF & s);
+				pdo->value_msb = (0x0F00 & s) >> 8;
+
+				outp.crc = packet_calc_crc(&outp);
+
+				packet_send(&outp);
 			}
 			break;
 		case PIN_CONTROL_PULSELENGTH_READ:

@@ -22,6 +22,7 @@
 #include "packet_handler.h"
 #include "core_proto.h"
 #include "core_handlers.h"
+// #include "conio.h"
 
 packet_rcv_handlers packet_handlers = {
 	.count = 12,
@@ -79,13 +80,17 @@ packet_rcv_handlers packet_handlers = {
 
 int packet_do_handle()
 {
+	int s;
+
 	// process packages endless ...
-	if(packet_receive(&inp, PACKET_INBOUND_START) == PACKET_STAT_OK) {
+	if((s = packet_receive(&inp, PACKET_INBOUND_START)) == PACKET_STAT_OK) {
+//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
 		if(packet_process_received(&packet_handlers, &inp) == PACKET_STAT_ERR_UNKPACK) {
 			send_status_packet(PACKET_RETURN_INVALID_PACKET);
 		}
 	}
 	else {
+//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
 		send_status_packet(PACKET_RETURN_BAD_PACKET);
 	}
 }

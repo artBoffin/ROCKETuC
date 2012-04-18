@@ -1,0 +1,2365 @@
+
+firmware.elf:     file format elf32-msp430
+
+
+Disassembly of section .text:
+
+0000c000 <__init_stack>:
+    c000:	31 40 00 04 	mov	#1024,	r1	;#0x0400
+
+0000c004 <__low_level_init>:
+    c004:	15 42 20 01 	mov	&0x0120,r5	
+    c008:	75 f3       	and.b	#-1,	r5	;r3 As==11
+    c00a:	35 d0 08 5a 	bis	#23048,	r5	;#0x5a08
+
+0000c00e <__do_copy_data>:
+    c00e:	3f 40 32 00 	mov	#50,	r15	;#0x0032
+    c012:	0f 93       	tst	r15		
+    c014:	07 24       	jz	$+16     	;abs 0xc024
+    c016:	82 45 20 01 	mov	r5,	&0x0120	
+    c01a:	2f 83       	decd	r15		
+    c01c:	9f 4f 52 cb 	mov	-13486(r15),512(r15);0xcb52(r15), 0x0200(r15)
+    c020:	00 02 
+    c022:	f9 23       	jnz	$-12     	;abs 0xc016
+
+0000c024 <__do_clear_bss>:
+    c024:	3f 40 cc 00 	mov	#204,	r15	;#0x00cc
+    c028:	0f 93       	tst	r15		
+    c02a:	06 24       	jz	$+14     	;abs 0xc038
+    c02c:	82 45 20 01 	mov	r5,	&0x0120	
+    c030:	1f 83       	dec	r15		
+    c032:	cf 43 32 02 	mov.b	#0,	562(r15);r3 As==00, 0x0232(r15)
+    c036:	fa 23       	jnz	$-10     	;abs 0xc02c
+
+0000c038 <main>:
+    DCOCTL  = CALDCO_1MHZ;
+}
+
+int main(void)
+{
+	clock_init();
+    c038:	b0 12 50 c0 	call	#0xc050	
+	packet_handler_init();
+    c03c:	b0 12 92 c0 	call	#0xc092	
+
+	while (1) {
+		packet_do_handle();
+    c040:	b0 12 10 c3 	call	#0xc310	
+    c044:	fd 3f       	jmp	$-4      	;abs 0xc040
+
+0000c046 <__stop_progExec__>:
+    c046:	32 d0 f0 00 	bis	#240,	r2	;#0x00f0
+    c04a:	fd 3f       	jmp	$-4      	;abs 0xc046
+
+0000c04c <__ctors_end>:
+    c04c:	30 40 50 cb 	br	#0xcb50	
+
+0000c050 <clock_init>:
+
+#include "packet_handler.h"
+
+void clock_init(void)
+{
+	WDTCTL = WDTPW + WDTHOLD;
+    c050:	b2 40 80 5a 	mov	#23168,	&0x0120	;#0x5a80
+    c054:	20 01 
+    BCSCTL1 = CALBC1_1MHZ;
+    c056:	d2 42 ff 10 	mov.b	&0x10ff,&0x0057	
+    c05a:	57 00 
+    DCOCTL  = CALDCO_1MHZ;
+    c05c:	d2 42 fe 10 	mov.b	&0x10fe,&0x0056	
+    c060:	56 00 
+}
+    c062:	30 41       	ret			
+
+0000c064 <send_status_packet>:
+
+packet outp;
+packet inp;
+
+void send_status_packet(unsigned char stat)
+{
+    c064:	0b 12       	push	r11		
+	packet_data_out_status *pd = (packet_data_out_status *)&outp.data[0];
+
+	outp.start	= PACKET_OUTBOUND_START;
+    c066:	3b 40 56 02 	mov	#598,	r11	;#0x0256
+    c06a:	fb 40 43 00 	mov.b	#67,	0(r11)	;#0x0043, 0x0000(r11)
+    c06e:	00 00 
+	outp.length	= 5;
+    c070:	fb 40 05 00 	mov.b	#5,	1(r11)	;#0x0005, 0x0001(r11)
+    c074:	01 00 
+	outp.type 	= PACKET_OUT_STATUS;
+    c076:	db 43 02 00 	mov.b	#1,	2(r11)	;r3 As==01, 0x0002(r11)
+	pd->status  = stat;
+    c07a:	cb 4f 03 00 	mov.b	r15,	3(r11)	;0x0003(r11)
+	outp.crc	= packet_calc_crc(&outp);
+    c07e:	0f 4b       	mov	r11,	r15	
+    c080:	b0 12 44 c4 	call	#0xc444	
+    c084:	cb 4f 13 00 	mov.b	r15,	19(r11)	;0x0013(r11)
+
+	packet_send(&outp);
+    c088:	0f 4b       	mov	r11,	r15	
+    c08a:	b0 12 82 c4 	call	#0xc482	
+}
+    c08e:	3b 41       	pop	r11		
+    c090:	30 41       	ret			
+
+0000c092 <packet_handler_init>:
+
+SERIAL_RB_Q stx_buf[RB_SIZE];
+serial_rb stx;
+
+void packet_handler_init()
+{
+    c092:	0b 12       	push	r11		
+	serial_init(BAUDRATE);
+    c094:	3f 40 80 25 	mov	#9600,	r15	;#0x2580
+    c098:	b0 12 d0 c3 	call	#0xc3d0	
+
+    serial_rb_init(&srx, &(srx_buf[0]), RB_SIZE);
+    c09c:	3b 40 40 00 	mov	#64,	r11	;#0x0040
+    c0a0:	0d 4b       	mov	r11,	r13	
+    c0a2:	3e 40 7e 02 	mov	#638,	r14	;#0x027e
+    c0a6:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c0aa:	b0 12 6e c3 	call	#0xc36e	
+    serial_rb_init(&stx, &(stx_buf[0]), RB_SIZE);
+    c0ae:	0d 4b       	mov	r11,	r13	
+    c0b0:	3e 40 be 02 	mov	#702,	r14	;#0x02be
+    c0b4:	3f 40 74 02 	mov	#628,	r15	;#0x0274
+    c0b8:	b0 12 6e c3 	call	#0xc36e	
+
+
+    IE2 |= UCA0RXIE; 
+    c0bc:	d2 d3 01 00 	bis.b	#1,	&0x0001	;r3 As==01
+	__bis_SR_register(GIE);
+    c0c0:	32 d2       	eint			
+}
+    c0c2:	3b 41       	pop	r11		
+    c0c4:	30 41       	ret			
+
+0000c0c6 <packet_byte_to_sendq>:
+
+void packet_byte_to_sendq(unsigned char pkt_byte) 
+{
+    c0c6:	0b 12       	push	r11		
+    c0c8:	4b 4f       	mov.b	r15,	r11	
+    c0ca:	01 3c       	jmp	$+4      	;abs 0xc0ce
+	// wait until buffer empties 
+	while(serial_rb_full(&stx)) {
+		__asm__("nop");
+    c0cc:	03 43       	nop			
+}
+
+void packet_byte_to_sendq(unsigned char pkt_byte) 
+{
+	// wait until buffer empties 
+	while(serial_rb_full(&stx)) {
+    c0ce:	3f 40 74 02 	mov	#628,	r15	;#0x0274
+    c0d2:	b0 12 50 c3 	call	#0xc350	
+    c0d6:	0f 93       	tst	r15		
+    c0d8:	f9 23       	jnz	$-12     	;abs 0xc0cc
+		__asm__("nop");
+	}
+
+	serial_rb_write(&stx, pkt_byte);
+    c0da:	4e 4b       	mov.b	r11,	r14	
+    c0dc:	3f 40 74 02 	mov	#628,	r15	;#0x0274
+    c0e0:	b0 12 84 c3 	call	#0xc384	
+	IE2 |= UCA0TXIE;
+    c0e4:	e2 d3 01 00 	bis.b	#2,	&0x0001	;r3 As==10
+}
+    c0e8:	3b 41       	pop	r11		
+    c0ea:	30 41       	ret			
+
+0000c0ec <packet_byte_from_rcvq>:
+
+unsigned char packet_byte_from_rcvq() 
+{
+    c0ec:	01 3c       	jmp	$+4      	;abs 0xc0f0
+	// wait until data arrived in buffer
+	while(serial_rb_empty(&srx)) {
+		__asm__("nop");
+    c0ee:	03 43       	nop			
+}
+
+unsigned char packet_byte_from_rcvq() 
+{
+	// wait until data arrived in buffer
+	while(serial_rb_empty(&srx)) {
+    c0f0:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c0f4:	b0 12 60 c3 	call	#0xc360	
+    c0f8:	0f 93       	tst	r15		
+    c0fa:	f9 23       	jnz	$-12     	;abs 0xc0ee
+		__asm__("nop");
+	}
+
+	return serial_rb_read(&srx);
+    c0fc:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c100:	b0 12 aa c3 	call	#0xc3aa	
+}
+    c104:	30 41       	ret			
+
+0000c106 <USCI0RX_ISR>:
+
+interrupt(USCIAB0RX_VECTOR) USCI0RX_ISR(void)
+{
+    c106:	0f 12       	push	r15		
+    c108:	0e 12       	push	r14		
+    c10a:	0d 12       	push	r13		
+    c10c:	0c 12       	push	r12		
+	if (!serial_rb_full(&srx)) {
+    c10e:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c112:	b0 12 50 c3 	call	#0xc350	
+    c116:	0f 93       	tst	r15		
+    c118:	06 20       	jnz	$+14     	;abs 0xc126
+        serial_rb_write(&srx, UCA0RXBUF);
+    c11a:	5e 42 66 00 	mov.b	&0x0066,r14	
+    c11e:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c122:	b0 12 84 c3 	call	#0xc384	
+	}
+}
+    c126:	3c 41       	pop	r12		
+    c128:	3d 41       	pop	r13		
+    c12a:	3e 41       	pop	r14		
+    c12c:	3f 41       	pop	r15		
+    c12e:	00 13       	reti			
+
+0000c130 <USCI0TX_ISR>:
+
+interrupt(USCIAB0TX_VECTOR) USCI0TX_ISR(void)
+{
+    c130:	0f 12       	push	r15		
+    c132:	0e 12       	push	r14		
+    c134:	0d 12       	push	r13		
+    c136:	0c 12       	push	r12		
+	if(!serial_rb_empty(&stx)) {
+    c138:	3f 40 74 02 	mov	#628,	r15	;#0x0274
+    c13c:	b0 12 60 c3 	call	#0xc360	
+    c140:	0f 93       	tst	r15		
+    c142:	07 20       	jnz	$+16     	;abs 0xc152
+    	serial_send(serial_rb_read(&stx));
+    c144:	3f 40 74 02 	mov	#628,	r15	;#0x0274
+    c148:	b0 12 aa c3 	call	#0xc3aa	
+    c14c:	b0 12 1c c4 	call	#0xc41c	
+    c150:	03 3c       	jmp	$+8      	;abs 0xc158
+    }
+    else {
+		IE2 &= ~UCA0TXIE; 
+    c152:	f2 f0 fd ff 	and.b	#-3,	&0x0001	;#0xfffd
+    c156:	01 00 
+    }
+}
+    c158:	3c 41       	pop	r12		
+    c15a:	3d 41       	pop	r13		
+    c15c:	3e 41       	pop	r14		
+    c15e:	3f 41       	pop	r15		
+    c160:	00 13       	reti			
+
+0000c162 <handle_packet_null>:
+#include "core_handlers.h"
+#include "rocketcore.h"
+
+int handle_packet_null(unsigned char length, unsigned char *data)
+{
+	send_status_packet(PACKET_RETURN_ACK);
+    c162:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c164:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c168:	0f 43       	clr	r15		
+    c16a:	30 41       	ret			
+
+0000c16c <handle_packet_reserved>:
+
+int handle_packet_reserved(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c16c:	4f 43       	clr.b	r15		
+    c16e:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c172:	0f 43       	clr	r15		
+    c174:	30 41       	ret			
+
+0000c176 <handle_packet_system_info>:
+
+int handle_packet_system_info(unsigned char length, unsigned char *data)
+{
+    c176:	0b 12       	push	r11		
+	packet_data_out_system_info *pd = (packet_data_out_system_info *)&outp.data[0];
+
+	outp.start	= PACKET_OUTBOUND_START;
+    c178:	3b 40 56 02 	mov	#598,	r11	;#0x0256
+    c17c:	fb 40 43 00 	mov.b	#67,	0(r11)	;#0x0043, 0x0000(r11)
+    c180:	00 00 
+	outp.length	= 7;
+    c182:	fb 40 07 00 	mov.b	#7,	1(r11)	;#0x0007, 0x0001(r11)
+    c186:	01 00 
+	outp.type 	= PACKET_OUT_SYSTEM_INFO;
+    c188:	eb 43 02 00 	mov.b	#2,	2(r11)	;r3 As==10, 0x0002(r11)
+	
+	// TODO replace 0xCAFFEE with data from constants
+	pd->board_type	= 0xCA;
+    c18c:	f2 40 ca ff 	mov.b	#-54,	&0x0259	;#0xffca
+    c190:	59 02 
+	pd->mcu_type	= 0xFF;
+    c192:	f2 43 5a 02 	mov.b	#-1,	&0x025a	;r3 As==11
+	pd->firmware_rev= 0xEE;
+    c196:	f2 40 ee ff 	mov.b	#-18,	&0x025b	;#0xffee
+    c19a:	5b 02 
+
+	outp.crc	= packet_calc_crc(&outp);
+    c19c:	0f 4b       	mov	r11,	r15	
+    c19e:	b0 12 44 c4 	call	#0xc444	
+    c1a2:	cb 4f 13 00 	mov.b	r15,	19(r11)	;0x0013(r11)
+
+	packet_send(&outp);
+    c1a6:	0f 4b       	mov	r11,	r15	
+    c1a8:	b0 12 82 c4 	call	#0xc482	
+
+	return PACKET_STAT_OK;
+}
+    c1ac:	0f 43       	clr	r15		
+    c1ae:	3b 41       	pop	r11		
+    c1b0:	30 41       	ret			
+
+0000c1b2 <handle_packet_device_control>:
+
+int handle_packet_device_control(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c1b2:	4f 43       	clr.b	r15		
+    c1b4:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c1b8:	0f 43       	clr	r15		
+    c1ba:	30 41       	ret			
+
+0000c1bc <handle_packet_pin_function>:
+
+int handle_packet_pin_function(unsigned char length, unsigned char *data)
+{
+    c1bc:	0b 12       	push	r11		
+    c1be:	0d 4e       	mov	r14,	r13	
+	int s;
+
+	// check if length matches for packet-data
+	if(length != 2) {
+    c1c0:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c1c2:	06 24       	jz	$+14     	;abs 0xc1d0
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+    c1c4:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    c1c6:	b0 12 64 c0 	call	#0xc064	
+		return PACKET_STAT_ERR_DATA;
+    c1ca:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+    c1ce:	0e 3c       	jmp	$+30     	;abs 0xc1ec
+	}
+
+	packet_data_in_pin_function *pd = (packet_data_in_pin_function *)&data[0];
+
+	if((s = pin_setup(pd->pin, pd->function)) != PACKET_STAT_OK) {
+    c1d0:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
+    c1d4:	6f 4d       	mov.b	@r13,	r15	
+    c1d6:	b0 12 ba c7 	call	#0xc7ba	
+    c1da:	0b 4f       	mov	r15,	r11	
+    c1dc:	0f 93       	tst	r15		
+    c1de:	03 24       	jz	$+8      	;abs 0xc1e6
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    c1e0:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c1e4:	01 3c       	jmp	$+4      	;abs 0xc1e8
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+    c1e6:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c1e8:	b0 12 64 c0 	call	#0xc064	
+	}
+
+	return s;
+}
+    c1ec:	0f 4b       	mov	r11,	r15	
+    c1ee:	3b 41       	pop	r11		
+    c1f0:	30 41       	ret			
+
+0000c1f2 <handle_packet_pin_control>:
+
+int handle_packet_pin_control(unsigned char length, unsigned char *data)
+{
+    c1f2:	0b 12       	push	r11		
+    c1f4:	0a 12       	push	r10		
+    c1f6:	0a 4e       	mov	r14,	r10	
+	int s = PACKET_STAT_OK;
+
+	// check if length matches for packet-data
+	if(length != 2) {
+    c1f8:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c1fa:	02 24       	jz	$+6      	;abs 0xc200
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+    c1fc:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    c1fe:	62 3c       	jmp	$+198    	;abs 0xc2c4
+		return PACKET_STAT_ERR_DATA;
+	}
+
+	packet_data_in_pin_control *pd = (packet_data_in_pin_control *)&data[0];
+
+	switch(pd->control) {
+    c200:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c204:	5f 9e 01 00 	cmp.b	1(r14),	r15	;0x0001(r14)
+    c208:	5d 28       	jnc	$+188    	;abs 0xc2c4
+    c20a:	5f 4e 01 00 	mov.b	1(r14),	r15	;0x0001(r14)
+    c20e:	0f 5f       	rla	r15		
+    c210:	10 4f 14 c2 	br	-15852(r15)	;0xc214(r15)
+    c214:	20 c2       	bic	#4,	r0	;r2 As==10
+    c216:	28 c2       	bic	#4,	r8	;r2 As==10
+    c218:	30 c2       	bic	#8,	r0	;r2 As==11
+    c21a:	44 c2       	bic.b	r2,	r4	
+    c21c:	6c c2       	bic.b	#4,	r12	;r2 As==10
+    c21e:	b8 c2 6f 4e 	bic	#8,	20079(r8);r2 As==11, 0x4e6f(r8)
+		case PIN_CONTROL_CLEAR:
+			if((s = pin_clear(pd->pin)) != PACKET_STAT_OK) {
+    c222:	b0 12 38 c9 	call	#0xc938	
+    c226:	07 3c       	jmp	$+16     	;abs 0xc236
+			else {
+				send_status_packet(PACKET_RETURN_ACK);
+			}
+			break;
+		case PIN_CONTROL_SET:
+			if((s = pin_set(pd->pin)) != PACKET_STAT_OK) {
+    c228:	6f 4e       	mov.b	@r14,	r15	
+    c22a:	b0 12 84 c9 	call	#0xc984	
+    c22e:	03 3c       	jmp	$+8      	;abs 0xc236
+			else {
+				send_status_packet(PACKET_RETURN_ACK);
+			}
+			break;
+		case PIN_CONTROL_TOGGLE:
+			if((s = pin_toggle(pd->pin)) != PACKET_STAT_OK) {
+    c230:	6f 4e       	mov.b	@r14,	r15	
+    c232:	b0 12 d0 c9 	call	#0xc9d0	
+    c236:	0b 4f       	mov	r15,	r11	
+    c238:	0f 93       	tst	r15		
+    c23a:	1e 20       	jnz	$+62     	;abs 0xc278
+				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+			}
+			else {
+				send_status_packet(PACKET_RETURN_ACK);
+    c23c:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c23e:	b0 12 64 c0 	call	#0xc064	
+    c242:	44 3c       	jmp	$+138    	;abs 0xc2cc
+			}
+			break;
+		case PIN_CONTROL_DIGITAL_READ:
+			if((s = pin_digital_read(pd->pin)) < 0) {
+    c244:	6f 4e       	mov.b	@r14,	r15	
+    c246:	b0 12 1c ca 	call	#0xca1c	
+    c24a:	0b 4f       	mov	r15,	r11	
+    c24c:	0f 93       	tst	r15		
+    c24e:	14 38       	jl	$+42     	;abs 0xc278
+				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+			}
+			else {
+				packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
+
+				outp.start	= PACKET_OUTBOUND_START;
+    c250:	f2 40 43 00 	mov.b	#67,	&0x0256	;#0x0043
+    c254:	56 02 
+				outp.length	= 6;
+    c256:	f2 40 06 00 	mov.b	#6,	&0x0257	;#0x0006
+    c25a:	57 02 
+				outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
+    c25c:	f2 40 03 00 	mov.b	#3,	&0x0258	;#0x0003
+    c260:	58 02 
+	
+				pdo->pin   = pd->pin;
+    c262:	e2 4a 59 02 	mov.b	@r10,	&0x0259	
+				pdo->state = s;
+    c266:	c2 4f 5a 02 	mov.b	r15,	&0x025a	
+    c26a:	1b 3c       	jmp	$+56     	;abs 0xc2a2
+
+				packet_send(&outp);
+			}
+			break;
+		case PIN_CONTROL_ANALOG_READ:
+			if((s = pin_analog_read(pd->pin)) < 0) {
+    c26c:	6f 4e       	mov.b	@r14,	r15	
+    c26e:	b0 12 7e ca 	call	#0xca7e	
+    c272:	0b 4f       	mov	r15,	r11	
+    c274:	0f 93       	tst	r15		
+    c276:	03 34       	jge	$+8      	;abs 0xc27e
+				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    c278:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c27c:	e0 3f       	jmp	$-62     	;abs 0xc23e
+			}
+			else {
+				packet_data_out_analog_pin_read *pdo = (packet_data_out_analog_pin_read *)&outp.data[0];
+
+				outp.start	= PACKET_OUTBOUND_START;
+    c27e:	f2 40 43 00 	mov.b	#67,	&0x0256	;#0x0043
+    c282:	56 02 
+				outp.length	= 7;
+    c284:	f2 40 07 00 	mov.b	#7,	&0x0257	;#0x0007
+    c288:	57 02 
+				outp.type 	= PACKET_OUT_ANALOG_PIN_READ;
+    c28a:	e2 42 58 02 	mov.b	#4,	&0x0258	;r2 As==10
+	
+				pdo->pin       = pd->pin;
+    c28e:	e2 4a 59 02 	mov.b	@r10,	&0x0259	
+				pdo->value_lsb = (0x00FF & s);
+    c292:	c2 4f 5a 02 	mov.b	r15,	&0x025a	
+				pdo->value_msb = (0x0F00 & s) >> 8;
+    c296:	3f f0 00 0f 	and	#3840,	r15	;#0x0f00
+    c29a:	8f 10       	swpb	r15		
+    c29c:	8f 11       	sxt	r15		
+    c29e:	c2 4f 5b 02 	mov.b	r15,	&0x025b	
+
+				outp.crc = packet_calc_crc(&outp);
+    c2a2:	3f 40 56 02 	mov	#598,	r15	;#0x0256
+    c2a6:	b0 12 44 c4 	call	#0xc444	
+    c2aa:	c2 4f 69 02 	mov.b	r15,	&0x0269	
+
+				packet_send(&outp);
+    c2ae:	3f 40 56 02 	mov	#598,	r15	;#0x0256
+    c2b2:	b0 12 82 c4 	call	#0xc482	
+    c2b6:	0a 3c       	jmp	$+22     	;abs 0xc2cc
+			}
+			break;
+		case PIN_CONTROL_PULSELENGTH_READ:
+			// TODO implement
+			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    c2b8:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c2bc:	b0 12 64 c0 	call	#0xc064	
+	return s;
+}
+
+int handle_packet_pin_control(unsigned char length, unsigned char *data)
+{
+	int s = PACKET_STAT_OK;
+    c2c0:	0b 43       	clr	r11		
+    c2c2:	04 3c       	jmp	$+10     	;abs 0xc2cc
+		case PIN_CONTROL_PULSELENGTH_READ:
+			// TODO implement
+			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+			break;
+		default:
+			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    c2c4:	b0 12 64 c0 	call	#0xc064	
+			s = PACKET_STAT_ERR_DATA;
+    c2c8:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+	}
+
+	return s;
+}
+    c2cc:	0f 4b       	mov	r11,	r15	
+    c2ce:	3a 41       	pop	r10		
+    c2d0:	3b 41       	pop	r11		
+    c2d2:	30 41       	ret			
+
+0000c2d4 <handle_packet_pwm_function>:
+
+int handle_packet_pwm_function(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c2d4:	4f 43       	clr.b	r15		
+    c2d6:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c2da:	0f 43       	clr	r15		
+    c2dc:	30 41       	ret			
+
+0000c2de <handle_packet_pwm_control>:
+
+int handle_packet_pwm_control(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c2de:	4f 43       	clr.b	r15		
+    c2e0:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c2e4:	0f 43       	clr	r15		
+    c2e6:	30 41       	ret			
+
+0000c2e8 <handle_packet_serial_function>:
+
+int handle_packet_serial_function(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c2e8:	4f 43       	clr.b	r15		
+    c2ea:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c2ee:	0f 43       	clr	r15		
+    c2f0:	30 41       	ret			
+
+0000c2f2 <handle_packet_serial_data>:
+
+int handle_packet_serial_data(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c2f2:	4f 43       	clr.b	r15		
+    c2f4:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c2f8:	0f 43       	clr	r15		
+    c2fa:	30 41       	ret			
+
+0000c2fc <handle_packet_external_interrupt_function>:
+
+int handle_packet_external_interrupt_function(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c2fc:	4f 43       	clr.b	r15		
+    c2fe:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c302:	0f 43       	clr	r15		
+    c304:	30 41       	ret			
+
+0000c306 <handle_packet_reset>:
+
+int handle_packet_reset(unsigned char length, unsigned char *data)
+{
+	// TODO define + implement
+	send_status_packet(PACKET_RETURN_UNKNOWN);
+    c306:	4f 43       	clr.b	r15		
+    c308:	b0 12 64 c0 	call	#0xc064	
+
+	return PACKET_STAT_OK;
+}
+    c30c:	0f 43       	clr	r15		
+    c30e:	30 41       	ret			
+
+0000c310 <packet_do_handle>:
+int packet_do_handle()
+{
+	int s;
+
+	// process packages endless ...
+	if((s = packet_receive(&inp, PACKET_INBOUND_START)) == PACKET_STAT_OK) {
+    c310:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
+    c314:	3f 40 42 02 	mov	#578,	r15	;#0x0242
+    c318:	b0 12 d8 c4 	call	#0xc4d8	
+    c31c:	0f 93       	tst	r15		
+    c31e:	0e 20       	jnz	$+30     	;abs 0xc33c
+//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
+		if(packet_process_received(&packet_handlers, &inp) == PACKET_STAT_ERR_UNKPACK) {
+    c320:	3e 40 42 02 	mov	#578,	r14	;#0x0242
+    c324:	3f 40 00 02 	mov	#512,	r15	;#0x0200
+    c328:	b0 12 46 c5 	call	#0xc546	
+    c32c:	3f 90 fd ff 	cmp	#-3,	r15	;#0xfffd
+    c330:	08 20       	jnz	$+18     	;abs 0xc342
+			send_status_packet(PACKET_RETURN_INVALID_PACKET);
+    c332:	7f 50 06 00 	add.b	#6,	r15	;#0x0006
+    c336:	b0 12 64 c0 	call	#0xc064	
+    c33a:	30 41       	ret			
+		}
+	}
+	else {
+//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
+		send_status_packet(PACKET_RETURN_BAD_PACKET);
+    c33c:	6f 43       	mov.b	#2,	r15	;r3 As==10
+    c33e:	b0 12 64 c0 	call	#0xc064	
+	}
+}
+    c342:	30 41       	ret			
+
+0000c344 <serial_rb_free>:
+#include "serial_rb.h"
+
+unsigned short serial_rb_free(serial_rb *rb)
+{
+    return (rb->elements - rb->entries);
+}
+    c344:	1e 4f 06 00 	mov	6(r15),	r14	;0x0006(r15)
+    c348:	1e 8f 08 00 	sub	8(r15),	r14	;0x0008(r15)
+    c34c:	0f 4e       	mov	r14,	r15	
+    c34e:	30 41       	ret			
+
+0000c350 <serial_rb_full>:
+
+int serial_rb_full(serial_rb *rb)
+{
+    return (rb->elements == rb->entries);
+    c350:	1e 43       	mov	#1,	r14	;r3 As==01
+    c352:	9f 9f 08 00 	cmp	8(r15),	6(r15)	;0x0008(r15), 0x0006(r15)
+    c356:	06 00 
+    c358:	01 24       	jz	$+4      	;abs 0xc35c
+    c35a:	0e 43       	clr	r14		
+}
+    c35c:	0f 4e       	mov	r14,	r15	
+    c35e:	30 41       	ret			
+
+0000c360 <serial_rb_empty>:
+
+int serial_rb_empty(serial_rb *rb)
+{
+    return (rb->entries == 0);
+    c360:	1e 43       	mov	#1,	r14	;r3 As==01
+    c362:	8f 93 08 00 	tst	8(r15)		;0x0008(r15)
+    c366:	01 24       	jz	$+4      	;abs 0xc36a
+    c368:	0e 43       	clr	r14		
+}
+    c36a:	0f 4e       	mov	r14,	r15	
+    c36c:	30 41       	ret			
+
+0000c36e <serial_rb_init>:
+
+void serial_rb_init(serial_rb *rb, SERIAL_RB_Q *buffer, unsigned short elements)
+{
+    rb->buffer      = buffer;
+    c36e:	8f 4e 00 00 	mov	r14,	0(r15)	;0x0000(r15)
+    rb->read        = &(rb->buffer[0]);
+    c372:	8f 4e 02 00 	mov	r14,	2(r15)	;0x0002(r15)
+    rb->write       = &(rb->buffer[0]);
+    c376:	8f 4e 04 00 	mov	r14,	4(r15)	;0x0004(r15)
+    rb->elements    = elements;
+    c37a:	8f 4d 06 00 	mov	r13,	6(r15)	;0x0006(r15)
+    rb->entries     = 0;
+    c37e:	8f 43 08 00 	mov	#0,	8(r15)	;r3 As==00, 0x0008(r15)
+}
+    c382:	30 41       	ret			
+
+0000c384 <serial_rb_write>:
+
+void serial_rb_write(serial_rb *rb, SERIAL_RB_Q element)
+{
+  rb->entries++;
+    c384:	9f 53 08 00 	inc	8(r15)		;0x0008(r15)
+
+  if (rb->write > &(rb->buffer[rb->elements - 1])) {
+    c388:	1d 4f 06 00 	mov	6(r15),	r13	;0x0006(r15)
+    c38c:	3d 53       	add	#-1,	r13	;r3 As==11
+    c38e:	2d 5f       	add	@r15,	r13	
+    c390:	1d 9f 04 00 	cmp	4(r15),	r13	;0x0004(r15)
+    c394:	02 2c       	jc	$+6      	;abs 0xc39a
+      rb->write = &(rb->buffer[0]);
+    c396:	af 4f 04 00 	mov	@r15,	4(r15)	;0x0004(r15)
+  }
+
+  *(rb->write++) = element;
+    c39a:	1d 4f 04 00 	mov	4(r15),	r13	;0x0004(r15)
+    c39e:	cd 4e 00 00 	mov.b	r14,	0(r13)	;0x0000(r13)
+    c3a2:	1d 53       	inc	r13		
+    c3a4:	8f 4d 04 00 	mov	r13,	4(r15)	;0x0004(r15)
+}
+    c3a8:	30 41       	ret			
+
+0000c3aa <serial_rb_read>:
+
+SERIAL_RB_Q serial_rb_read(serial_rb *rb)
+{
+  rb->entries--;
+    c3aa:	bf 53 08 00 	add	#-1,	8(r15)	;r3 As==11, 0x0008(r15)
+
+  if (rb->read > &(rb->buffer[rb->elements - 1])) {
+    c3ae:	1e 4f 06 00 	mov	6(r15),	r14	;0x0006(r15)
+    c3b2:	3e 53       	add	#-1,	r14	;r3 As==11
+    c3b4:	2e 5f       	add	@r15,	r14	
+    c3b6:	1e 9f 02 00 	cmp	2(r15),	r14	;0x0002(r15)
+    c3ba:	02 2c       	jc	$+6      	;abs 0xc3c0
+      rb->read = &(rb->buffer[0]);
+    c3bc:	af 4f 02 00 	mov	@r15,	2(r15)	;0x0002(r15)
+  }
+
+  return *(rb->read++);
+    c3c0:	1d 4f 02 00 	mov	2(r15),	r13	;0x0002(r15)
+    c3c4:	6e 4d       	mov.b	@r13,	r14	
+    c3c6:	1d 53       	inc	r13		
+    c3c8:	8f 4d 02 00 	mov	r13,	2(r15)	;0x0002(r15)
+}
+    c3cc:	4f 4e       	mov.b	r14,	r15	
+    c3ce:	30 41       	ret			
+
+0000c3d0 <serial_init>:
+ * TXD pin
+ */
+#define UART_TXD   		BIT2	
+
+void serial_init(unsigned int baudrate)
+{
+    c3d0:	0b 12       	push	r11		
+    c3d2:	0a 12       	push	r10		
+    c3d4:	09 12       	push	r9		
+    c3d6:	08 12       	push	r8		
+    c3d8:	07 12       	push	r7		
+	P1SEL    |= UART_RXD + UART_TXD;                       
+    c3da:	f2 d0 06 00 	bis.b	#6,	&0x0026	;#0x0006
+    c3de:	26 00 
+  	P1SEL2   |= UART_RXD + UART_TXD;                       
+    c3e0:	f2 d0 06 00 	bis.b	#6,	&0x0041	;#0x0006
+    c3e4:	41 00 
+  	UCA0CTL1 |= UCSSEL_2;                   // SMCLK
+    c3e6:	f2 d0 80 ff 	bis.b	#-128,	&0x0061	;#0xff80
+    c3ea:	61 00 
+
+	unsigned char br = (unsigned char)(1000000 / (long)baudrate);
+    c3ec:	07 43       	clr	r7		
+    c3ee:	3c 40 40 42 	mov	#16960,	r12	;#0x4240
+    c3f2:	3d 40 0f 00 	mov	#15,	r13	;#0x000f
+    c3f6:	0a 4f       	mov	r15,	r10	
+    c3f8:	0b 47       	mov	r7,	r11	
+    c3fa:	b0 12 dc ca 	call	#0xcadc	
+
+  	UCA0BR0  = br;                          // 1MHz / baudrate 
+    c3fe:	c2 4c 62 00 	mov.b	r12,	&0x0062	
+  	UCA0BR1  = 0;                           // 
+    c402:	c2 47 63 00 	mov.b	r7,	&0x0063	
+  	UCA0MCTL = UCBRS0;                      // Modulation UCBRSx = 1
+    c406:	e2 43 64 00 	mov.b	#2,	&0x0064	;r3 As==10
+  	UCA0CTL1 &= ~UCSWRST;                   // Initialize USCI state machine
+    c40a:	f2 f0 fe ff 	and.b	#-2,	&0x0061	;#0xfffe
+    c40e:	61 00 
+}
+    c410:	37 41       	pop	r7		
+    c412:	38 41       	pop	r8		
+    c414:	39 41       	pop	r9		
+    c416:	3a 41       	pop	r10		
+    c418:	3b 41       	pop	r11		
+    c41a:	30 41       	ret			
+
+0000c41c <serial_send>:
+
+void serial_send(unsigned char data)
+{
+  	UCA0TXBUF = data;                 		
+    c41c:	c2 4f 67 00 	mov.b	r15,	&0x0067	
+}
+    c420:	30 41       	ret			
+
+0000c422 <serial_send_blocking>:
+
+void serial_send_blocking(unsigned char data)
+{
+	while (!(IFG2&UCA0TXIFG));              // USCI_A0 TX buffer ready?
+    c422:	5e 42 03 00 	mov.b	&0x0003,r14	
+    c426:	2e f3       	and	#2,	r14	;r3 As==10
+    c428:	fc 27       	jz	$-6      	;abs 0xc422
+  	UCA0TXBUF = data;                  
+    c42a:	c2 4f 67 00 	mov.b	r15,	&0x0067	
+}
+    c42e:	30 41       	ret			
+
+0000c430 <serial_recv>:
+
+unsigned char serial_recv()
+{
+	return UCA0RXBUF;
+}
+    c430:	5f 42 66 00 	mov.b	&0x0066,r15	
+    c434:	30 41       	ret			
+
+0000c436 <serial_recv_blocking>:
+
+unsigned char serial_recv_blocking()
+{
+    while (!(IFG2&UCA0RXIFG));         		// USCI_A0 RX buffer ready?
+    c436:	5f 42 03 00 	mov.b	&0x0003,r15	
+    c43a:	1f f3       	and	#1,	r15	;r3 As==01
+    c43c:	fc 27       	jz	$-6      	;abs 0xc436
+	return UCA0RXBUF;
+}
+    c43e:	5f 42 66 00 	mov.b	&0x0066,r15	
+    c442:	30 41       	ret			
+
+0000c444 <packet_calc_crc>:
+ * 02111-1307 USA.  
+ */
+
+#include "packet.h"
+
+unsigned char packet_calc_crc(packet *pkt) {
+    c444:	0b 12       	push	r11		
+
+	unsigned char i;
+	unsigned char crc = 0;
+
+	crc += pkt->length;
+    c446:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
+	crc += pkt->type;
+    c44a:	5e 4f 02 00 	mov.b	2(r15),	r14	;0x0002(r15)
+    c44e:	4e 5d       	add.b	r13,	r14	
+
+	for(i = 0; i < pkt->length - 4; i++) {
+    c450:	4c 43       	clr.b	r12		
+    c452:	2d 82       	sub	#4,	r13	;r2 As==10
+    c454:	04 3c       	jmp	$+10     	;abs 0xc45e
+		crc += pkt->data[i];
+    c456:	0b 5f       	add	r15,	r11	
+    c458:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
+	unsigned char crc = 0;
+
+	crc += pkt->length;
+	crc += pkt->type;
+
+	for(i = 0; i < pkt->length - 4; i++) {
+    c45c:	5c 53       	inc.b	r12		
+    c45e:	4b 4c       	mov.b	r12,	r11	
+    c460:	0b 9d       	cmp	r13,	r11	
+    c462:	f9 3b       	jl	$-12     	;abs 0xc456
+		crc += pkt->data[i];
+	} 
+
+	return crc;
+}
+    c464:	4f 4e       	mov.b	r14,	r15	
+    c466:	3b 41       	pop	r11		
+    c468:	30 41       	ret			
+
+0000c46a <packet_check_crc>:
+
+int	packet_check_crc(packet *pkt) {
+    c46a:	0b 12       	push	r11		
+    c46c:	0b 4f       	mov	r15,	r11	
+
+	if(packet_calc_crc(pkt) == pkt->crc) {
+    c46e:	b0 12 44 c4 	call	#0xc444	
+		return 1;
+    c472:	1e 43       	mov	#1,	r14	;r3 As==01
+    c474:	5f 9b 13 00 	cmp.b	19(r11),r15	;0x0013(r11)
+    c478:	01 24       	jz	$+4      	;abs 0xc47c
+    c47a:	0e 43       	clr	r14		
+	}
+
+	return 0;
+}
+    c47c:	0f 4e       	mov	r14,	r15	
+    c47e:	3b 41       	pop	r11		
+    c480:	30 41       	ret			
+
+0000c482 <packet_send>:
+
+int packet_send(packet *pkt) {
+    c482:	0b 12       	push	r11		
+    c484:	0a 12       	push	r10		
+    c486:	0b 4f       	mov	r15,	r11	
+
+	unsigned char  i;
+
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+    c488:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    c48c:	3f 90 15 00 	cmp	#21,	r15	;#0x0015
+    c490:	1f 34       	jge	$+64     	;abs 0xc4d0
+		return PACKET_STAT_ERR_LENGTH;
+	}
+ 
+	// write start byte
+	packet_byte_to_sendq(pkt->start);
+    c492:	6f 4b       	mov.b	@r11,	r15	
+    c494:	b0 12 c6 c0 	call	#0xc0c6	
+
+	// write length
+	packet_byte_to_sendq(pkt->length);
+    c498:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c49c:	b0 12 c6 c0 	call	#0xc0c6	
+
+	// write type
+	packet_byte_to_sendq(pkt->type);
+    c4a0:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
+    c4a4:	b0 12 c6 c0 	call	#0xc0c6	
+
+	// write data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c4a8:	4a 43       	clr.b	r10		
+    c4aa:	06 3c       	jmp	$+14     	;abs 0xc4b8
+		packet_byte_to_sendq(pkt->data[i]); 
+    c4ac:	0e 5b       	add	r11,	r14	
+    c4ae:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
+    c4b2:	b0 12 c6 c0 	call	#0xc0c6	
+
+	// write type
+	packet_byte_to_sendq(pkt->type);
+
+	// write data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c4b6:	5a 53       	inc.b	r10		
+    c4b8:	4e 4a       	mov.b	r10,	r14	
+    c4ba:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c4be:	2f 82       	sub	#4,	r15	;r2 As==10
+    c4c0:	0e 9f       	cmp	r15,	r14	
+    c4c2:	f4 3b       	jl	$-22     	;abs 0xc4ac
+		packet_byte_to_sendq(pkt->data[i]); 
+	}
+
+	// write crc 
+	packet_byte_to_sendq(pkt->crc);
+    c4c4:	5f 4b 13 00 	mov.b	19(r11),r15	;0x0013(r11)
+    c4c8:	b0 12 c6 c0 	call	#0xc0c6	
+	
+	return PACKET_STAT_OK;
+    c4cc:	0f 43       	clr	r15		
+    c4ce:	01 3c       	jmp	$+4      	;abs 0xc4d2
+
+	unsigned char  i;
+
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+		return PACKET_STAT_ERR_LENGTH;
+    c4d0:	3f 43       	mov	#-1,	r15	;r3 As==11
+
+	// write crc 
+	packet_byte_to_sendq(pkt->crc);
+	
+	return PACKET_STAT_OK;
+}
+    c4d2:	3a 41       	pop	r10		
+    c4d4:	3b 41       	pop	r11		
+    c4d6:	30 41       	ret			
+
+0000c4d8 <packet_receive>:
+
+int packet_receive(packet *pkt, unsigned char start) {
+    c4d8:	0b 12       	push	r11		
+    c4da:	0a 12       	push	r10		
+    c4dc:	09 12       	push	r9		
+    c4de:	0b 4f       	mov	r15,	r11	
+    c4e0:	4a 4e       	mov.b	r14,	r10	
+
+	unsigned char  i;
+
+	// discard everything until start byte found in buffer
+	while(packet_byte_from_rcvq() != start);
+    c4e2:	b0 12 ec c0 	call	#0xc0ec	
+    c4e6:	4f 9a       	cmp.b	r10,	r15	
+    c4e8:	fc 23       	jnz	$-6      	;abs 0xc4e2
+
+	pkt->start = start;
+    c4ea:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
+
+	// read length
+	pkt->length = packet_byte_from_rcvq();
+    c4ee:	b0 12 ec c0 	call	#0xc0ec	
+    c4f2:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
+	
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+    c4f6:	4f 4f       	mov.b	r15,	r15	
+    c4f8:	3f 90 15 00 	cmp	#21,	r15	;#0x0015
+    c4fc:	1d 34       	jge	$+60     	;abs 0xc538
+		return PACKET_STAT_ERR_LENGTH;
+	}
+ 
+	// read type
+	pkt->type = packet_byte_from_rcvq();
+    c4fe:	b0 12 ec c0 	call	#0xc0ec	
+    c502:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
+ 	
+	// read data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c506:	4a 43       	clr.b	r10		
+    c508:	06 3c       	jmp	$+14     	;abs 0xc516
+		pkt->data[i] = packet_byte_from_rcvq();
+    c50a:	b0 12 ec c0 	call	#0xc0ec	
+    c50e:	09 5b       	add	r11,	r9	
+    c510:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
+ 
+	// read type
+	pkt->type = packet_byte_from_rcvq();
+ 	
+	// read data
+	for(i = 0; i < pkt->length - 4; i++) {	
+    c514:	5a 53       	inc.b	r10		
+    c516:	49 4a       	mov.b	r10,	r9	
+    c518:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c51c:	2f 82       	sub	#4,	r15	;r2 As==10
+    c51e:	09 9f       	cmp	r15,	r9	
+    c520:	f4 3b       	jl	$-22     	;abs 0xc50a
+		pkt->data[i] = packet_byte_from_rcvq();
+	}
+	
+	// read crc 
+	pkt->crc = packet_byte_from_rcvq();
+    c522:	b0 12 ec c0 	call	#0xc0ec	
+    c526:	cb 4f 13 00 	mov.b	r15,	19(r11)	;0x0013(r11)
+	
+	// check crc
+	if(!packet_check_crc(pkt)) {
+    c52a:	0f 4b       	mov	r11,	r15	
+    c52c:	b0 12 6a c4 	call	#0xc46a	
+    c530:	0f 93       	tst	r15		
+    c532:	04 20       	jnz	$+10     	;abs 0xc53c
+		return PACKET_STAT_ERR_CRC;
+    c534:	2f 83       	decd	r15		
+    c536:	03 3c       	jmp	$+8      	;abs 0xc53e
+	// read length
+	pkt->length = packet_byte_from_rcvq();
+	
+	// check length
+	if(pkt->length - 4 > PACKET_MAX_DATA) {
+		return PACKET_STAT_ERR_LENGTH;
+    c538:	3f 43       	mov	#-1,	r15	;r3 As==11
+    c53a:	01 3c       	jmp	$+4      	;abs 0xc53e
+	// check crc
+	if(!packet_check_crc(pkt)) {
+		return PACKET_STAT_ERR_CRC;
+	}
+
+	return PACKET_STAT_OK;
+    c53c:	0f 43       	clr	r15		
+}
+    c53e:	39 41       	pop	r9		
+    c540:	3a 41       	pop	r10		
+    c542:	3b 41       	pop	r11		
+    c544:	30 41       	ret			
+
+0000c546 <packet_process_received>:
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+    c546:	0b 12       	push	r11		
+    c548:	0a 12       	push	r10		
+    c54a:	0c 4e       	mov	r14,	r12	
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c54c:	6b 4f       	mov.b	@r15,	r11	
+	}
+
+	return PACKET_STAT_OK;
+}
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+    c54e:	0e 4f       	mov	r15,	r14	
+    c550:	2e 53       	incd	r14		
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c552:	0d 43       	clr	r13		
+    c554:	11 3c       	jmp	$+36     	;abs 0xc578
+		if(rh->handlers[i].type == pkt->type) {
+    c556:	6a 4e       	mov.b	@r14,	r10	
+    c558:	2e 52       	add	#4,	r14	;r2 As==10
+    c55a:	1d 53       	inc	r13		
+    c55c:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
+    c560:	0b 20       	jnz	$+24     	;abs 0xc578
+			// call handler function
+    		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
+    c562:	0d 5d       	rla	r13		
+    c564:	0d 5d       	rla	r13		
+    c566:	0d 5f       	add	r15,	r13	
+    c568:	0e 4c       	mov	r12,	r14	
+    c56a:	3e 50 03 00 	add	#3,	r14	;#0x0003
+    c56e:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
+    c572:	6f 82       	sub.b	#4,	r15	;r2 As==10
+    c574:	ad 12       	call	@r13		
+    c576:	04 3c       	jmp	$+10     	;abs 0xc580
+
+int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
+
+	int i;
+
+    for(i = 0; i < rh->count; i++) {
+    c578:	0d 9b       	cmp	r11,	r13	
+    c57a:	ed 3b       	jl	$-36     	;abs 0xc556
+			// call handler function
+    		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
+		}
+    }
+
+	return PACKET_STAT_ERR_UNKPACK;
+    c57c:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
+}
+    c580:	3a 41       	pop	r10		
+    c582:	3b 41       	pop	r11		
+    c584:	30 41       	ret			
+
+0000c586 <pin2port>:
+	PIN_FUNCTION_INPUT_FLOAT,			// P2.7
+};
+
+int pin2port(unsigned char pin) 
+{
+	int port = (0xF0 & pin) >> 4;
+    c586:	12 c3       	clrc			
+    c588:	4f 10       	rrc.b	r15		
+    c58a:	4f 11       	rra.b	r15		
+    c58c:	4f 11       	rra.b	r15		
+    c58e:	4f 11       	rra.b	r15		
+    c590:	4f 4f       	mov.b	r15,	r15	
+
+	if(port >= 1 && port <= 2) { 
+    c592:	0e 4f       	mov	r15,	r14	
+    c594:	3e 53       	add	#-1,	r14	;r3 As==11
+    c596:	2e 93       	cmp	#2,	r14	;r3 As==10
+    c598:	02 28       	jnc	$+6      	;abs 0xc59e
+		return port;
+	}
+
+	return PIN_STAT_ERR_INVALPORT;
+    c59a:	3f 40 fe ff 	mov	#-2,	r15	;#0xfffe
+}
+    c59e:	30 41       	ret			
+
+0000c5a0 <pin2bit>:
+{
+	int bit_num = (0x0F & pin);
+	int bit 	=  0x01 << bit_num;
+
+	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
+	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
+    c5a0:	4e 4f       	mov.b	r15,	r14	
+    c5a2:	7e 50 ef ff 	add.b	#-17,	r14	;#0xffef
+    c5a6:	6e 93       	cmp.b	#2,	r14	;r3 As==10
+    c5a8:	0c 28       	jnc	$+26     	;abs 0xc5c2
+	return PIN_STAT_ERR_INVALPORT;
+}
+
+int pin2bit(unsigned char pin) 
+{
+	int bit_num = (0x0F & pin);
+    c5aa:	0e 4f       	mov	r15,	r14	
+    c5ac:	3e f0 0f 00 	and	#15,	r14	;#0x000f
+	int bit 	=  0x01 << bit_num;
+
+	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
+	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
+    c5b0:	3e 92       	cmp	#8,	r14	;r2 As==11
+    c5b2:	0a 34       	jge	$+22     	;abs 0xc5c8
+}
+
+int pin2bit(unsigned char pin) 
+{
+	int bit_num = (0x0F & pin);
+	int bit 	=  0x01 << bit_num;
+    c5b4:	1f 43       	mov	#1,	r15	;r3 As==01
+    c5b6:	0e 93       	tst	r14		
+    c5b8:	03 24       	jz	$+8      	;abs 0xc5c0
+    c5ba:	0f 5f       	rla	r15		
+    c5bc:	1e 83       	dec	r14		
+    c5be:	fd 23       	jnz	$-4      	;abs 0xc5ba
+	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
+	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
+		return PIN_STAT_ERR_INVALPIN;
+	}
+
+	return bit;
+    c5c0:	30 41       	ret			
+	int bit_num = (0x0F & pin);
+	int bit 	=  0x01 << bit_num;
+
+	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
+	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
+		return PIN_STAT_ERR_INVALPIN;
+    c5c2:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
+    c5c6:	30 41       	ret			
+    c5c8:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
+	}
+
+	return bit;
+}
+    c5cc:	30 41       	ret			
+
+0000c5ce <pin_set_curr_func>:
+
+void pin_set_curr_func(unsigned char pin, unsigned char func) 
+{
+	int port    = (0xF0 & pin) >> 4;
+    c5ce:	4d 4f       	mov.b	r15,	r13	
+    c5d0:	12 c3       	clrc			
+    c5d2:	4d 10       	rrc.b	r13		
+    c5d4:	4d 11       	rra.b	r13		
+    c5d6:	4d 11       	rra.b	r13		
+    c5d8:	4d 11       	rra.b	r13		
+    c5da:	4d 4d       	mov.b	r13,	r13	
+	int bit_num = (0x0F & pin);
+	int idx  	= (port - 1) * 8 + bit_num;
+    c5dc:	3d 53       	add	#-1,	r13	;r3 As==11
+    c5de:	0d 5d       	rla	r13		
+    c5e0:	0d 5d       	rla	r13		
+    c5e2:	0d 5d       	rla	r13		
+}
+
+void pin_set_curr_func(unsigned char pin, unsigned char func) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+    c5e4:	3f f0 0f 00 	and	#15,	r15	;#0x000f
+	int idx  	= (port - 1) * 8 + bit_num;
+    c5e8:	0d 5f       	add	r15,	r13	
+
+	if((unsigned int)idx > sizeof(pin_curr_func)) {
+    c5ea:	3d 90 11 00 	cmp	#17,	r13	;#0x0011
+    c5ee:	02 2c       	jc	$+6      	;abs 0xc5f4
+		return;
+	}
+
+	pin_curr_func[idx] = func;
+    c5f0:	cd 4e 32 02 	mov.b	r14,	562(r13);0x0232(r13)
+    c5f4:	30 41       	ret			
+
+0000c5f6 <pin_function>:
+}
+
+unsigned char pin_function(unsigned char pin) 
+{
+	int port    = (0xF0 & pin) >> 4;
+    c5f6:	4e 4f       	mov.b	r15,	r14	
+    c5f8:	12 c3       	clrc			
+    c5fa:	4e 10       	rrc.b	r14		
+    c5fc:	4e 11       	rra.b	r14		
+    c5fe:	4e 11       	rra.b	r14		
+    c600:	4e 11       	rra.b	r14		
+    c602:	4e 4e       	mov.b	r14,	r14	
+	int bit_num = (0x0F & pin);
+	int idx  	= (port - 1) * 8 + bit_num;
+    c604:	3e 53       	add	#-1,	r14	;r3 As==11
+    c606:	0e 5e       	rla	r14		
+    c608:	0e 5e       	rla	r14		
+    c60a:	0e 5e       	rla	r14		
+}
+
+unsigned char pin_function(unsigned char pin) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+    c60c:	3f f0 0f 00 	and	#15,	r15	;#0x000f
+	int idx  	= (port - 1) * 8 + bit_num;
+    c610:	0e 5f       	add	r15,	r14	
+
+	if((unsigned int)idx > sizeof(pin_curr_func)) {
+    c612:	3e 90 11 00 	cmp	#17,	r14	;#0x0011
+    c616:	03 2c       	jc	$+8      	;abs 0xc61e
+		return 0;
+	}
+
+	return pin_curr_func[idx];
+    c618:	5f 4e 32 02 	mov.b	562(r14),r15	;0x0232(r14)
+    c61c:	30 41       	ret			
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= (port - 1) * 8 + bit_num;
+
+	if((unsigned int)idx > sizeof(pin_curr_func)) {
+		return 0;
+    c61e:	4f 43       	clr.b	r15		
+	}
+
+	return pin_curr_func[idx];
+}
+    c620:	30 41       	ret			
+
+0000c622 <pin_with_function>:
+
+unsigned char pin_with_function(unsigned char pin, unsigned char function) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
+    c622:	4f 93       	tst.b	r15		
+    c624:	10 24       	jz	$+34     	;abs 0xc646
+}
+
+unsigned char pin_with_function(unsigned char pin, unsigned char function) 
+{
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+    c626:	0d 4f       	mov	r15,	r13	
+    c628:	3d f0 0f 00 	and	#15,	r13	;#0x000f
+	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
+    c62c:	1d 53       	inc	r13		
+	return pin_curr_func[idx];
+}
+
+unsigned char pin_with_function(unsigned char pin, unsigned char function) 
+{
+	int port    = (0xF0 & pin) >> 4;
+    c62e:	12 c3       	clrc			
+    c630:	4f 10       	rrc.b	r15		
+    c632:	4f 11       	rra.b	r15		
+    c634:	4f 11       	rra.b	r15		
+    c636:	4f 11       	rra.b	r15		
+    c638:	4f 4f       	mov.b	r15,	r15	
+	int bit_num = (0x0F & pin);
+	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
+    c63a:	3f 53       	add	#-1,	r15	;r3 As==11
+    c63c:	0f 5f       	rla	r15		
+    c63e:	0f 5f       	rla	r15		
+    c640:	0f 5f       	rla	r15		
+    c642:	0d 5f       	add	r15,	r13	
+    c644:	01 3c       	jmp	$+4      	;abs 0xc648
+    c646:	0d 43       	clr	r13		
+	int i;
+
+	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
+    c648:	1d 53       	inc	r13		
+    c64a:	3f 40 0f 00 	mov	#15,	r15	;#0x000f
+    c64e:	11 3c       	jmp	$+36     	;abs 0xc672
+		if(pin_curr_func[i] == function) {
+    c650:	cd 9e 32 02 	cmp.b	r14,	562(r13);0x0232(r13)
+    c654:	0d 20       	jnz	$+28     	;abs 0xc670
+			return (((i / 8 + 1) << 4) + (i % 8));
+    c656:	0f 4d       	mov	r13,	r15	
+    c658:	0f 11       	rra	r15		
+    c65a:	0f 11       	rra	r15		
+    c65c:	0f 11       	rra	r15		
+    c65e:	5f 53       	inc.b	r15		
+    c660:	4f 5f       	rla.b	r15		
+    c662:	4f 5f       	rla.b	r15		
+    c664:	4f 5f       	rla.b	r15		
+    c666:	4f 5f       	rla.b	r15		
+    c668:	3d f0 07 00 	and	#7,	r13	;#0x0007
+    c66c:	4f 5d       	add.b	r13,	r15	
+    c66e:	30 41       	ret			
+	int port    = (0xF0 & pin) >> 4;
+	int bit_num = (0x0F & pin);
+	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
+	int i;
+
+	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
+    c670:	1d 53       	inc	r13		
+    c672:	0f 9d       	cmp	r13,	r15	
+    c674:	ed 2f       	jc	$-36     	;abs 0xc650
+		if(pin_curr_func[i] == function) {
+			return (((i / 8 + 1) << 4) + (i % 8));
+		}
+	}
+
+	return 0;
+    c676:	4f 43       	clr.b	r15		
+}
+    c678:	30 41       	ret			
+
+0000c67a <pin_capabilities>:
+int pin_capabilities(unsigned char pin) 
+{
+	int caps = 0;
+
+	// PIN_CAP_INPUT
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+    c67a:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
+    c67e:	4a 24       	jz	$+150    	;abs 0xc714
+    c680:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
+    c684:	8a 24       	jz	$+278    	;abs 0xc79a
+    c686:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
+    c68a:	44 24       	jz	$+138    	;abs 0xc714
+    c68c:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
+    c690:	1e 24       	jz	$+62     	;abs 0xc6ce
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+    c692:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
+    c696:	1b 24       	jz	$+56     	;abs 0xc6ce
+    c698:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
+    c69c:	18 24       	jz	$+50     	;abs 0xc6ce
+    c69e:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
+    c6a2:	15 24       	jz	$+44     	;abs 0xc6ce
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+    c6a4:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
+    c6a8:	12 24       	jz	$+38     	;abs 0xc6ce
+    c6aa:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
+    c6ae:	0f 24       	jz	$+32     	;abs 0xc6ce
+    c6b0:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
+    c6b4:	0c 24       	jz	$+26     	;abs 0xc6ce
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+    c6b6:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
+    c6ba:	09 24       	jz	$+20     	;abs 0xc6ce
+    c6bc:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
+    c6c0:	06 24       	jz	$+14     	;abs 0xc6ce
+    c6c2:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
+    c6c6:	03 24       	jz	$+8      	;abs 0xc6ce
+		pin == PIN_2_6 || pin == PIN_2_7) {
+    c6c8:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
+    c6cc:	68 20       	jnz	$+210    	;abs 0xc79e
+	
+		caps |= PIN_CAP_INPUT;
+	} 
+
+	// PIN_CAP_INPUT_RE
+	if( pin == PIN_1_0 || pin == PIN_1_4 ||
+    c6ce:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
+    c6d2:	20 24       	jz	$+66     	;abs 0xc714
+    c6d4:	1e 43       	mov	#1,	r14	;r3 As==01
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+    c6d6:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
+    c6da:	1d 24       	jz	$+60     	;abs 0xc716
+    c6dc:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
+    c6e0:	1a 24       	jz	$+54     	;abs 0xc716
+    c6e2:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
+    c6e6:	17 24       	jz	$+48     	;abs 0xc716
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+    c6e8:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
+    c6ec:	14 24       	jz	$+42     	;abs 0xc716
+    c6ee:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
+    c6f2:	11 24       	jz	$+36     	;abs 0xc716
+    c6f4:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
+    c6f8:	0e 24       	jz	$+30     	;abs 0xc716
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+    c6fa:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
+    c6fe:	0b 24       	jz	$+24     	;abs 0xc716
+    c700:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
+    c704:	08 24       	jz	$+18     	;abs 0xc716
+    c706:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
+    c70a:	05 24       	jz	$+12     	;abs 0xc716
+		pin == PIN_2_6 || pin == PIN_2_7) {
+    c70c:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
+    c710:	06 20       	jnz	$+14     	;abs 0xc71e
+    c712:	01 3c       	jmp	$+4      	;abs 0xc716
+	
+		caps |= PIN_CAP_INPUT;
+	} 
+
+	// PIN_CAP_INPUT_RE
+	if( pin == PIN_1_0 || pin == PIN_1_4 ||
+    c714:	1e 43       	mov	#1,	r14	;r3 As==01
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+		pin == PIN_2_6 || pin == PIN_2_7) {
+	
+		caps |= PIN_CAP_INPUT_RE;
+    c716:	2e d3       	bis	#2,	r14	;r3 As==10
+
+	// PIN_CAP_OUTPUT
+	// PIN_CAP_PWM
+	// PIN_CAP_UARTRX
+	// PIN_CAP_UARTTX
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+    c718:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
+    c71c:	27 24       	jz	$+80     	;abs 0xc76c
+    c71e:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
+    c722:	24 24       	jz	$+74     	;abs 0xc76c
+    c724:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
+    c728:	21 24       	jz	$+68     	;abs 0xc76c
+    c72a:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
+    c72e:	1e 24       	jz	$+62     	;abs 0xc76c
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
+    c730:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
+    c734:	1b 24       	jz	$+56     	;abs 0xc76c
+    c736:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
+    c73a:	18 24       	jz	$+50     	;abs 0xc76c
+    c73c:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
+    c740:	15 24       	jz	$+44     	;abs 0xc76c
+	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
+    c742:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
+    c746:	12 24       	jz	$+38     	;abs 0xc76c
+    c748:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
+    c74c:	0f 24       	jz	$+32     	;abs 0xc76c
+    c74e:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
+    c752:	0c 24       	jz	$+26     	;abs 0xc76c
+        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
+    c754:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
+    c758:	09 24       	jz	$+20     	;abs 0xc76c
+    c75a:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
+    c75e:	06 24       	jz	$+14     	;abs 0xc76c
+    c760:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
+    c764:	03 24       	jz	$+8      	;abs 0xc76c
+		pin == PIN_2_6 || pin == PIN_2_7) {
+    c766:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
+    c76a:	0b 20       	jnz	$+24     	;abs 0xc782
+	
+		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+    c76c:	3e d0 74 00 	bis	#116,	r14	;#0x0074
+	} 
+
+	// PIN_CAP_ANALOG_IN
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+    c770:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
+    c774:	0f 24       	jz	$+32     	;abs 0xc794
+    c776:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
+    c77a:	0c 24       	jz	$+26     	;abs 0xc794
+    c77c:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
+    c780:	09 24       	jz	$+20     	;abs 0xc794
+    c782:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
+    c786:	06 24       	jz	$+14     	;abs 0xc794
+		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7) {
+    c788:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
+    c78c:	03 24       	jz	$+8      	;abs 0xc794
+    c78e:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
+    c792:	01 20       	jnz	$+4      	;abs 0xc796
+	
+		caps |= PIN_CAP_ANALOG_IN;
+    c794:	3e d2       	bis	#8,	r14	;r2 As==11
+	} 
+
+	return caps;
+}
+    c796:	0f 4e       	mov	r14,	r15	
+    c798:	30 41       	ret			
+int pin_capabilities(unsigned char pin) 
+{
+	int caps = 0;
+
+	// PIN_CAP_INPUT
+	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
+    c79a:	1e 43       	mov	#1,	r14	;r3 As==01
+    c79c:	e7 3f       	jmp	$-48     	;abs 0xc76c
+	return 0;
+}
+
+int pin_capabilities(unsigned char pin) 
+{
+	int caps = 0;
+    c79e:	0e 43       	clr	r14		
+    c7a0:	9a 3f       	jmp	$-202    	;abs 0xc6d6
+
+0000c7a2 <pin_has_capabilities>:
+
+	return caps;
+}
+
+int pin_has_capabilities(unsigned char pin, int capabilities) 
+{
+    c7a2:	0b 12       	push	r11		
+    c7a4:	0b 4e       	mov	r14,	r11	
+	return ((pin_capabilities(pin) & capabilities) == capabilities ? 1 : 0);
+    c7a6:	b0 12 7a c6 	call	#0xc67a	
+    c7aa:	0e 4f       	mov	r15,	r14	
+    c7ac:	0e fb       	and	r11,	r14	
+    c7ae:	1f 43       	mov	#1,	r15	;r3 As==01
+    c7b0:	0e 9b       	cmp	r11,	r14	
+    c7b2:	01 24       	jz	$+4      	;abs 0xc7b6
+    c7b4:	0f 43       	clr	r15		
+}
+    c7b6:	3b 41       	pop	r11		
+    c7b8:	30 41       	ret			
+
+0000c7ba <pin_setup>:
+
+int pin_setup(unsigned char pin, unsigned char function)
+{
+    c7ba:	0b 12       	push	r11		
+    c7bc:	0a 12       	push	r10		
+    c7be:	09 12       	push	r9		
+    c7c0:	08 12       	push	r8		
+    c7c2:	49 4f       	mov.b	r15,	r9	
+    c7c4:	48 4e       	mov.b	r14,	r8	
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c7c6:	b0 12 86 c5 	call	#0xc586	
+    c7ca:	0b 4f       	mov	r15,	r11	
+    c7cc:	0f 93       	tst	r15		
+    c7ce:	ae 38       	jl	$+350    	;abs 0xc92c
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c7d0:	4f 49       	mov.b	r9,	r15	
+    c7d2:	b0 12 a0 c5 	call	#0xc5a0	
+    c7d6:	0a 4f       	mov	r15,	r10	
+    c7d8:	0f 93       	tst	r15		
+    c7da:	a3 38       	jl	$+328    	;abs 0xc922
+
+	// see if PIN is already configured for the given function
+	if(pin_function(pin) == function) { 
+    c7dc:	4f 49       	mov.b	r9,	r15	
+    c7de:	b0 12 f6 c5 	call	#0xc5f6	
+    c7e2:	4f 98       	cmp.b	r8,	r15	
+    c7e4:	a0 24       	jz	$+322    	;abs 0xc926
+		return PIN_STAT_OK;
+	}
+
+	switch(function) {
+    c7e6:	78 92       	cmp.b	#8,	r8	;r2 As==11
+    c7e8:	a0 2c       	jc	$+322    	;abs 0xc92a
+    c7ea:	4f 48       	mov.b	r8,	r15	
+    c7ec:	0f 5f       	rla	r15		
+    c7ee:	10 4f f2 c7 	br	-14350(r15)	;0xc7f2(r15)
+    c7f2:	02 c8       	bic	r8,	r2	
+    c7f4:	26 c8       	bic	@r8,	r6	
+    c7f6:	4e c8       	bic.b	r8,	r14	
+    c7f8:	86 c8 ba c8 	bic	r8,	-14150(r6);0xc8ba(r6)
+    c7fc:	d8 c8 e8 c8 	bic.b	-14104(r8),-14084(r8);0xc8e8(r8), 0xc8fc(r8)
+    c800:	fc c8 
+	case PIN_FUNCTION_INPUT_FLOAT:
+		if(!pin_has_capabilities(pin, PIN_CAP_INPUT)) {
+    c802:	1e 43       	mov	#1,	r14	;r3 As==01
+    c804:	4f 49       	mov.b	r9,	r15	
+    c806:	b0 12 a2 c7 	call	#0xc7a2	
+    c80a:	0f 93       	tst	r15		
+    c80c:	8e 24       	jz	$+286    	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		if(port == 1) {
+    c80e:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c810:	04 20       	jnz	$+10     	;abs 0xc81a
+			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c812:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c814:	c2 fa 22 00 	and.b	r10,	&0x0022	
+    c818:	43 3c       	jmp	$+136    	;abs 0xc8a0
+			P1REN &= ~bit; 	                // disable pull-up/down 
+		}
+		else if(port == 2) {
+    c81a:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c81c:	7d 20       	jnz	$+252    	;abs 0xc918
+			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c81e:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c820:	c2 fa 2a 00 	and.b	r10,	&0x002a	
+    c824:	47 3c       	jmp	$+144    	;abs 0xc8b4
+			P2REN &= ~bit; 	                // disable pull-up/down 
+		}
+		break;
+	case PIN_FUNCTION_INPUT_PULLUP:
+		if(!pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
+    c826:	2e 43       	mov	#2,	r14	;r3 As==10
+    c828:	4f 49       	mov.b	r9,	r15	
+    c82a:	b0 12 a2 c7 	call	#0xc7a2	
+    c82e:	0f 93       	tst	r15		
+    c830:	7c 24       	jz	$+250    	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		if(port == 1) {
+    c832:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c834:	05 20       	jnz	$+12     	;abs 0xc840
+			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c836:	c2 ca 22 00 	bic.b	r10,	&0x0022	
+  			P1OUT |=  bit;					// setting out to HIGH enables pull-up                     
+    c83a:	c2 da 21 00 	bis.b	r10,	&0x0021	
+    c83e:	15 3c       	jmp	$+44     	;abs 0xc86a
+			P1REN |=  bit; 	                // enable pull-up/down 
+		}
+		else if(port == 2) {
+    c840:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c842:	6a 20       	jnz	$+214    	;abs 0xc918
+			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c844:	c2 ca 2a 00 	bic.b	r10,	&0x002a	
+  			P2OUT |=  bit;					// setting out to HIGH enables pull-up                     
+    c848:	c2 da 29 00 	bis.b	r10,	&0x0029	
+    c84c:	19 3c       	jmp	$+52     	;abs 0xc880
+			P2REN |=  bit; 	                // enable pull-up/down 
+		}
+		break;
+	case PIN_FUNCTION_INPUT_PULLDOWN:
+		if(!pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
+    c84e:	2e 43       	mov	#2,	r14	;r3 As==10
+    c850:	4f 49       	mov.b	r9,	r15	
+    c852:	b0 12 a2 c7 	call	#0xc7a2	
+    c856:	0f 93       	tst	r15		
+    c858:	68 24       	jz	$+210    	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		if(port == 1) {
+    c85a:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c85c:	09 20       	jnz	$+20     	;abs 0xc870
+			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c85e:	4f 4a       	mov.b	r10,	r15	
+    c860:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c862:	c2 ff 22 00 	and.b	r15,	&0x0022	
+  			P1OUT &= ~bit;					// setting out to LOW enables pull-down                     
+    c866:	c2 ff 21 00 	and.b	r15,	&0x0021	
+			P1REN |=  bit; 	                // enable pull-up/down 
+    c86a:	c2 da 27 00 	bis.b	r10,	&0x0027	
+    c86e:	54 3c       	jmp	$+170    	;abs 0xc918
+		}
+		else if(port == 2) {
+    c870:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c872:	52 20       	jnz	$+166    	;abs 0xc918
+			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c874:	4f 4a       	mov.b	r10,	r15	
+    c876:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c878:	c2 ff 2a 00 	and.b	r15,	&0x002a	
+  			P2OUT &= ~bit;					// setting out to LOW enables pull-down                     
+    c87c:	c2 ff 29 00 	and.b	r15,	&0x0029	
+			P2REN |=  bit; 	                // enable pull-up/down 
+    c880:	c2 da 2f 00 	bis.b	r10,	&0x002f	
+    c884:	49 3c       	jmp	$+148    	;abs 0xc918
+		}
+		break;
+	case PIN_FUNCTION_OUTPUT:
+		if(!pin_has_capabilities(pin, PIN_CAP_OUTPUT)) { 
+    c886:	2e 42       	mov	#4,	r14	;r2 As==10
+    c888:	4f 49       	mov.b	r9,	r15	
+    c88a:	b0 12 a2 c7 	call	#0xc7a2	
+    c88e:	0f 93       	tst	r15		
+    c890:	4c 24       	jz	$+154    	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		if(port == 1) {
+    c892:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c894:	08 20       	jnz	$+18     	;abs 0xc8a6
+			P1DIR |=  bit;					// set direction to out                 
+    c896:	c2 da 22 00 	bis.b	r10,	&0x0022	
+  			P1OUT &= ~bit;					// set to LOW initially                     
+    c89a:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c89c:	c2 fa 21 00 	and.b	r10,	&0x0021	
+			P1REN &= ~bit; 	                // disable pull-up/down 
+    c8a0:	c2 fa 27 00 	and.b	r10,	&0x0027	
+    c8a4:	39 3c       	jmp	$+116    	;abs 0xc918
+		}
+		else if(port == 2) {
+    c8a6:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c8a8:	37 20       	jnz	$+112    	;abs 0xc918
+			P2DIR |=  bit;					// set direction to out                 
+    c8aa:	c2 da 2a 00 	bis.b	r10,	&0x002a	
+  			P2OUT &= ~bit;					// set to LOW initially                     
+    c8ae:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c8b0:	c2 fa 29 00 	and.b	r10,	&0x0029	
+			P2REN &= ~bit; 	                // disable pull-up/down 
+    c8b4:	c2 fa 2f 00 	and.b	r10,	&0x002f	
+    c8b8:	2f 3c       	jmp	$+96     	;abs 0xc918
+		}
+		break;
+	case PIN_FUNCTION_ANALOG_IN:
+		if(!pin_has_capabilities(pin, PIN_CAP_ANALOG_IN)) { 
+    c8ba:	3e 42       	mov	#8,	r14	;r2 As==11
+    c8bc:	4f 49       	mov.b	r9,	r15	
+    c8be:	b0 12 a2 c7 	call	#0xc7a2	
+    c8c2:	0f 93       	tst	r15		
+    c8c4:	32 24       	jz	$+102    	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		P1DIR    &= ~bit;					// make sure to clear OUT flag for the pin                 
+    c8c6:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c8c8:	c2 fa 22 00 	and.b	r10,	&0x0022	
+		P1REN &= ~bit; 	                	// disable pull-up/down 
+    c8cc:	c2 fa 27 00 	and.b	r10,	&0x0027	
+
+		// VCC as +VRef, VSS as -VRef, 16 x ADC10CLKs
+   		ADC10CTL0 = SREF_0 + ADC10SHT_2 + REFON + ADC10ON;
+    c8d0:	b2 40 30 10 	mov	#4144,	&0x01b0	;#0x1030
+    c8d4:	b0 01 
+    c8d6:	20 3c       	jmp	$+66     	;abs 0xc918
+
+		break;
+	case PIN_FUNCTION_PWM:
+		if(!pin_has_capabilities(pin, PIN_CAP_PWM)) { 
+    c8d8:	3e 40 10 00 	mov	#16,	r14	;#0x0010
+    c8dc:	4f 49       	mov.b	r9,	r15	
+    c8de:	b0 12 a2 c7 	call	#0xc7a2	
+    c8e2:	0f 93       	tst	r15		
+    c8e4:	19 20       	jnz	$+52     	;abs 0xc918
+    c8e6:	21 3c       	jmp	$+68     	;abs 0xc92a
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		// TODO
+		break;
+	case PIN_FUNCTION_UARTRX:
+		if(!pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
+    c8e8:	3e 40 20 00 	mov	#32,	r14	;#0x0020
+    c8ec:	4f 49       	mov.b	r9,	r15	
+    c8ee:	b0 12 a2 c7 	call	#0xc7a2	
+    c8f2:	0f 93       	tst	r15		
+    c8f4:	1a 24       	jz	$+54     	;abs 0xc92a
+			pin_with_function(0, function)) { 
+    c8f6:	7e 40 06 00 	mov.b	#6,	r14	;#0x0006
+    c8fa:	09 3c       	jmp	$+20     	;abs 0xc90e
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		// TODO	
+		break;
+	case PIN_FUNCTION_UARTTX:
+		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
+    c8fc:	3e 40 40 00 	mov	#64,	r14	;#0x0040
+    c900:	4f 49       	mov.b	r9,	r15	
+    c902:	b0 12 a2 c7 	call	#0xc7a2	
+    c906:	0f 93       	tst	r15		
+    c908:	10 24       	jz	$+34     	;abs 0xc92a
+			pin_with_function(0, function)) { 
+    c90a:	7e 40 07 00 	mov.b	#7,	r14	;#0x0007
+    c90e:	4f 43       	clr.b	r15		
+    c910:	b0 12 22 c6 	call	#0xc622	
+			return PIN_STAT_ERR_UNSUPFUNC;
+		}
+		// TODO	
+		break;
+	case PIN_FUNCTION_UARTTX:
+		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
+    c914:	4f 93       	tst.b	r15		
+    c916:	09 20       	jnz	$+20     	;abs 0xc92a
+		break;
+	default:
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
+	pin_set_curr_func(pin, function);
+    c918:	4e 48       	mov.b	r8,	r14	
+    c91a:	4f 49       	mov.b	r9,	r15	
+    c91c:	b0 12 ce c5 	call	#0xc5ce	
+    c920:	02 3c       	jmp	$+6      	;abs 0xc926
+{
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c922:	0b 4f       	mov	r15,	r11	
+    c924:	03 3c       	jmp	$+8      	;abs 0xc92c
+
+	// see if PIN is already configured for the given function
+	if(pin_function(pin) == function) { 
+		return PIN_STAT_OK;
+    c926:	0b 43       	clr	r11		
+    c928:	01 3c       	jmp	$+4      	;abs 0xc92c
+		// TODO	
+		break;
+	case PIN_FUNCTION_UARTTX:
+		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
+			pin_with_function(0, function)) { 
+			return PIN_STAT_ERR_UNSUPFUNC;
+    c92a:	3b 43       	mov	#-1,	r11	;r3 As==11
+	}
+
+	pin_set_curr_func(pin, function);
+
+	return PIN_STAT_OK;
+}
+    c92c:	0f 4b       	mov	r11,	r15	
+    c92e:	38 41       	pop	r8		
+    c930:	39 41       	pop	r9		
+    c932:	3a 41       	pop	r10		
+    c934:	3b 41       	pop	r11		
+    c936:	30 41       	ret			
+
+0000c938 <pin_clear>:
+
+int pin_clear(unsigned char pin)
+{
+    c938:	0b 12       	push	r11		
+    c93a:	0a 12       	push	r10		
+    c93c:	4a 4f       	mov.b	r15,	r10	
+	unsigned char pf = pin_function(pin);
+    c93e:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+    c942:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c946:	15 20       	jnz	$+44     	;abs 0xc972
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c948:	4f 4a       	mov.b	r10,	r15	
+    c94a:	b0 12 86 c5 	call	#0xc586	
+    c94e:	0b 4f       	mov	r15,	r11	
+    c950:	0f 93       	tst	r15		
+    c952:	14 38       	jl	$+42     	;abs 0xc97c
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c954:	4f 4a       	mov.b	r10,	r15	
+    c956:	b0 12 a0 c5 	call	#0xc5a0	
+    c95a:	0f 93       	tst	r15		
+    c95c:	0c 38       	jl	$+26     	;abs 0xc976
+
+	if(port == 1) {
+    c95e:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c960:	03 20       	jnz	$+8      	;abs 0xc968
+  		P1OUT &= ~bit;					// set to LOW                   
+    c962:	c2 cf 21 00 	bic.b	r15,	&0x0021	
+    c966:	09 3c       	jmp	$+20     	;abs 0xc97a
+	}
+	else if(port == 2) {
+    c968:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c96a:	07 20       	jnz	$+16     	;abs 0xc97a
+  		P2OUT &= ~bit;					// set to LOW                    
+    c96c:	c2 cf 29 00 	bic.b	r15,	&0x0029	
+    c970:	04 3c       	jmp	$+10     	;abs 0xc97a
+int pin_clear(unsigned char pin)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    c972:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c974:	03 3c       	jmp	$+8      	;abs 0xc97c
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c976:	0b 4f       	mov	r15,	r11	
+    c978:	01 3c       	jmp	$+4      	;abs 0xc97c
+	}
+	else if(port == 2) {
+  		P2OUT &= ~bit;					// set to LOW                    
+	}
+
+	return PIN_STAT_OK;
+    c97a:	0b 43       	clr	r11		
+}
+    c97c:	0f 4b       	mov	r11,	r15	
+    c97e:	3a 41       	pop	r10		
+    c980:	3b 41       	pop	r11		
+    c982:	30 41       	ret			
+
+0000c984 <pin_set>:
+
+int pin_set(unsigned char pin)
+{
+    c984:	0b 12       	push	r11		
+    c986:	0a 12       	push	r10		
+    c988:	4a 4f       	mov.b	r15,	r10	
+	unsigned char pf = pin_function(pin);
+    c98a:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+    c98e:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c992:	15 20       	jnz	$+44     	;abs 0xc9be
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c994:	4f 4a       	mov.b	r10,	r15	
+    c996:	b0 12 86 c5 	call	#0xc586	
+    c99a:	0b 4f       	mov	r15,	r11	
+    c99c:	0f 93       	tst	r15		
+    c99e:	14 38       	jl	$+42     	;abs 0xc9c8
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c9a0:	4f 4a       	mov.b	r10,	r15	
+    c9a2:	b0 12 a0 c5 	call	#0xc5a0	
+    c9a6:	0f 93       	tst	r15		
+    c9a8:	0c 38       	jl	$+26     	;abs 0xc9c2
+
+	if(port == 1) {
+    c9aa:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c9ac:	03 20       	jnz	$+8      	;abs 0xc9b4
+  		P1OUT |= bit;					// set to HIGH 
+    c9ae:	c2 df 21 00 	bis.b	r15,	&0x0021	
+    c9b2:	09 3c       	jmp	$+20     	;abs 0xc9c6
+	}
+	else if(port == 2) {
+    c9b4:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c9b6:	07 20       	jnz	$+16     	;abs 0xc9c6
+  		P2OUT |= bit;					// set to HIGH               
+    c9b8:	c2 df 29 00 	bis.b	r15,	&0x0029	
+    c9bc:	04 3c       	jmp	$+10     	;abs 0xc9c6
+int pin_set(unsigned char pin)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    c9be:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c9c0:	03 3c       	jmp	$+8      	;abs 0xc9c8
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c9c2:	0b 4f       	mov	r15,	r11	
+    c9c4:	01 3c       	jmp	$+4      	;abs 0xc9c8
+	}
+	else if(port == 2) {
+  		P2OUT |= bit;					// set to HIGH               
+	}
+
+	return PIN_STAT_OK;
+    c9c6:	0b 43       	clr	r11		
+}
+    c9c8:	0f 4b       	mov	r11,	r15	
+    c9ca:	3a 41       	pop	r10		
+    c9cc:	3b 41       	pop	r11		
+    c9ce:	30 41       	ret			
+
+0000c9d0 <pin_toggle>:
+
+int pin_toggle(unsigned char pin)
+{
+    c9d0:	0b 12       	push	r11		
+    c9d2:	0a 12       	push	r10		
+    c9d4:	4a 4f       	mov.b	r15,	r10	
+	unsigned char pf = pin_function(pin);
+    c9d6:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_OUTPUT)  { 
+    c9da:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c9de:	15 20       	jnz	$+44     	;abs 0xca0a
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c9e0:	4f 4a       	mov.b	r10,	r15	
+    c9e2:	b0 12 86 c5 	call	#0xc586	
+    c9e6:	0b 4f       	mov	r15,	r11	
+    c9e8:	0f 93       	tst	r15		
+    c9ea:	14 38       	jl	$+42     	;abs 0xca14
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c9ec:	4f 4a       	mov.b	r10,	r15	
+    c9ee:	b0 12 a0 c5 	call	#0xc5a0	
+    c9f2:	0f 93       	tst	r15		
+    c9f4:	0c 38       	jl	$+26     	;abs 0xca0e
+
+	if(port == 1) {
+    c9f6:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c9f8:	03 20       	jnz	$+8      	;abs 0xca00
+  		P1OUT ^= bit;					// toggle 
+    c9fa:	c2 ef 21 00 	xor.b	r15,	&0x0021	
+    c9fe:	09 3c       	jmp	$+20     	;abs 0xca12
+	}
+	else if(port == 2) {
+    ca00:	2b 93       	cmp	#2,	r11	;r3 As==10
+    ca02:	07 20       	jnz	$+16     	;abs 0xca12
+  		P2OUT ^= bit;					// toggle           
+    ca04:	c2 ef 29 00 	xor.b	r15,	&0x0029	
+    ca08:	04 3c       	jmp	$+10     	;abs 0xca12
+int pin_toggle(unsigned char pin)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT)  { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    ca0a:	3b 43       	mov	#-1,	r11	;r3 As==11
+    ca0c:	03 3c       	jmp	$+8      	;abs 0xca14
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    ca0e:	0b 4f       	mov	r15,	r11	
+    ca10:	01 3c       	jmp	$+4      	;abs 0xca14
+	}
+	else if(port == 2) {
+  		P2OUT ^= bit;					// toggle           
+	}
+
+	return PIN_STAT_OK;
+    ca12:	0b 43       	clr	r11		
+}
+    ca14:	0f 4b       	mov	r11,	r15	
+    ca16:	3a 41       	pop	r10		
+    ca18:	3b 41       	pop	r11		
+    ca1a:	30 41       	ret			
+
+0000ca1c <pin_digital_read>:
+
+int pin_digital_read(unsigned char pin)
+{
+    ca1c:	0b 12       	push	r11		
+    ca1e:	0a 12       	push	r10		
+    ca20:	4a 4f       	mov.b	r15,	r10	
+	unsigned char pf = pin_function(pin);
+    ca22:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && 
+    ca26:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    ca2a:	09 24       	jz	$+20     	;abs 0xca3e
+    ca2c:	4f 93       	tst.b	r15		
+    ca2e:	07 24       	jz	$+16     	;abs 0xca3e
+    ca30:	5f 93       	cmp.b	#1,	r15	;r3 As==01
+    ca32:	05 24       	jz	$+12     	;abs 0xca3e
+	   pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
+    ca34:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    ca36:	03 24       	jz	$+8      	;abs 0xca3e
+	   && pf != PIN_FUNCTION_PWM) { 
+    ca38:	7f 90 05 00 	cmp.b	#5,	r15	;#0x0005
+    ca3c:	19 20       	jnz	$+52     	;abs 0xca70
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    ca3e:	4f 4a       	mov.b	r10,	r15	
+    ca40:	b0 12 86 c5 	call	#0xc586	
+    ca44:	0b 4f       	mov	r15,	r11	
+    ca46:	0f 93       	tst	r15		
+    ca48:	16 38       	jl	$+46     	;abs 0xca76
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    ca4a:	4f 4a       	mov.b	r10,	r15	
+    ca4c:	b0 12 a0 c5 	call	#0xc5a0	
+    ca50:	0f 93       	tst	r15		
+    ca52:	10 38       	jl	$+34     	;abs 0xca74
+
+	if(port == 1) {
+    ca54:	1b 93       	cmp	#1,	r11	;r3 As==01
+    ca56:	04 20       	jnz	$+10     	;abs 0xca60
+  		return ((P1IN & bit) == bit ? 1 : 0);	// read and return 
+    ca58:	5e 42 20 00 	mov.b	&0x0020,r14	
+    ca5c:	0e ff       	and	r15,	r14	
+    ca5e:	04 3c       	jmp	$+10     	;abs 0xca68
+	}
+
+	return ((P2IN & bit) == bit ? 1 : 0);	// read and return 
+    ca60:	5e 42 28 00 	mov.b	&0x0028,r14	
+    ca64:	0e ff       	and	r15,	r14	
+    ca66:	1b 43       	mov	#1,	r11	;r3 As==01
+    ca68:	0e 9f       	cmp	r15,	r14	
+    ca6a:	05 24       	jz	$+12     	;abs 0xca76
+    ca6c:	0b 43       	clr	r11		
+    ca6e:	03 3c       	jmp	$+8      	;abs 0xca76
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && 
+	   pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
+	   && pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    ca70:	3b 43       	mov	#-1,	r11	;r3 As==11
+    ca72:	01 3c       	jmp	$+4      	;abs 0xca76
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    ca74:	0b 4f       	mov	r15,	r11	
+	if(port == 1) {
+  		return ((P1IN & bit) == bit ? 1 : 0);	// read and return 
+	}
+
+	return ((P2IN & bit) == bit ? 1 : 0);	// read and return 
+}
+    ca76:	0f 4b       	mov	r11,	r15	
+    ca78:	3a 41       	pop	r10		
+    ca7a:	3b 41       	pop	r11		
+    ca7c:	30 41       	ret			
+
+0000ca7e <pin_analog_read>:
+
+int pin_analog_read(unsigned char pin)
+{
+    ca7e:	0b 12       	push	r11		
+    ca80:	4b 4f       	mov.b	r15,	r11	
+	unsigned char pf = pin_function(pin);
+    ca82:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_ANALOG_IN) { 
+    ca86:	7f 50 fd ff 	add.b	#-3,	r15	;#0xfffd
+    ca8a:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    ca8c:	1b 2c       	jc	$+56     	;abs 0xcac4
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
+	int s;
+
+	if((s = pin2port(pin)) < 0) return s;
+    ca8e:	4f 4b       	mov.b	r11,	r15	
+    ca90:	b0 12 86 c5 	call	#0xc586	
+    ca94:	0f 93       	tst	r15		
+    ca96:	17 38       	jl	$+48     	;abs 0xcac6
+	if((s = pin2bit(pin))  < 0) return s;
+    ca98:	4f 4b       	mov.b	r11,	r15	
+    ca9a:	b0 12 a0 c5 	call	#0xc5a0	
+    ca9e:	0f 93       	tst	r15		
+    caa0:	12 38       	jl	$+38     	;abs 0xcac6
+
+	// configure channel
+   	ADC10CTL1 = 0xF000 & (pin << 12); 
+    caa2:	4f 4b       	mov.b	r11,	r15	
+    caa4:	8f 10       	swpb	r15		
+    caa6:	0f 5f       	rla	r15		
+    caa8:	0f 5f       	rla	r15		
+    caaa:	0f 5f       	rla	r15		
+    caac:	0f 5f       	rla	r15		
+    caae:	82 4f b2 01 	mov	r15,	&0x01b2	
+
+    ADC10CTL0 |= ENC + ADC10SC;             // sample 
+    cab2:	b2 d0 03 00 	bis	#3,	&0x01b0	;#0x0003
+    cab6:	b0 01 
+    while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
+    cab8:	92 b3 b2 01 	bit	#1,	&0x01b2	;r3 As==01
+    cabc:	fd 23       	jnz	$-4      	;abs 0xcab8
+
+	return ADC10MEM;
+    cabe:	1f 42 b4 01 	mov	&0x01b4,r15	
+    cac2:	01 3c       	jmp	$+4      	;abs 0xcac6
+int pin_analog_read(unsigned char pin)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_ANALOG_IN) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    cac4:	3f 43       	mov	#-1,	r15	;r3 As==11
+
+    ADC10CTL0 |= ENC + ADC10SC;             // sample 
+    while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
+
+	return ADC10MEM;
+}
+    cac6:	3b 41       	pop	r11		
+    cac8:	30 41       	ret			
+
+0000caca <pin_pulselength_read>:
+
+int pin_pulselength_read(unsigned char pin)
+{
+	unsigned char pf = pin_function(pin);
+    caca:	b0 12 f6 c5 	call	#0xc5f6	
+ 
+	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && 
+    cace:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    cad2:	02 28       	jnc	$+6      	;abs 0xcad8
+	   pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    cad4:	3f 43       	mov	#-1,	r15	;r3 As==11
+    cad6:	30 41       	ret			
+	}
+
+	// TODO
+	return 0;
+    cad8:	0f 43       	clr	r15		
+}
+    cada:	30 41       	ret			
+
+0000cadc <__divmodsi4>:
+    cadc:	08 43       	clr	r8		
+    cade:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
+    cae2:	05 24       	jz	$+12     	;abs 0xcaee
+    cae4:	3d e3       	inv	r13		
+    cae6:	3c e3       	inv	r12		
+    cae8:	1c 53       	inc	r12		
+    caea:	0d 63       	adc	r13		
+    caec:	28 d2       	bis	#4,	r8	;r2 As==10
+    caee:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
+    caf2:	05 24       	jz	$+12     	;abs 0xcafe
+    caf4:	3b e3       	inv	r11		
+    caf6:	3a e3       	inv	r10		
+    caf8:	1a 53       	inc	r10		
+    cafa:	0b 63       	adc	r11		
+    cafc:	38 d2       	bis	#8,	r8	;r2 As==11
+    cafe:	b0 12 26 cb 	call	#0xcb26	
+    cb02:	08 10       	rrc	r8		
+    cb04:	28 b2       	bit	#4,	r8	;r2 As==10
+    cb06:	08 24       	jz	$+18     	;abs 0xcb18
+    cb08:	3e e3       	inv	r14		
+    cb0a:	3f e3       	inv	r15		
+    cb0c:	1e 53       	inc	r14		
+    cb0e:	0f 63       	adc	r15		
+    cb10:	3c e3       	inv	r12		
+    cb12:	3d e3       	inv	r13		
+    cb14:	1c 53       	inc	r12		
+    cb16:	0d 63       	adc	r13		
+    cb18:	38 b2       	bit	#8,	r8	;r2 As==11
+    cb1a:	04 24       	jz	$+10     	;abs 0xcb24
+    cb1c:	3c e3       	inv	r12		
+    cb1e:	3d e3       	inv	r13		
+    cb20:	1c 53       	inc	r12		
+    cb22:	0d 63       	adc	r13		
+    cb24:	30 41       	ret			
+
+0000cb26 <__udivmodsi4>:
+    cb26:	0f ef       	xor	r15,	r15	
+    cb28:	0e ee       	xor	r14,	r14	
+    cb2a:	39 40 21 00 	mov	#33,	r9	;#0x0021
+    cb2e:	0a 3c       	jmp	$+22     	;abs 0xcb44
+    cb30:	08 10       	rrc	r8		
+    cb32:	0e 6e       	rlc	r14		
+    cb34:	0f 6f       	rlc	r15		
+    cb36:	0f 9b       	cmp	r11,	r15	
+    cb38:	05 28       	jnc	$+12     	;abs 0xcb44
+    cb3a:	02 20       	jnz	$+6      	;abs 0xcb40
+    cb3c:	0e 9a       	cmp	r10,	r14	
+    cb3e:	02 28       	jnc	$+6      	;abs 0xcb44
+    cb40:	0e 8a       	sub	r10,	r14	
+    cb42:	0f 7b       	subc	r11,	r15	
+    cb44:	0c 6c       	rlc	r12		
+    cb46:	0d 6d       	rlc	r13		
+    cb48:	08 68       	rlc	r8		
+    cb4a:	19 83       	dec	r9		
+    cb4c:	f1 23       	jnz	$-28     	;abs 0xcb30
+    cb4e:	30 41       	ret			
+
+0000cb50 <_unexpected_>:
+    cb50:	00 13       	reti			
+
+Disassembly of section .vectors:
+
+0000ffe0 <__ivtbl_16>:
+    ffe0:	4c c0 4c c0 4c c0 4c c0 4c c0 4c c0 30 c1 06 c1     L.L.L.L.L.L.0...
+    fff0:	4c c0 4c c0 4c c0 4c c0 4c c0 4c c0 4c c0 00 c0     L.L.L.L.L.L.L...

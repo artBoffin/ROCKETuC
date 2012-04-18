@@ -30,7 +30,7 @@ void send_status_packet(unsigned char stat)
 	packet_data_out_status *pd = (packet_data_out_status *)&outp.data[0];
 
 	outp.start	= PACKET_OUTBOUND_START;
-	outp.length	= 4 + sizeof(packet_data_out_status);
+	outp.length	= 5;
 	outp.type 	= PACKET_OUT_STATUS;
 	pd->status  = stat;
 	outp.crc	= packet_calc_crc(&outp);
