@@ -53,7 +53,7 @@ public class ROCKETuC {
 
 
 	private final static int CTRL_SERIAL_WAIT =						1000; //milliseconds to wait for initial connect
-	private final static int CTRL_PACKET_TIMEOUT =					100; //milliseconds to wait before re-sending un-ACKed packet
+	private final static int CTRL_PACKET_TIMEOUT =					50; //milliseconds to wait before re-sending un-ACKed packet
 	private final static int CTRL_PACKET_RESEND_LIMIT =				10; //number of times to try re-sending un-ACKed packet
 
 	private final static char POUT_START = 							0x24; 
@@ -235,12 +235,12 @@ public class ROCKETuC {
 
 		}
 
-		public void serialEvent(Serial which) {
+		/*public void serialEvent(Serial which) {
 			// Notify the ROCKETuC class that there's serial data for it to process.
 			while (serial.available() > 0){
 				//processInput();
 			}
-		}
+		}*/
 	}
 
 	public void dispose() {
@@ -389,7 +389,7 @@ public class ROCKETuC {
 
 		char crc = 0;
 
-		for(int i = 0; i < packetIn.length; i++) {
+		for(int i = 1; i < packetIn.length; i++) {
 			crc += packetIn[i];
 		} 
 
@@ -401,14 +401,19 @@ public class ROCKETuC {
 		char crc = packetCrcCalc(packetIn);//calculate crc
 		char tries = 0;
 		char[] packetOut = new char[packetIn.length+1]; //packet to modify for crc add
+
 		for(int i = 0; i < packetIn.length; i++)
 		{
-		packetOut[i] = packetIn[i]; //copy packet in over
+			packetOut[i] = packetIn[i]; //copy packet in over
 		}
 		packetOut[packetIn.length] = crc; //slip in crc
 		String out = new String(packetOut); //convert char array to string
 		//System.out.print(out);
 		serial.write(out);
+		try {
+			Thread.sleep(CTRL_PACKET_TIMEOUT);
+		} catch (InterruptedException e1) {
+		}
 		if(checkForAck())
 		{
 			return;
@@ -429,17 +434,20 @@ public class ROCKETuC {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+
 			}
 		}
 	}
 
 	private boolean checkForAck()
 	{
-		final char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK};
+		final char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK, 0x07};		
 		String ack = new String(PKIN_PKET_ACK);
 		if(serial.available() > 0)
 		{
 			String inBuffer = serial.readString(); 
+			serial.clear();
+			System.out.println(displayHexString(inBuffer));
 			if(inBuffer.equals(ack))
 			{
 				return true;
@@ -455,6 +463,42 @@ public class ROCKETuC {
 			return false;
 		}
 	}
+
+	/**
+	 * convert a String to a hex representation of the String,
+	 * with 4 hex chars per char of the original String, broken into byte groups.
+	 * e.g. "1abc \uabcd" gives "0031_0061_0062_0063_0020_abcd"
+	 * @param s String to convert to hex equivalent
+	 * @return hex represenation of string, 4 hex digit chars per char.
+	 */
+	public static String displayHexString ( String s )
+	{
+		StringBuilder sb = new StringBuilder( s.length() * 5 - 1 );
+		for ( int i=0; i<s.length(); i++ )
+		{
+			char c = s.charAt(i);
+			if ( i != 0 )
+			{
+				sb.append( '_' );
+			}
+			// encode 16 bits as four nibbles
+
+			sb.append( hexChar [ c >>> 12 & 0xf ] );
+			sb.append( hexChar [ c >>> 8 & 0xf ] );
+			sb.append( hexChar [ c >>> 4 & 0xf ] );
+			sb.append( hexChar [ c & 0xf ] );
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * table to convert a nibble to a hex char.
+	 */
+	static final char[] hexChar = {
+		'0' , '1' , '2' , '3' ,
+		'4' , '5' , '6' , '7' ,
+		'8' , '9' , 'a' , 'b' ,
+		'c' , 'd' , 'e' , 'f'};
 
 	/**
 	 * 
