@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +19,22 @@
  * 02111-1307 USA.  
  */
 
-#include <msp430.h>
-
+#include "core_proto.h"
 #include "packet_handler.h"
 
-void clock_init(void)
+packet outp;
+packet inp;
+
+void send_status_packet(unsigned char stat)
 {
-	WDTCTL = WDTPW + WDTHOLD;
-    BCSCTL1 = CALBC1_1MHZ;
-    DCOCTL  = CALDCO_1MHZ;
+	packet_data_out_status *pd = (packet_data_out_status *)&outp.data[0];
+
+	outp.start	= PACKET_OUTBOUND_START;
+	outp.length	= 5;
+	outp.type 	= PACKET_OUT_STATUS;
+	pd->status  = stat;
+	outp.crc	= packet_calc_crc(&outp);
+
+	packet_send(&outp);
 }
 
-int main(void)
-{
-	clock_init();
-	packet_handler_init();
-
-	while (1) {
-		packet_do_handle();
-	}
-
-	return 0;
-}

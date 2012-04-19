@@ -21,9 +21,8 @@
 
 #include <msp430.h>
 
-#include <libemb/serial/serial.h>
-#include <libemb/conio/conio.h>
-
+#include "serial.h"
+#include "conio.h"
 #include "packet.h"
 
 int ph_pin_setup(unsigned char length, unsigned char *data);

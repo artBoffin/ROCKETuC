@@ -1,5 +1,5 @@
 BINARY	 = firmware
-OBJS	+= main.o core_handlers.o 
+OBJS	+= main.o core_proto.o serial_transport.o core_handlers.o packet_handler.o
 INCDIR  += -I../../libserial/src/include 
 INCDIR  += -I../../libconio/src/include 
 INCDIR  += -I../../libpacket/src/include 

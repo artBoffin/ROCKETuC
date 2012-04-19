@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@
 
 #ifndef __COREPROTO_H_
 #define __COREPROTO_H_
+
+#include "packet.h"
 
 #define PACKET_IN_NULL  						0x00 
 #define PACKET_IN_RESERVED  					0x01
@@ -42,12 +44,19 @@
 #define PACKET_OUT_ANALOG_PIN_READ				0x04
 #define PACKET_OUT_PULSE_LEGHT_READ				0x05
 
-#define PACKET_STATUS_UNKNOWN					0x00
-#define PACKET_STATUS_ACK						0x01
-#define PACKET_STATUS_BAD_PACKET				0x02
-#define PACKET_STATUS_INVALID_PACKET			0x03
-#define PACKET_STATUS_INAVLID_DATA				0x04
-#define PACKET_STATUS_INVALID_PIN_COMMAND		0x05
+#define PACKET_RETURN_UNKNOWN					0x00
+#define PACKET_RETURN_ACK						0x01
+#define PACKET_RETURN_BAD_PACKET				0x02
+#define PACKET_RETURN_INVALID_PACKET			0x03
+#define PACKET_RETURN_INAVLID_DATA				0x04
+#define PACKET_RETURN_INVALID_PIN_COMMAND		0x05
+
+#define PIN_CONTROL_CLEAR						0x00
+#define PIN_CONTROL_SET							0x01
+#define PIN_CONTROL_TOGGLE						0x02
+#define PIN_CONTROL_DIGITAL_READ				0x03
+#define PIN_CONTROL_ANALOG_READ					0x04
+#define PIN_CONTROL_PULSELENGTH_READ			0x05
 
 typedef struct {
 	unsigned char	pin;
@@ -56,7 +65,7 @@ typedef struct {
 
 typedef struct {
 	unsigned char	pin;
-	unsigned char	mode;
+	unsigned char	control;
 } packet_data_in_pin_control;
 
 typedef struct {
@@ -105,5 +114,10 @@ typedef struct {
 	unsigned char	value_lsb;
 	unsigned char	value_msb;
 } packet_data_out_analog_pin_read;
+
+extern packet outp;
+extern packet inp;
+
+void send_status_packet(unsigned char stat);
 
 #endif

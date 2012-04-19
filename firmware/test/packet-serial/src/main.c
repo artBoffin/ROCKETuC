@@ -22,9 +22,8 @@
 #include <msp430.h>
 #include <legacymsp430.h>
 
-#include <libemb/serial/serial.h>
-#include <libemb/serial/serial_rb.h>
-
+#include "serial.h"
+#include "serial_rb.h"
 #include "packet.h"
 
 #define RB_SIZE		64 

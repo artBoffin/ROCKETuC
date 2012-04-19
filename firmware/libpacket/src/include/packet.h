@@ -48,6 +48,11 @@
 #define PACKET_STAT_ERR_UNKPACK		-3
 
 /**
+ * Returned status if packet data was maleformed 
+ */
+#define PACKET_STAT_ERR_DATA		-4
+
+/**
  * General definition of a binary packet
  */
 typedef struct {
