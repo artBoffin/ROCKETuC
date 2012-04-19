@@ -1,0 +1,3 @@
+18.04.2012	sw	initial firmware version of "serial-rocket"
+				provides basic digital IO (set/clear/toggle/read)
+				provides analog read
