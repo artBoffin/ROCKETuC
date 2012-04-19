@@ -22,7 +22,14 @@
 #include "core_proto.h"
 #include "packet_handler.h"
 
+/**
+ * OUT-bound packet instance.
+ */
 packet outp;
+
+/**
+ * IN-bound packet instance.
+ */
 packet inp;
 
 void send_status_packet(unsigned char stat)
