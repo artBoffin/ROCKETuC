@@ -113,13 +113,13 @@ public class ROCKETuC {
 	private final static char PORT_5 =								0x50; //port 5/F definition 
 
 	private final static char PIN_0 =								0x00; //pin 0 definition 
-	private final static char PIN_1 =								0x00; //pin 1 definition 
-	private final static char PIN_2 =								0x00; //pin 2 definition 
-	private final static char PIN_3 =								0x00; //pin 3 definition 
-	private final static char PIN_4 =								0x00; //pin 4 definition 
-	private final static char PIN_5 =								0x00; //pin 5 definition 
-	private final static char PIN_6 =								0x00; //pin 6 definition 
-	private final static char PIN_7 =								0x00; //pin 7 definition 
+	private final static char PIN_1 =								0x01; //pin 1 definition 
+	private final static char PIN_2 =								0x02; //pin 2 definition 
+	private final static char PIN_3 =								0x03; //pin 3 definition 
+	private final static char PIN_4 =								0x04; //pin 4 definition 
+	private final static char PIN_5 =								0x05; //pin 5 definition 
+	private final static char PIN_6 =								0x06; //pin 6 definition 
+	private final static char PIN_7 =								0x07; //pin 7 definition 
 
 	//in pakcet defns
 	private final static char PKIN_NULL =							0x00; //IN-bound packet NULL 
@@ -151,7 +151,7 @@ public class ROCKETuC {
 	/**
 	 * Constant to set a pin to input mode float(in a call to pinMode()).
 	 */
-	public final static char INPUT = CMD_PIN_IN_FLOAT;
+	public final static char INPUT = CMD_PIN_IN_PULL_UP;
 	/**
 	 * Constant of pin name P1.0
 	 */
@@ -413,9 +413,18 @@ public class ROCKETuC {
 			packetOut[i] = packetIn[i]; //copy packet in over
 		}
 		packetOut[packetIn.length] = crc; //slip in crc
+		
+		System.out.println("Packet out (DEC)");
+		System.out.println((int)packetOut[0]);
+		System.out.println((int)packetOut[1]);
+		System.out.println((int)packetOut[2]);
+		System.out.println((int)packetOut[3]);
+		System.out.println((int)packetOut[4]);
+		
 		String out = new String(packetOut); //convert char array to string
 		//System.out.print(out);
 		serial.write(out);
+		
 		try {
 			Thread.sleep(CTRL_PACKET_TIMEOUT); //need to sleep to wait for data
 		} catch (InterruptedException e1) {
@@ -455,6 +464,7 @@ public class ROCKETuC {
 			String inBuffer = serial.readString(); 
 			serial.clear();
 			char inChars[] = inBuffer.toCharArray();
+			System.out.println("Packet in (DEC)");
 			System.out.println((int)inChars[0]);
 			System.out.println((int)inChars[1]);
 			System.out.println((int)inChars[2]);
