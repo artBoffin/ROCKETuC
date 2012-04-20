@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
