@@ -123,7 +123,7 @@ public class ROCKETuC {
 
 	//in pakcet defns
 	private final static char PKIN_NULL =							0x00; //IN-bound packet NULL 
-	private final static char PKIN_START =							0x43; //IN-bound start of packet char "+"
+	private final static char PKIN_START =							0x2B; //IN-bound start of packet char "+"
 	private final static char PKIN_ACK=								0x01; //IN-bound ACK
 	private final static char PKIN_STAT_ERR=						0x01; //IN-bound packet type "STATUS / ERROR"
 	private final static char PKIN_STAT_ERR_LEN=					0x05; //IN-bound packet type "STATUS / ERROR" length
@@ -389,7 +389,7 @@ public class ROCKETuC {
 
 		char crc = 0;
 
-		for(int i = 1; i < packetIn.length; i++) {
+		for(int i = 0; i < packetIn.length; i++) {
 			crc += packetIn[i];
 		} 
 
@@ -447,7 +447,6 @@ public class ROCKETuC {
 		{
 			String inBuffer = serial.readString(); 
 			serial.clear();
-			System.out.println(displayHexString(inBuffer));
 			if(inBuffer.equals(ack))
 			{
 				return true;
@@ -464,41 +463,7 @@ public class ROCKETuC {
 		}
 	}
 
-	/**
-	 * convert a String to a hex representation of the String,
-	 * with 4 hex chars per char of the original String, broken into byte groups.
-	 * e.g. "1abc \uabcd" gives "0031_0061_0062_0063_0020_abcd"
-	 * @param s String to convert to hex equivalent
-	 * @return hex represenation of string, 4 hex digit chars per char.
-	 */
-	public static String displayHexString ( String s )
-	{
-		StringBuilder sb = new StringBuilder( s.length() * 5 - 1 );
-		for ( int i=0; i<s.length(); i++ )
-		{
-			char c = s.charAt(i);
-			if ( i != 0 )
-			{
-				sb.append( '_' );
-			}
-			// encode 16 bits as four nibbles
 
-			sb.append( hexChar [ c >>> 12 & 0xf ] );
-			sb.append( hexChar [ c >>> 8 & 0xf ] );
-			sb.append( hexChar [ c >>> 4 & 0xf ] );
-			sb.append( hexChar [ c & 0xf ] );
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * table to convert a nibble to a hex char.
-	 */
-	static final char[] hexChar = {
-		'0' , '1' , '2' , '3' ,
-		'4' , '5' , '6' , '7' ,
-		'8' , '9' , 'a' , 'b' ,
-		'c' , 'd' , 'e' , 'f'};
 
 	/**
 	 * 
