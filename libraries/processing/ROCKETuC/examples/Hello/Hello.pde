@@ -7,12 +7,17 @@ void setup() {
   println(ROCKETuC.list());
   launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600);
   launchpad.pinMode(ROCKETuC.P10, ROCKETuC.OUTPUT);
+  launchpad.pinMode(ROCKETuC.P13, ROCKETuC.INPUT);
 }
 
 void draw() {
+  if(launchpad.digitalRead(ROCKETuC.P13) == ROCKETuC.HIGH)
+  {
   launchpad.digitalWrite(ROCKETuC.P10, ROCKETuC.HIGH);
-  delay(500);
+  }
+  else
+  {
   launchpad.digitalWrite(ROCKETuC.P10, ROCKETuC.LOW);
-  delay(500);
+  }
 }
 

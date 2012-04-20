@@ -129,6 +129,7 @@ public class ROCKETuC {
 	private final static char PKIN_STAT_ERR_LEN=					0x05; //IN-bound packet type "STATUS / ERROR" length
 
 
+	private final static char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK, 0x07};	
 
 
 
@@ -147,6 +148,10 @@ public class ROCKETuC {
 	 * Constant to set a pin to output mode (in a call to pinMode()).
 	 */
 	public final static char OUTPUT = CMD_PIN_OUT;
+	/**
+	 * Constant to set a pin to input mode float(in a call to pinMode()).
+	 */
+	public final static char INPUT = CMD_PIN_IN_FLOAT;
 	/**
 	 * Constant of pin name P1.0
 	 */
@@ -308,7 +313,7 @@ public class ROCKETuC {
 		try {
 			serialSendPacket(packet);
 		} catch (myException e) {
-			System.err.println("ROCKETuC > ERR: Lost serial connection, check connection");
+			System.err.println("ROCKETuC > ERR: No ACK on NULL, check connection");
 		}
 	}
 
@@ -353,17 +358,18 @@ public class ROCKETuC {
 	 * pinMode()).
 	 *
 	 * @param pin the pin to read from 
-	 * 
+	 * @return value of pin
 	 */
-	public void digitalRead(char pin) {
+		public char digitalRead(char pin) {
 		char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_CTRL, pin, CMD_PIN_DIGI_READ};
 		try {
-			serialSendPacket(packet);
+			return serialSendPacket(packet)[0];
 		} catch (myException e) {
 			System.err.println("ROCKETuC > ERR: No ACK on digitalRead, check connection");
-		}		
+		}	
+		return 2; //should never get here
 	}
-
+	 
 	/*private void processInput() {
 		byte[] inputData = serial.readBytes();
 		//char command;
@@ -389,14 +395,14 @@ public class ROCKETuC {
 
 		char crc = 0;
 
-		for(int i = 0; i < packetIn.length; i++) {
+		for(int i = 1; i < packetIn.length; i++) {
 			crc += packetIn[i];
 		} 
 
 		return crc;
 	}	
 
-	private void serialSendPacket(char[] packetIn) throws myException
+	private char[] serialSendPacket(char[] packetIn) throws myException
 	{
 		char crc = packetCrcCalc(packetIn);//calculate crc
 		char tries = 0;
@@ -411,17 +417,23 @@ public class ROCKETuC {
 		//System.out.print(out);
 		serial.write(out);
 		try {
-			Thread.sleep(CTRL_PACKET_TIMEOUT);
+			Thread.sleep(CTRL_PACKET_TIMEOUT); //need to sleep to wait for data
 		} catch (InterruptedException e1) {
 		}
-		if(checkForAck())
+		char [] dataIn = checkForReturn(packetOut); //check for data input and load it
+		if(dataIn != null) //if we got no return packet
 		{
-			return;
+			return dataIn; //return data portion of in-packet
 		}
 		else
 		{
-			while(!checkForAck())
+			while(dataIn == null) //keep trying to comm
 			{
+				try {
+					Thread.sleep(CTRL_PACKET_TIMEOUT); //need to sleep to wait for data
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 				if(tries > CTRL_PACKET_RESEND_LIMIT) //if we are below our try limit
 				{
 					throw new myException ("Packet error: no ACK"); //throw an exception if we exceed our retry limit
@@ -429,41 +441,55 @@ public class ROCKETuC {
 				tries++;
 				System.err.println("ROCKETuC > WARNING: No ACK, retry");
 				serial.write(out);
-				try {
-					Thread.sleep(CTRL_PACKET_TIMEOUT);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 
+				dataIn = checkForReturn(packetOut); //check again
 			}
+			return dataIn; //return data portion of in-packet
 		}
 	}
 
-	private boolean checkForAck()
-	{
-		final char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK, 0x07};		
-		String ack = new String(PKIN_PKET_ACK);
-		if(serial.available() > 0)
-		{
+
+	private char[] checkForReturn(char[] packetIn){
+
+		if(serial.available() > 0){
 			String inBuffer = serial.readString(); 
 			serial.clear();
-			if(inBuffer.equals(ack))
-			{
-				return true;
+			char inChars[] = inBuffer.toCharArray();
+			System.out.println((int)inChars[0]);
+			System.out.println((int)inChars[1]);
+			System.out.println((int)inChars[2]);
+			System.out.println((int)inChars[3]);
+			char dataLength = (char) (inChars[1] - 4); //calculate length of data segment
+			char dataOut[] = new char[dataLength];
+			//TODO: verify packet is good with CRC and return type
+			for(char i = 3; i < dataLength + 3; i++){ //copy out the data portion of the packet
+				dataOut[i-3] = inChars[i];
 			}
-			else
-			{
-				return false;
-			}
+			return dataOut;
 		}
-		else
-		{
+		else{
 			System.err.println("ROCKETuC > WARNING: Empty buffer read");
-			return false;
+			return null;
 		}
 	}
 
-
+	/**
+	 * Checks to see if value is in a list
+	 * 
+	 * @param value
+	 * @param list
+	 * @return is in list
+	 */
+	private boolean isValueInList(char value, char[] list){
+		for(int i = 0; i < list.length; i++)
+		{
+			if(list[i] == value) //if value is in list
+			{
+				return true; //it is in
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * 
@@ -478,5 +504,9 @@ public class ROCKETuC {
 			super(msg);
 		}
 	}
+
+	//TEST STUFF
+
+
 }
 
