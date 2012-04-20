@@ -51,36 +51,166 @@ public class ROCKETuC {
 
 	public final static String VERSION = "v0.1.1";
 
-	 /**
-	   * Constant to write a low value to a pin (in a call to
-	   * digitalWrite()).
-	   */
-	  public static final char LOW = 0x00;
-	  /**
-	   * Constant to write a high value to a pin (in a call to
-	   * digitalWrite()).
-	   */
-	  public static final char HIGH = 0x01;
-	  /**
-	   * Constant to set a pin to output mode (in a call to pinMode()).
-	   */
-	  public static final char OUTPUT = 0x03;
+
+	private final static int CTRL_SERIAL_WAIT =						1000; //milliseconds to wait for initial connect
+	private final static int CTRL_PACKET_TIMEOUT =					50; //milliseconds to wait before re-sending un-ACKed packet
+	private final static int CTRL_PACKET_RESEND_LIMIT =				10; //number of times to try re-sending un-ACKed packet
+
+	private final static char POUT_START = 							0x24; 
+
+	private final static char POUT_NULL = 							0x00; //OUT-bound packet type "NULL"
+	private final static char POUT_NULL_LEN = 						0x04; //OUT-bound packet type "NULL" length
+
+	//private final static char POUT_RESERVED = 					0x01; //OUT-bound packet type 
+
+	private final static char POUT_SYS_INFO =						0x02; //OUT-bound packet type "system info"
+	private final static char POUT_SYS_INFO_LEN =					0x02; //OUT-bound packet type "system info" length
+
+	private final static char POUT_DEV_CTRL = 						0x03; //OUT-bound packet type "device control"
+
+	private final static char POUT_PIN_FUNC = 						0x04; //OUT-bound packet type "pin function"
+	private final static char POUT_PIN_FUNC_LEN = 					0x06; //OUT-bound "pin function" length
+
+	private final static char POUT_PIN_CTRL = 						0x05; //OUT-bound packet type "pin control"
+	private final static char POUT_PIN_CTRL_LEN = 					0x02; //OUT-bound packet type "pin control" length
+
+	private final static char POUT_PWM_FUNC = 						0x06; //OUT-bound packet type "pwm function"
+	private final static char POUT_PWM_FUNC_LEN = 					0x03; //OUT-bound packet type "pwm function"
+
+	private final static char POUT_PWM_CTRL = 						0x07; //OUT-bound packet type "pwm control"
+	private final static char POUT_PWM_CTRL_LEN = 					0x03; //OUT-bound packet type "pwm control"
+
+	private final static char POUT_SERL_FUNC =						0x08; //OUT-bound packet type "serial function"
+
+	private final static char POUT_SERL_DATA = 						0x09; //OUT-bound packet type "serial data"
+
+	private final static char POUT_EXT_INTR_FUNC =					0x0A; //OUT-bound packet type "external interrupt function"
+
+	//pin function data commands
+	private final static char CMD_PIN_IN_FLOAT =					0x00; //CMD function for pin function "input float" 	
+	private final static char CMD_PIN_IN_PULL_UP =					0x01; //CMD function for pin function "input pull-up" 	
+	private final static char CMD_PIN_IN_PULL_DOWN =				0x02; //CMD function for pin function "input pull-down" 	
+	private final static char CMD_PIN_OUT =							0x03; //CMD function for pin function "output" 	
+	private final static char CMD_PIN_IN_ANAG =						0x04; //CMD function for pin function "input analog" 	
+	private final static char CMD_PIN_IN_PWM =						0x05; //CMD function for pin function "input PWM" 
+	private final static char CMD_PIN_SER_TX =						0x05; //CMD function for pin function "serial TX" 
+	private final static char CMD_PIN_SER_RX =						0x05; //CMD function for pin function "serial RX" 
+
+	//pin control data commands
+	private final static char CMD_PIN_CLR =							0x00; //CMD function for pin control "clear pin" 	
+	private final static char CMD_PIN_SET =							0x01; //CMD function for pin control "set pin" 	
+	private final static char CMD_PIN_TOGL =						0x02; //CMD function for pin control "toggle pin" 	
+	private final static char CMD_PIN_DIGI_READ =					0x03; //CMD function for pin control "digital read" 	
+	private final static char CMD_PIN_ANAG_READ =					0x04; //CMD function for pin control "analog read" 	
+	private final static char CMD_PIN_PWM_READ =					0x05; //CMD function for pin control "pwm read" 
+
+	//port and pin defns 
+	private final static char PORT_0 =								0x00; //port 0/A definition 
+	private final static char PORT_1 =								0x10; //port 1/B definition 
+	private final static char PORT_2 =								0x20; //port 2/C definition 
+	private final static char PORT_3 =								0x30; //port 3/D definition 
+	private final static char PORT_4 =								0x40; //port 4/E definition 
+	private final static char PORT_5 =								0x50; //port 5/F definition 
+
+	private final static char PIN_0 =								0x00; //pin 0 definition 
+	private final static char PIN_1 =								0x00; //pin 1 definition 
+	private final static char PIN_2 =								0x00; //pin 2 definition 
+	private final static char PIN_3 =								0x00; //pin 3 definition 
+	private final static char PIN_4 =								0x00; //pin 4 definition 
+	private final static char PIN_5 =								0x00; //pin 5 definition 
+	private final static char PIN_6 =								0x00; //pin 6 definition 
+	private final static char PIN_7 =								0x00; //pin 7 definition 
+
+	//in pakcet defns
+	private final static char PKIN_NULL =							0x00; //IN-bound packet NULL 
+	private final static char PKIN_START =							0x43; //IN-bound start of packet char "+"
+	private final static char PKIN_ACK=								0x01; //IN-bound ACK
+	private final static char PKIN_STAT_ERR=						0x01; //IN-bound packet type "STATUS / ERROR"
+	private final static char PKIN_STAT_ERR_LEN=					0x05; //IN-bound packet type "STATUS / ERROR" length
 
 
-	
-	private final char PACKET_OUT_START = 						0x24; //PACKET_OUT-bound start of packet char "$"
-	private final char PACKET_OUT_NULL = 						0x00; //PACKET_OUT-bound packet type "NULL"
-	//private final char PACKET_OUT_RESERVED = 					0x01; //PACKET_OUT-bound packet type 
-	private final char PACKET_OUT_SYSTEM_INFO =					0x02; //PACKET_OUT-bound packet type "system info"
-	private final char PACKET_OUT_DEVICE_CONTROL = 				0x03; //PACKET_OUT-bound packet type "device control"
-	private final char PACKET_OUT_PIN_FUNCTION = 				0x04; //PACKET_OUT-bound packet type "pin function"
-	private final char PACKET_OUT_PIN_FUNCTION_LENGTH = 		0x06; //PACKET_OUT-bound "pin function" length, 6 chars
-	private final char PACKET_OUT_PIN_CONTROL = 				0x05; //PACKET_OUT-bound packet type "pin control"
-	private final char PACKET_OUT_PWM_FUNCTION = 				0x06; //PACKET_OUT-bound packet type "pwm function"
-	private final char PACKET_OUT_PWM_CONTROL = 				0x07; //PACKET_OUT-bound packet type "pwm control"
-	private final char PACKET_OUT_SERIAL_FUNCTION =				0x08; //PACKET_OUT-bound packet type "serial function"
-	private final char PACKET_OUT_SERIAL_DATA = 				0x09; //PACKET_OUT-bound packet type "serial data"
-	private final char PACKET_OUT_EXTERNAL_INTERRUPT_FUNCTION = 0x0A; //PACKET_OUT-bound packet type "external interrupt function"
+
+
+
+
+	/**
+	 * Constant to write a low value to a pin (in a call to
+	 * digitalWrite()).
+	 */
+	public final static char LOW = CMD_PIN_CLR;
+	/**
+	 * Constant to write a high value to a pin (in a call to
+	 * digitalWrite()).
+	 */
+	public final static char HIGH = CMD_PIN_SET ;
+	/**
+	 * Constant to set a pin to output mode (in a call to pinMode()).
+	 */
+	public final static char OUTPUT = CMD_PIN_OUT;
+	/**
+	 * Constant of pin name P1.0
+	 */
+	public final static char P10 = PORT_1 | PIN_0;
+	/**
+	 * Constant of pin name P1.1
+	 */
+	public final static char P11 = PORT_1 | PIN_1;
+	/**
+	 * Constant of pin name P1.2
+	 */
+	public final static char P12 = PORT_1 | PIN_2;
+	/**
+	 * Constant of pin name P1.3
+	 */
+	public final static char P13 = PORT_1 | PIN_3;
+	/**
+	 * Constant of pin name P1.4
+	 */
+	public final static char P14 = PORT_1 | PIN_4;
+	/**
+	 * Constant of pin name P1.5
+	 */
+	public final static char P15 = PORT_1 | PIN_5;
+	/**
+	 * Constant of pin name P1.6
+	 */
+	public final static char P16 = PORT_1 | PIN_6;
+	/**
+	 * Constant of pin name P1.7
+	 */
+	public final static char P17 = PORT_1 | PIN_7;
+	/**
+	 * Constant of pin name P2.0
+	 */
+	public final static char P20 = PORT_2 | PIN_0;
+	/**
+	 * Constant of pin name P2.1
+	 */
+	public final static char P21 = PORT_2 | PIN_1;
+	/**
+	 * Constant of pin name P2.2
+	 */
+	public final static char P22 = PORT_2 | PIN_2;
+	/**
+	 * Constant of pin name P2.3
+	 */
+	public final static char P23 = PORT_2 | PIN_3;
+	/**
+	 * Constant of pin name P2.4
+	 */
+	public final static char P24 = PORT_2 | PIN_4;
+	/**
+	 * Constant of pin name P2.5
+	 */
+	public final static char P25 = PORT_2 | PIN_5;
+	/**
+	 * Constant of pin name P2.6
+	 */
+	public final static char P26 = PORT_2 | PIN_6;
+	/**
+	 * Constant of pin name P2.7
+	 */
+	public final static char P27 = PORT_2 | PIN_7;
 
 
 	/**
@@ -100,16 +230,17 @@ public class ROCKETuC {
 			 * automatically).
 			 * 
 			 */
-			
-			  disposeMethods = new RegisteredMethods();
-			 
+
+			disposeMethods = new RegisteredMethods();
+
 		}
 
-		public void serialEvent(Serial which) {
+		/*public void serialEvent(Serial which) {
 			// Notify the ROCKETuC class that there's serial data for it to process.
-			while (available() > 0)
-				processInput();
-		}
+			while (serial.available() > 0){
+				//processInput();
+			}
+		}*/
 	}
 
 	public void dispose() {
@@ -147,21 +278,38 @@ public class ROCKETuC {
 	 * (e.g. one the elements of the array returned by ROCKETuC.list())
 	 * @param irate the baud rate to use to communicate with the ROCKETuC board
 	 * (the ROCKETuC library defaults to 9600, and the examples use this rate,
-	 * but other firmwares may override it)
+	 * but other firmwares may override it) 
 	 */
-	public ROCKETuC (PApplet myParent, String iname, int irate) {
+	public ROCKETuC (PApplet myParent, String iname, int irate){
 		this.myParent = myParent;
 		this.serialProxy = new SerialProxy();
 		this.serial = new Serial(serialProxy, iname, irate);
 
 		try {
-			System.out.println("Loading...");
-			Thread.sleep(3000); //time for serial init?
-		} catch (InterruptedException e) {}
+			System.out.println("ROCKETuC > Connecting ...");
+			Thread.sleep(CTRL_SERIAL_WAIT); //time for serial init?
+		} catch (InterruptedException e) 
+		{
+			System.err.println("ROCKETuC > ERR: Serial connect problem, check your connection");
+		}
 
 		//do stuff on first connect
-		System.out.println("Connected");
+		System.out.println("ROCKETuC > Connected");
 		myParent.registerDispose(this);
+	}
+
+
+	/**
+	 * Send NULL packet 
+	 * 
+	 */
+	public void packetNull() {
+		char packet[] = {POUT_START, POUT_NULL_LEN, POUT_NULL};
+		try {
+			serialSendPacket(packet);
+		} catch (myException e) {
+			System.err.println("ROCKETuC > ERR: Lost serial connection, check connection");
+		}
 	}
 
 
@@ -171,12 +319,16 @@ public class ROCKETuC {
 	 *
 	 * @param pin the pin whose mode to set 
 	 * @param mode either input(with options) or output
+	 *
 	 */
 	public void pinMode(char pin, char mode) {
-		char crcCheck[] = {PACKET_OUT_START, PACKET_OUT_PIN_FUNCTION_LENGTH, PACKET_OUT_PIN_FUNCTION, pin, mode};
-		char crc = packetCrcCalc(crcCheck);
-		char packet[] = {PACKET_OUT_START, PACKET_OUT_PIN_FUNCTION_LENGTH, PACKET_OUT_PIN_FUNCTION, pin, mode, crc};
-		serialSendPacket(packet);
+
+		char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_FUNC, pin, mode};
+		try {
+			serialSendPacket(packet);
+		} catch (myException e) {
+			System.err.println("ROCKETuC > ERR: No ACK on pinMode, check connection");
+		}
 	}
 
 	/**
@@ -184,43 +336,182 @@ public class ROCKETuC {
 	 * pinMode()).
 	 *
 	 * @param pin the pin to write to 
-	 * @param value the value to write: ROCKETuC.LOW  or ROCKETuC.HIGH
+	 * @param value the value to write: ROCKETuC.LOW  or ROCKETuC.HIGH 
 	 * 
 	 */
 	public void digitalWrite(char pin, char value) {
-		char crcCheck[] = {PACKET_OUT_START, PACKET_OUT_PIN_FUNCTION_LENGTH, PACKET_OUT_PIN_CONTROL, pin, value};
-		char crc = packetCrcCalc(crcCheck);
-		char packet[] = {PACKET_OUT_START, PACKET_OUT_PIN_FUNCTION_LENGTH, PACKET_OUT_PIN_CONTROL, pin, value, crc};
-		serialSendPacket(packet);
+		char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_CTRL, pin, value};
+		try {
+			serialSendPacket(packet);
+		} catch (myException e) {
+			System.err.println("ROCKETuC > ERR: No ACK on digitalWrite, check connection");
+		}	
 	}
 
-
-	private int available() {
-		return serial.available();
+	/**
+	 * Read from digital pin (the pin must have been put into input mode with
+	 * pinMode()).
+	 *
+	 * @param pin the pin to read from 
+	 * 
+	 */
+	public void digitalRead(char pin) {
+		char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_CTRL, pin, CMD_PIN_DIGI_READ};
+		try {
+			serialSendPacket(packet);
+		} catch (myException e) {
+			System.err.println("ROCKETuC > ERR: No ACK on digitalRead, check connection");
+		}		
 	}
 
-	private void processInput() {
-		int inputData = serial.read();
+	/*private void processInput() {
+		byte[] inputData = serial.readBytes();
 		//char command;
-        System.out.println(inputData); 
+		System.out.println(inputData); 
 	}
-	
-	private void serialSendPacket(char[] packetIn)
+
+	private void serialSendPacketAck(char[] packetIn)
 	{
-        String out = new String(packetIn); //convert char array to string
-        //System.out.print(out);
+		String out = new String(packetIn); //convert char array to string
+		//System.out.print(out);
 		serial.write(out);
+
 	}
-	
+
+	/**
+	 * 
+	 * Calculate CRC for packet
+	 * Simple adding of all bytes
+	 * 
+	 */
+
 	private char packetCrcCalc(char[] packetIn) {
 
 		char crc = 0;
 
-		for(int i = 0; i < packetIn.length; i++) {
+		for(int i = 1; i < packetIn.length; i++) {
 			crc += packetIn[i];
 		} 
 
 		return crc;
+	}	
+
+	private void serialSendPacket(char[] packetIn) throws myException
+	{
+		char crc = packetCrcCalc(packetIn);//calculate crc
+		char tries = 0;
+		char[] packetOut = new char[packetIn.length+1]; //packet to modify for crc add
+
+		for(int i = 0; i < packetIn.length; i++)
+		{
+			packetOut[i] = packetIn[i]; //copy packet in over
+		}
+		packetOut[packetIn.length] = crc; //slip in crc
+		String out = new String(packetOut); //convert char array to string
+		//System.out.print(out);
+		serial.write(out);
+		try {
+			Thread.sleep(CTRL_PACKET_TIMEOUT);
+		} catch (InterruptedException e1) {
+		}
+		if(checkForAck())
+		{
+			return;
+		}
+		else
+		{
+			while(!checkForAck())
+			{
+				if(tries > CTRL_PACKET_RESEND_LIMIT) //if we are below our try limit
+				{
+					throw new myException ("Packet error: no ACK"); //throw an exception if we exceed our retry limit
+				}
+				tries++;
+				System.err.println("ROCKETuC > WARNING: No ACK, retry");
+				serial.write(out);
+				try {
+					Thread.sleep(CTRL_PACKET_TIMEOUT);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	}
+
+	private boolean checkForAck()
+	{
+		final char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK, 0x07};		
+		String ack = new String(PKIN_PKET_ACK);
+		if(serial.available() > 0)
+		{
+			String inBuffer = serial.readString(); 
+			serial.clear();
+			System.out.println(displayHexString(inBuffer));
+			if(inBuffer.equals(ack))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			System.err.println("ROCKETuC > WARNING: Empty buffer read");
+			return false;
+		}
+	}
+
+	/**
+	 * convert a String to a hex representation of the String,
+	 * with 4 hex chars per char of the original String, broken into byte groups.
+	 * e.g. "1abc \uabcd" gives "0031_0061_0062_0063_0020_abcd"
+	 * @param s String to convert to hex equivalent
+	 * @return hex represenation of string, 4 hex digit chars per char.
+	 */
+	public static String displayHexString ( String s )
+	{
+		StringBuilder sb = new StringBuilder( s.length() * 5 - 1 );
+		for ( int i=0; i<s.length(); i++ )
+		{
+			char c = s.charAt(i);
+			if ( i != 0 )
+			{
+				sb.append( '_' );
+			}
+			// encode 16 bits as four nibbles
+
+			sb.append( hexChar [ c >>> 12 & 0xf ] );
+			sb.append( hexChar [ c >>> 8 & 0xf ] );
+			sb.append( hexChar [ c >>> 4 & 0xf ] );
+			sb.append( hexChar [ c & 0xf ] );
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * table to convert a nibble to a hex char.
+	 */
+	static final char[] hexChar = {
+		'0' , '1' , '2' , '3' ,
+		'4' , '5' , '6' , '7' ,
+		'8' , '9' , 'a' , 'b' ,
+		'c' , 'd' , 'e' , 'f'};
+
+	/**
+	 * 
+	 * Exception handler
+	 * 
+	 */
+	class myException extends Exception {
+
+		private static final long serialVersionUID = 1L;
+
+		public myException(String msg){
+			super(msg);
+		}
 	}
 }
 
