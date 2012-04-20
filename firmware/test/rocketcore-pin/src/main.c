@@ -51,6 +51,10 @@ void delay()
 int main(void)
 {
 	clock_init();
+
+	pin_reserve(PIN_1_1);
+	pin_reserve(PIN_1_2);
+
 	serial_init(9600);
 
 	cio_print("** ROCKETuC - librocketcore PIN test **\n\r");

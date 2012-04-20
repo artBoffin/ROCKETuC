@@ -129,6 +129,14 @@
 #define PIN_STAT_ERR_INVALPIN		-3
 
 /**
+ * Mark the given PIN as reserved. A reserved PIN is dedicated to 
+ * internal use only, and thus is not usable from outside. 
+ *
+ * @param[in]	pin		PIN to reserve 
+ */
+void pin_reserve(unsigned char pin);
+
+/**
  * Get the capabilites for a PIN as defined with the PIN_CAP_x constants.
  *
  * @param[in]	pin		PIN for which to get capablities

@@ -19,29 +19,17 @@
  * 02111-1307 USA.  
  */
 
-#include <msp430.h>
+#ifndef __CONFIG_H_
+#define __CONFIG_H_
 
-#include "rocketcore.h"
+/**
+ * Size of RX/TX ringbuffers used for serial communication
+ */
+#define RB_SIZE		64	
 
-void clock_init(void)
-{
-	WDTCTL = WDTPW + WDTHOLD;
-    BCSCTL1 = CALBC1_1MHZ;
-    DCOCTL  = CALDCO_1MHZ;
-}
+/**
+ * Baudrate used for serial communication
+ */
+#define BAUDRATE	9600
 
-int main(void)
-{
-	clock_init();
-
-	pin_reserve(PIN_1_1);
-	pin_reserve(PIN_1_2);
-
-	packet_handler_init();
-
-	while (1) {
-		packet_do_handle();
-	}
-
-	return 0;
-}
+#endif
