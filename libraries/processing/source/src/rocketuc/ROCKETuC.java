@@ -395,7 +395,7 @@ public class ROCKETuC {
 
 		char crc = 0;
 
-		for(int i = 1; i < packetIn.length; i++) {
+		for(int i = 0; i < packetIn.length; i++) {
 			crc += packetIn[i];
 		} 
 

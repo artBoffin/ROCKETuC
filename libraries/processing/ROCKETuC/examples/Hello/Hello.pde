@@ -8,6 +8,7 @@ void setup() {
   launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600);
   launchpad.pinMode(ROCKETuC.P10, ROCKETuC.OUTPUT);
   launchpad.pinMode(ROCKETuC.P13, ROCKETuC.INPUT);
+   launchpad.digitalWrite(ROCKETuC.P13, ROCKETuC.HIGH);
 }
 
 void draw() {
