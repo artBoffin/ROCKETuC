@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,13 +26,17 @@
 #include "serial_rb.h"
 #include "core_proto.h"
 #include "packet_handler.h"
+#include "config.h"
 
-#define RB_SIZE		64 
-#define BAUDRATE	9600
-
+/**
+ * Serial ringbuffer to receive packet data
+ */
 SERIAL_RB_Q srx_buf[RB_SIZE];
 serial_rb srx;
 
+/**
+ * Serial ringbuffer to send packet data
+ */
 SERIAL_RB_Q stx_buf[RB_SIZE];
 serial_rb stx;
 

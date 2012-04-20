@@ -1,14 +1,12 @@
 BINARY	 = firmware
-OBJS	+= main.o core_proto.o serial_transport_msp430.o core_handlers.o packet_handler.o
+OBJS	+= main.o serial_transport_msp430.o 
 INCDIR  += -I../../libserial/src/include 
-INCDIR  += -I../../libconio/src/include 
 INCDIR  += -I../../libpacket/src/include 
 INCDIR  += -I../../librocketcore/src/include
 LIBDIR  += -L../../libserial/lib 
-LIBDIR  += -L../../libconio/lib 
 LIBDIR  += -L../../libpacket/lib 
 LIBDIR  += -L../../librocketcore/lib
-LIBS	+= -lserial -lconio -lpacket -lrocketcore 
+LIBS	+= -lserial -lrocketcore -lpacket
 
 include ../../common.mk
 

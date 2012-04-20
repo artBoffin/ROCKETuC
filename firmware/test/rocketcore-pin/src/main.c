@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,10 @@ void delay()
 int main(void)
 {
 	clock_init();
+
+	pin_reserve(PIN_1_1);
+	pin_reserve(PIN_1_2);
+
 	serial_init(9600);
 
 	cio_print("** ROCKETuC - librocketcore PIN test **\n\r");

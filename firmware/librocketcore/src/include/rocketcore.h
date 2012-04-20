@@ -23,5 +23,8 @@
 #define __PROCESSING_H_
 
 #include "pin.h"
+#include "core_proto.h"
+#include "core_handlers.h"
+#include "packet_handler.h"
 
 #endif

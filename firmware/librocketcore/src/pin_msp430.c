@@ -24,8 +24,8 @@
 
 unsigned char pin_curr_func[] = {
 	PIN_FUNCTION_INPUT_FLOAT,    		// P1.0
-	0,									// P1.1 - reserved/internal
-	0,									// P1.2 - reserved/internal
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.1 
+	PIN_FUNCTION_INPUT_FLOAT,			// P1.2 
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.3
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.4
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.5
@@ -76,6 +76,11 @@ void pin_set_curr_func(unsigned char pin, unsigned char func)
 	}
 
 	pin_curr_func[idx] = func;
+}
+
+void pin_reserve(unsigned char pin) 
+{
+	pin_set_curr_func(pin, 0);	
 }
 
 unsigned char pin_function(unsigned char pin) 

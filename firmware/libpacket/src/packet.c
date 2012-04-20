@@ -26,6 +26,7 @@ unsigned char packet_calc_crc(packet *pkt) {
 	unsigned char i;
 	unsigned char crc = 0;
 
+	crc += pkt->start;
 	crc += pkt->length;
 	crc += pkt->type;
 
