@@ -24,13 +24,30 @@
 
 #include "packet.h"
 
+/**
+ * Start byte indicating IN-bound packets
+ */
 #define PACKET_INBOUND_START	0x24
-#define PACKET_OUTBOUND_START	0x43
 
+/**
+ * Start byte indicating OUT-bound packets
+ */
+#define PACKET_OUTBOUND_START	0x2B
+
+/**
+ * List of IN-bound packet receive handlers
+ */
 extern packet_rcv_handlers packet_handlers;
 
+/**
+ * Initialize packet handler
+ */
 void packet_handler_init();
 
-int packet_do_handle();
+/**
+ * Do packet handling (by reading it from the underlaying input stream
+ * and sending it to the packet handler assigned).
+ */
+void packet_do_handle();
 
 #endif

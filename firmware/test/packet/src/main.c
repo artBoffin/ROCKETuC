@@ -129,7 +129,7 @@ int main(void)
 	cio_print("** ROCKETuC - libpacket test **\n\r");
 
 	// assemble and dummy-send NULL packet 
-	outp.start 		= 0x43;
+	outp.start 		= 0x2B;
 	outp.length 	= 0x04;
 	outp.type 		= 0x00;
 	outp.crc		= packet_calc_crc(&outp);
@@ -139,7 +139,7 @@ int main(void)
 	if(outp.crc == 0x04) cio_print("OK\n\r"); else cio_print("FAIL CRC\n\r");
 	
 	// assemble and dummy-send ACK packet 
-	outp.start 		= 0x43;
+	outp.start 		= 0x2B;
 	outp.length 	= 0x05;
 	outp.type 		= 0x01;
 	outp.data[0]	= 0x01;
