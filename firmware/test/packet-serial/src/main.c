@@ -184,7 +184,7 @@ int main(void)
 	serirq_init();
 
 	inp.start   = 0x24;
-	outp.start	= 0x43;
+	outp.start	= 0x2B;
 
 	while (1) {
 		// process packages endless ...

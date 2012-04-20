@@ -73,8 +73,8 @@ void clock_init(void)
     c062:	30 41       	ret			
 
 0000c064 <send_status_packet>:
-
-packet outp;
+ * IN-bound packet instance.
+ */
 packet inp;
 
 void send_status_packet(unsigned char stat)
@@ -84,7 +84,7 @@ void send_status_packet(unsigned char stat)
 
 	outp.start	= PACKET_OUTBOUND_START;
     c066:	3b 40 56 02 	mov	#598,	r11	;#0x0256
-    c06a:	fb 40 43 00 	mov.b	#67,	0(r11)	;#0x0043, 0x0000(r11)
+    c06a:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
     c06e:	00 00 
 	outp.length	= 5;
     c070:	fb 40 05 00 	mov.b	#5,	1(r11)	;#0x0005, 0x0001(r11)
@@ -294,7 +294,7 @@ int handle_packet_system_info(unsigned char length, unsigned char *data)
 
 	outp.start	= PACKET_OUTBOUND_START;
     c178:	3b 40 56 02 	mov	#598,	r11	;#0x0256
-    c17c:	fb 40 43 00 	mov.b	#67,	0(r11)	;#0x0043, 0x0000(r11)
+    c17c:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
     c180:	00 00 
 	outp.length	= 7;
     c182:	fb 40 07 00 	mov.b	#7,	1(r11)	;#0x0007, 0x0001(r11)
@@ -466,7 +466,7 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 				packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
 
 				outp.start	= PACKET_OUTBOUND_START;
-    c250:	f2 40 43 00 	mov.b	#67,	&0x0256	;#0x0043
+    c250:	f2 40 2b 00 	mov.b	#43,	&0x0256	;#0x002b
     c254:	56 02 
 				outp.length	= 6;
     c256:	f2 40 06 00 	mov.b	#6,	&0x0257	;#0x0006
@@ -499,7 +499,7 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 				packet_data_out_analog_pin_read *pdo = (packet_data_out_analog_pin_read *)&outp.data[0];
 
 				outp.start	= PACKET_OUTBOUND_START;
-    c27e:	f2 40 43 00 	mov.b	#67,	&0x0256	;#0x0043
+    c27e:	f2 40 2b 00 	mov.b	#43,	&0x0256	;#0x002b
     c282:	56 02 
 				outp.length	= 7;
     c284:	f2 40 07 00 	mov.b	#7,	&0x0257	;#0x0007
@@ -644,18 +644,17 @@ int handle_packet_reset(unsigned char length, unsigned char *data)
     c30e:	30 41       	ret			
 
 0000c310 <packet_do_handle>:
-int packet_do_handle()
-{
-	int s;
+	}
+};
 
-	// process packages endless ...
-	if((s = packet_receive(&inp, PACKET_INBOUND_START)) == PACKET_STAT_OK) {
+void packet_do_handle()
+{
+	if(packet_receive(&inp, PACKET_INBOUND_START) == PACKET_STAT_OK) {
     c310:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
     c314:	3f 40 42 02 	mov	#578,	r15	;#0x0242
     c318:	b0 12 d8 c4 	call	#0xc4d8	
     c31c:	0f 93       	tst	r15		
     c31e:	0e 20       	jnz	$+30     	;abs 0xc33c
-//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
 		if(packet_process_received(&packet_handlers, &inp) == PACKET_STAT_ERR_UNKPACK) {
     c320:	3e 40 42 02 	mov	#578,	r14	;#0x0242
     c324:	3f 40 00 02 	mov	#512,	r15	;#0x0200
@@ -669,12 +668,9 @@ int packet_do_handle()
 		}
 	}
 	else {
-//		cio_printf("\n\rStatus=%x, Received start=%x, length=%x, type=%x, crc=%x\n\r", s, inp.start, inp.length, inp.type, inp.crc);
 		send_status_packet(PACKET_RETURN_BAD_PACKET);
     c33c:	6f 43       	mov.b	#2,	r15	;r3 As==10
     c33e:	b0 12 64 c0 	call	#0xc064	
-	}
-}
     c342:	30 41       	ret			
 
 0000c344 <serial_rb_free>:

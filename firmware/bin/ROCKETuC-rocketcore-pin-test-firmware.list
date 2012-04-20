@@ -541,7 +541,7 @@ int main(void)
     c440:	30 40 52 d1 	br	#0xd152	
 
 0000c444 <clock_init>:
-
+#include "conio.h"
 #include "pin.h"
 
 void clock_init(void)

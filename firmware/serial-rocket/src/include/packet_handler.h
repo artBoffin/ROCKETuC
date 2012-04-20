@@ -32,7 +32,7 @@
 /**
  * Start byte indicating OUT-bound packets
  */
-#define PACKET_OUTBOUND_START	0x43
+#define PACKET_OUTBOUND_START	0x2B
 
 /**
  * List of IN-bound packet receive handlers
