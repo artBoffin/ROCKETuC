@@ -151,7 +151,12 @@ public class ROCKETuC {
 	/**
 	 * Constant to set a pin to input mode float(in a call to pinMode()).
 	 */
-	public final static char INPUT = CMD_PIN_IN_PULL_UP;
+	public final static char INPUT = CMD_PIN_IN_FLOAT;
+	/**
+	 * Constant to set a pin to input mode analog(in a call to pinMode()).
+	 */
+	public final static char ANALOG = CMD_PIN_ANAG_READ;
+	
 	/**
 	 * Constant of pin name P1.0
 	 */
@@ -363,12 +368,35 @@ public class ROCKETuC {
 		public char digitalRead(char pin) {
 		char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_CTRL, pin, CMD_PIN_DIGI_READ};
 		try {
-			return serialSendPacket(packet)[0];
+			char data = serialSendPacket(packet)[1];
+			//System.out.println(data);
+			return data;
 		} catch (myException e) {
 			System.err.println("ROCKETuC > ERR: No ACK on digitalRead, check connection");
 		}	
 		return 2; //should never get here
 	}
+		
+		/**
+		 * Read from analog pin (the pin must have been put into input mode with
+		 * pinMode()).
+		 *
+		 * @param pin the pin to read from 
+		 * @return value of pin
+		 */
+			public int analogRead(char pin) {
+			char packet[] = {POUT_START, POUT_PIN_FUNC_LEN, POUT_PIN_CTRL, pin, CMD_PIN_ANAG_READ};
+			try {
+				char lsb = serialSendPacket(packet)[1];
+				char msb = serialSendPacket(packet)[2];
+				int value =  msb << 8 | lsb;
+				//System.out.println(data);
+				return value;
+			} catch (myException e) {
+				System.err.println("ROCKETuC > ERR: No ACK on analogRead, check connection");
+			}	
+			return -1; //should never get here
+		}
 	 
 	/*private void processInput() {
 		byte[] inputData = serial.readBytes();
@@ -469,6 +497,7 @@ public class ROCKETuC {
 			System.out.println((int)inChars[1]);
 			System.out.println((int)inChars[2]);
 			System.out.println((int)inChars[3]);
+			System.out.println((int)inChars[4]);
 			char dataLength = (char) (inChars[1] - 4); //calculate length of data segment
 			char dataOut[] = new char[dataLength];
 			//TODO: verify packet is good with CRC and return type
