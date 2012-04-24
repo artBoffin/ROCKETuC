@@ -103,7 +103,7 @@ int main(void)
 	
 	dump_regs("p1.0+p1.6+p2.5 output");
 
-	// set P1.0 + P1.6i + P2.5 to HIGH
+	// set P1.0 + P1.6 + P2.5 to HIGH
 	pin_set(PIN_1_0);
 	pin_set(PIN_1_6);
 	pin_set(PIN_2_5);
@@ -199,6 +199,22 @@ int main(void)
 	int adcin2 = 0; 
 	cio_printf("Analog read p1.5: %x\n\r", adcin1);
 
+	// set P2.2 to PWM with period of 20ms and duty cycle of 7.5%
+	cio_printf("setup 2.2 for PWM: %x\n\r", pin_setup(PIN_2_2, PIN_FUNCTION_PWM));
+	dump_regs("p2.2 PWM");
+
+	// period 
+	pin_pwm_function(PIN_2_2, 20000);
+	
+	// adjust PWM duty cycle based on ADC reading
+	// max. ADC value is 1024. Servo needs to be btw. 5 and 10% duty cycle
+	// thus, 1024 = 5%, 205 = 1%, delta % = adcin1 / 205
+	// duty cycle 255 = 100%, 2.5 = 1%
+	// thus target duty cycle = 5% + delta % * 2.5
+	unsigned char dc = 5 + (unsigned char)((adcin1 / 205) * 2.5);
+
+	pin_pwm_control(PIN_2_2, dc);
+
 	while (1) {
 		delay();
 
@@ -220,6 +236,8 @@ int main(void)
 		if(adcin2 - adcin1 > 5 || adcin1 - adcin2 > 5) {
 			adcin1 = adcin2;
 			cio_printf("Analog read at p1.5: %x (%i)\n\r", adcin2, adcin2);
+			dc = 5 + (unsigned char)((adcin1 / 205) * 2.5);
+			pin_pwm_control(PIN_2_2, dc);
 		}
 	}
 

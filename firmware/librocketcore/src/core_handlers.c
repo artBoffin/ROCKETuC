@@ -180,18 +180,48 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 
 int handle_packet_pwm_function(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
+	int s;
 
-	return PACKET_STAT_OK;
+	// check if length matches for packet-data
+	if(length != 3) {
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+		return PACKET_STAT_ERR_DATA;
+	}
+
+	packet_data_in_pwm_function *pd = (packet_data_in_pwm_function *)&data[0];
+
+	int p = (0x00FF & pd->period_lsb) | (0xFF00 & (pd->period_msb << 8));
+
+	if((s = pin_pwm_function(pd->pin, p)) != PACKET_STAT_OK) {
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+	}
+
+	return s;
 }
 
 int handle_packet_pwm_control(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
+	int s;
 
-	return PACKET_STAT_OK;
+	// check if length matches for packet-data
+	if(length != 2) {
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+		return PACKET_STAT_ERR_DATA;
+	}
+
+	packet_data_in_pwm_control *pd = (packet_data_in_pwm_control *)&data[0];
+
+	if((s = pin_pwm_control(pd->pin, pd->duty_cycle)) != PACKET_STAT_OK) {
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+	}
+
+	return s;
 }
 
 int handle_packet_serial_function(unsigned char length, unsigned char *data)

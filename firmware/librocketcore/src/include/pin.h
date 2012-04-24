@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -256,5 +256,9 @@ int pin_analog_read(unsigned char pin);
  * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
  */
 int pin_pulselength_read(unsigned char pin);
+
+int pin_pwm_function(unsigned char pin, int period);
+
+int pin_pwm_control(unsigned char pin, unsigned char duty_cycle);
 
 #endif
