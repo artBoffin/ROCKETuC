@@ -117,43 +117,23 @@ int pin_capabilities(unsigned char pin)
 	int caps = 0;
 
 	// PIN_CAP_INPUT
-	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
-		pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
-	
-		caps |= PIN_CAP_INPUT;
-	} 
-
-	// PIN_CAP_INPUT_RE
-	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 || 
-		pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
-	
-		caps |= PIN_CAP_INPUT_RE;
-	} 
-
 	// PIN_CAP_OUTPUT
 	// PIN_CAP_UARTRX
 	// PIN_CAP_UARTTX
 	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
-		pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
+		pin == PIN_2_1 || pin == PIN_2_2 || pin == PIN_2_3 || 
+		pin == PIN_2_4 || pin == PIN_2_5 || pin == PIN_2_6 || 
+		pin == PIN_2_7) {
 	
-		caps |= PIN_CAP_OUTPUT + PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+		caps |= PIN_CAP_INPUT + PIN_CAP_INPUT_RE + PIN_CAP_OUTPUT + 
+				PIN_CAP_UARTTX + PIN_CAP_UARTRX;
 	} 
 
 	// PIN_CAP_PWM
-	if( pin == PIN_1_2 || pin == PIN_1_6 ||
-		pin == PIN_2_1 || pin == PIN_2_2) {
+	if( pin == PIN_1_2 || pin == PIN_1_6 || pin == PIN_2_1 || 
+		pin == PIN_2_2) {
 	
 		caps |= PIN_CAP_PWM;
 	} 
@@ -281,12 +261,20 @@ int pin_setup(unsigned char pin, unsigned char function)
 		}
 
 		if(port == 1) {
+			// only one pin on port 1 is able to perform PWM
+			if(pin_with_function(PIN_1_0, function) < PIN_2_0) { 
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
 			P1DIR |=  bit;					// set direction to out                 
   			P1OUT &= ~bit;					// set to LOW initially                     
 			P1REN &= ~bit; 	                // disable pull-up/down 
   			P1SEL |=  bit;                  // select TA option
 		}
 		else if(port == 2) {
+			// only one pin on port 2 is able to perform PWM
+			if(pin_with_function(PIN_2_0, function)) { 
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
 			P2DIR |=  bit;					// set direction to out                 
   			P2OUT &= ~bit;					// set to LOW initially                     
 			P2REN &= ~bit; 	                // disable pull-up/down 
@@ -295,14 +283,14 @@ int pin_setup(unsigned char pin, unsigned char function)
 		break;
 	case PIN_FUNCTION_UARTRX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
-			pin_with_function(0, function)) { 
+			pin_with_function(PIN_1_0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-			pin_with_function(0, function)) { 
+			pin_with_function(PIN_1_0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO
