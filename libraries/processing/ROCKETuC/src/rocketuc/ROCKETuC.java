@@ -368,7 +368,7 @@ public class ROCKETuC {
 			System.err.println("ROCKETuC > ERR: No ACK on pwmSetup, check connection");
 		}
 	}
-	
+
 	/**
 	 * Setup PWM duty cycle
 	 * Also sets pull-ups if present
@@ -468,7 +468,7 @@ public class ROCKETuC {
 	 * 
 	 */
 
-	private char packetCrcCalc(char[] packetIn) {
+	private char packetCrcCalcOut(char[] packetIn) {
 
 		char crc = 0;
 
@@ -478,10 +478,25 @@ public class ROCKETuC {
 
 		return crc;
 	}	
+	
+	private boolean packetCrcCheckIn(char[] packetIn) {
+
+		char crc = 0;
+		//don't calc last byte (contains
+		for(int i = 0; i < packetIn.length-1; i++) {
+			crc += packetIn[i];
+		} 
+		if(packetIn[packetIn.length-1] == crc){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}	
 
 	private char[] serialSendPacket(char[] packetIn) throws myException
 	{
-		char crc = packetCrcCalc(packetIn);//calculate crc
+		char crc = packetCrcCalcOut(packetIn);//calculate crc
 		int tries = 0;
 		char[] packetOut = new char[packetIn.length+1]; //packet to modify for crc add
 
@@ -490,14 +505,6 @@ public class ROCKETuC {
 			packetOut[i] = packetIn[i]; //copy packet in over
 		}
 		packetOut[packetIn.length] = crc; //slip in crc
-
-		/*System.out.println("Packet out (DEC)");
-		System.out.println((int)packetOut[0]);
-		System.out.println((int)packetOut[1]);
-		System.out.println((int)packetOut[2]);
-		System.out.println((int)packetOut[3]);
-		System.out.println((int)packetOut[4]);*/
-
 		String out = new String(packetOut); //convert char array to string
 		//System.out.print(out);
 		serial.write(out);
@@ -541,22 +548,23 @@ public class ROCKETuC {
 			serial.clear();
 
 			char inChars[] = inBuffer.toCharArray();
-
-			if(inBuffer.length() > 4 && inBuffer.length() == inChars[1]){
-				/*System.out.println("Packet in (DEC)");
-			System.out.println((int)inChars[0]);
-			System.out.println((int)inChars[1]);
-			System.out.println((int)inChars[2]);
-			System.out.println((int)inChars[3]);
-			System.out.println((int)inChars[4]);*/
-				char dataLength = (char) (inChars[1] - 4); //calculate length of data segment
-				char dataOut[] = new char[dataLength];
-				//TODO: verify packet is good with CRC and return type
-				for(char i = 3; i < dataLength + 3; i++){ //copy out the data portion of the packet
-					dataOut[i-3] = inChars[i];
-					//System.out.println((int)inChars[i]);
+			//length check
+			if(inChars.length > 4 && inChars.length == inChars[1]){
+				//CRC
+				if(packetCrcCheckIn(inChars)){	
+					char dataLength = (char) (inChars[1] - 4); //calculate length of data segment
+					char dataOut[] = new char[dataLength];
+					//TODO: verify packet is good with return type
+					//copy out the data portion of the packet
+					for(char i = 3; i < dataLength + 3; i++){ 
+						dataOut[i-3] = inChars[i];
+					}
+					return dataOut;
 				}
-				return dataOut;
+				else{
+					System.err.println("ROCKETuC > WARNING: Packet CRC error");
+					return null;
+				}
 			}
 			else{
 				System.err.println("ROCKETuC > WARNING: Packet length mismatch");
