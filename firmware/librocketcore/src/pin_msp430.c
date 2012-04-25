@@ -117,8 +117,8 @@ int pin_capabilities(unsigned char pin)
 	int caps = 0;
 
 	// PIN_CAP_INPUT
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_1 || pin == PIN_1_2 ||
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 ||
 		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
 	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
         pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
@@ -128,8 +128,8 @@ int pin_capabilities(unsigned char pin)
 	} 
 
 	// PIN_CAP_INPUT_RE
-	if( pin == PIN_1_0 || pin == PIN_1_4 ||
-		pin == PIN_1_1 || pin == PIN_1_2 ||
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 || 
+		pin == PIN_1_3 || pin == PIN_1_4 ||
 		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
 	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
         pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
@@ -141,8 +141,8 @@ int pin_capabilities(unsigned char pin)
 	// PIN_CAP_OUTPUT
 	// PIN_CAP_UARTRX
 	// PIN_CAP_UARTTX
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_1 || pin == PIN_1_2 ||
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 ||
 		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
 	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
         pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
