@@ -42,10 +42,20 @@ void dump_regs(const char *msg)
 
 void delay() 
 {
-	volatile unsigned long i = 15000;
+	volatile unsigned long i = 10000;
 
 	do (i--);
 	while (i != 0);
+}
+
+unsigned char adc2dc(int adc) 
+{
+	// adjust PWM duty cycle based on ADC reading
+	// max. ADC value is 1024. Servo needs to be btw. 2.5 and 12.5% duty cycle
+	// thus, 1024 = 10%, 1024 / 10 = 1%, delta % = adcin1 / (1024 / 10) 
+	// duty cycle 255 = 100%, 2.5 = 1%
+	// thus target duty cycle = 2.5% + delta % * 2.5
+	return (2.5 * 2.5) + (unsigned char)((adc / (1024 / 10)) * 2.5);
 }
 
 int main(void)
@@ -89,10 +99,10 @@ int main(void)
 	}
 	
 	// onyl one PIN at a time is allowed to be soft UART RX/TX
-	cio_printf("Set UARTTX p1.4: %x\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTTX));
-	cio_printf("Set UARTTX p1.5: %x\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTTX));
-	cio_printf("Set UARTRX p1.4: %x\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTRX));
-	cio_printf("Set UARTRX p1.5: %x\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTRX));
+	cio_printf("Set UARTTX p1.4: %i\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTTX));
+	cio_printf("Set UARTTX p1.5: %i\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTTX));
+	cio_printf("Set UARTRX p1.4: %i\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTRX));
+	cio_printf("Set UARTRX p1.5: %i\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTRX));
 
 
 	// set P1.0 + P1.6 + P2.5 to output (the build in LEDs)
@@ -151,7 +161,6 @@ int main(void)
 	cio_printf("P1.6 is %x\n\r", pin_digital_read(PIN_1_6));	
 	cio_printf("P2.5 is %x\n\r", pin_digital_read(PIN_2_5));	
 
-
 	// set P1.3 to input float
 	pin_setup(PIN_1_3, PIN_FUNCTION_INPUT_FLOAT);
 
@@ -192,7 +201,7 @@ int main(void)
 	// set P1.5 to analog in
 	int i = 0;
 
-	cio_printf("setup 1.5 for analog in: %x\n\r", pin_setup(PIN_1_5, PIN_FUNCTION_ANALOG_IN));
+	cio_printf("setup 1.5 for analog in: %i\n\r", pin_setup(PIN_1_5, PIN_FUNCTION_ANALOG_IN));
 	dump_regs("p1.5 analog in");
 	
 	int adcin1 = pin_analog_read(PIN_1_5); 
@@ -200,20 +209,15 @@ int main(void)
 	cio_printf("Analog read p1.5: %x\n\r", adcin1);
 
 	// set P2.2 to PWM with period of 20ms and duty cycle of 7.5%
-	cio_printf("setup 2.2 for PWM: %x\n\r", pin_setup(PIN_2_2, PIN_FUNCTION_PWM));
+	cio_printf("setup 2.2 for PWM: %i\n\r", pin_setup(PIN_2_2, PIN_FUNCTION_PWM));
 	dump_regs("p2.2 PWM");
+
+	// only one of the two possible pins on port two are allowed to be set to PWM
+	cio_printf("setup 2.1 for PWM: %i\n\r", pin_setup(PIN_2_1, PIN_FUNCTION_PWM));
 
 	// period 
 	pin_pwm_function(PIN_2_2, 20000);
-	
-	// adjust PWM duty cycle based on ADC reading
-	// max. ADC value is 1024. Servo needs to be btw. 5 and 10% duty cycle
-	// thus, 1024 = 5%, 205 = 1%, delta % = adcin1 / 205
-	// duty cycle 255 = 100%, 2.5 = 1%
-	// thus target duty cycle = 5% + delta % * 2.5
-	unsigned char dc = 5 + (unsigned char)((adcin1 / 205) * 2.5);
-
-	pin_pwm_control(PIN_2_2, dc);
+	pin_pwm_control(PIN_2_2, adc2dc(adcin1));
 
 	while (1) {
 		delay();
@@ -236,8 +240,7 @@ int main(void)
 		if(adcin2 - adcin1 > 5 || adcin1 - adcin2 > 5) {
 			adcin1 = adcin2;
 			cio_printf("Analog read at p1.5: %x (%i)\n\r", adcin2, adcin2);
-			dc = 5 + (unsigned char)((adcin1 / 205) * 2.5);
-			pin_pwm_control(PIN_2_2, dc);
+			pin_pwm_control(PIN_2_2, adc2dc(adcin1));
 		}
 	}
 

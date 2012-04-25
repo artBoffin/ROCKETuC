@@ -22,6 +22,12 @@
 #include <msp430.h>
 #include "pin.h"
 
+// #define PIN_DBG	
+
+#ifdef  PIN_DBG
+#include "conio.h"
+#endif
+
 unsigned char pin_curr_func[] = {
 	PIN_FUNCTION_INPUT_FLOAT,    		// P1.0
 	PIN_FUNCTION_INPUT_FLOAT,			// P1.1 
@@ -80,7 +86,7 @@ void pin_set_curr_func(unsigned char pin, unsigned char func)
 
 void pin_reserve(unsigned char pin) 
 {
-	pin_set_curr_func(pin, 0);	
+	pin_set_curr_func(pin, PIN_FUNCTION_RESERVED);	
 }
 
 unsigned char pin_function(unsigned char pin) 
@@ -89,8 +95,8 @@ unsigned char pin_function(unsigned char pin)
 	int bit_num = (0x0F & pin);
 	int idx  	= (port - 1) * 8 + bit_num;
 
-	if((unsigned int)idx > sizeof(pin_curr_func)) {
-		return 0;
+	if((unsigned int)idx >= 16) {
+		return PIN_FUNCTION_UNKNOWN;
 	}
 
 	return pin_curr_func[idx];
@@ -166,12 +172,16 @@ int pin_setup(unsigned char pin, unsigned char function)
 
 	f = pin_function(pin); 
 	
+#ifdef PIN_DBG
+	cio_printf("pin %x has current function %x\n\r", pin, f);
+#endif
+
 	// see if PIN is already configured for the given function
 	if(f == function) { 
 		return PIN_STAT_OK;
 	}
 	// PIN is reserved
-	else if(f == 0) {
+	else if(f == PIN_FUNCTION_RESERVED) {
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
