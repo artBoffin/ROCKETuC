@@ -1,7 +1,7 @@
 /* 
  * This file is part of the ROCKETuC firmware project
  *
- * Copyright (C) 2011 Stefan Wendler <sw@kaltpost.de>
+ * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
  * The ROCKETuC firmware is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -117,41 +117,31 @@ int pin_capabilities(unsigned char pin)
 	int caps = 0;
 
 	// PIN_CAP_INPUT
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
-	
-		caps |= PIN_CAP_INPUT;
-	} 
-
-	// PIN_CAP_INPUT_RE
-	if( pin == PIN_1_0 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
-	
-		caps |= PIN_CAP_INPUT_RE;
-	} 
-
 	// PIN_CAP_OUTPUT
-	// PIN_CAP_PWM
 	// PIN_CAP_UARTRX
 	// PIN_CAP_UARTTX
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
+		pin == PIN_2_1 || pin == PIN_2_2 || pin == PIN_2_3 || 
+		pin == PIN_2_4 || pin == PIN_2_5 || pin == PIN_2_6 || 
+		pin == PIN_2_7) {
 	
-		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+		caps |= PIN_CAP_INPUT + PIN_CAP_INPUT_RE + PIN_CAP_OUTPUT + 
+				PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+	} 
+
+	// PIN_CAP_PWM
+	if( pin == PIN_1_2 || pin == PIN_1_6 || pin == PIN_2_1 || 
+		pin == PIN_2_2) {
+	
+		caps |= PIN_CAP_PWM;
 	} 
 
 	// PIN_CAP_ANALOG_IN
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7) {
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7) {
 	
 		caps |= PIN_CAP_ANALOG_IN;
 	} 
@@ -172,9 +162,17 @@ int pin_setup(unsigned char pin, unsigned char function)
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
 
+	unsigned char f;
+
+	f = pin_function(pin); 
+	
 	// see if PIN is already configured for the given function
-	if(pin_function(pin) == function) { 
+	if(f == function) { 
 		return PIN_STAT_OK;
+	}
+	// PIN is reserved
+	else if(f == 0) {
+		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
 	switch(function) {
@@ -185,10 +183,12 @@ int pin_setup(unsigned char pin, unsigned char function)
 		if(port == 1) {
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
 			P1REN &= ~bit; 	                // disable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
 			P2REN &= ~bit; 	                // disable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLUP:
@@ -199,11 +199,13 @@ int pin_setup(unsigned char pin, unsigned char function)
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P1OUT |=  bit;					// setting out to HIGH enables pull-up                     
 			P1REN |=  bit; 	                // enable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P2OUT |=  bit;					// setting out to HIGH enables pull-up                     
 			P2REN |=  bit; 	                // enable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLDOWN:
@@ -214,11 +216,13 @@ int pin_setup(unsigned char pin, unsigned char function)
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P1OUT &= ~bit;					// setting out to LOW enables pull-down                     
 			P1REN |=  bit; 	                // enable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
   			P2OUT &= ~bit;					// setting out to LOW enables pull-down                     
 			P2REN |=  bit; 	                // enable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_OUTPUT:
@@ -229,19 +233,23 @@ int pin_setup(unsigned char pin, unsigned char function)
 			P1DIR |=  bit;					// set direction to out                 
   			P1OUT &= ~bit;					// set to LOW initially                     
 			P1REN &= ~bit; 	                // disable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
 			P2DIR |=  bit;					// set direction to out                 
   			P2OUT &= ~bit;					// set to LOW initially                     
 			P2REN &= ~bit; 	                // disable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_ANALOG_IN:
 		if(!pin_has_capabilities(pin, PIN_CAP_ANALOG_IN)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		P1DIR    &= ~bit;					// make sure to clear OUT flag for the pin                 
+
+		P1DIR &= ~bit;						// make sure to clear OUT flag for the pin                 
 		P1REN &= ~bit; 	                	// disable pull-up/down 
+  		P1SEL &= ~bit;                  	// remove option
 
 		// VCC as +VRef, VSS as -VRef, 16 x ADC10CLKs
    		ADC10CTL0 = SREF_0 + ADC10SHT_2 + REFON + ADC10ON;
@@ -251,18 +259,38 @@ int pin_setup(unsigned char pin, unsigned char function)
 		if(!pin_has_capabilities(pin, PIN_CAP_PWM)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		// TODO
+
+		if(port == 1) {
+			// only one pin on port 1 is able to perform PWM
+			if(pin_with_function(PIN_1_0, function) < PIN_2_0) { 
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
+			P1DIR |=  bit;					// set direction to out                 
+  			P1OUT &= ~bit;					// set to LOW initially                     
+			P1REN &= ~bit; 	                // disable pull-up/down 
+  			P1SEL |=  bit;                  // select TA option
+		}
+		else if(port == 2) {
+			// only one pin on port 2 is able to perform PWM
+			if(pin_with_function(PIN_2_0, function)) { 
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
+			P2DIR |=  bit;					// set direction to out                 
+  			P2OUT &= ~bit;					// set to LOW initially                     
+			P2REN &= ~bit; 	                // disable pull-up/down 
+  			P2SEL |=  bit;                  // select TA option
+		}
 		break;
 	case PIN_FUNCTION_UARTRX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
-			pin_with_function(0, function)) { 
+			pin_with_function(PIN_1_0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-			pin_with_function(0, function)) { 
+			pin_with_function(PIN_1_0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO
@@ -404,4 +432,58 @@ int pin_pulselength_read(unsigned char pin)
 
 	// TODO
 	return 0;
+}
+
+int pin_pwm_function(unsigned char pin, int period)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+
+	if(port == 1) {
+  		TA0CCR0  = period - 1;					// Set period 
+		TA0CCTL1 = OUTMOD_7;                    // CCR1 reset/set
+		TA0CTL   = TASSEL_2 + MC_1;             // SMCLK, up mode
+	}
+	else {
+  		TA1CCR0  = period - 1;					// Set period 
+		TA1CCTL1 = OUTMOD_7;                    // CCR1 reset/set
+		TA1CTL   = TASSEL_2 + MC_1;             // SMCLK, up mode
+	}
+
+	return PIN_STAT_OK;
+}
+
+int pin_pwm_control(unsigned char pin, unsigned char duty_cycle)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+
+	if(port == 1) {
+		// e.g. DC=50%: (20000 / 100) * (128 / 2.55) ~ 10000 
+		TA0CCR1 = (TA0CCR0 / 100) * (duty_cycle / 2.55); 
+	}
+	else {
+		// e.g. DC=50%: (20000 / 100) * (128 / 2.55) ~ 10000 
+		TA1CCR1 = (TA1CCR0 / 100) * (duty_cycle / 2.55); 
+	}
+
+	return PIN_STAT_OK;
 }
