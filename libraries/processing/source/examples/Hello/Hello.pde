@@ -2,25 +2,39 @@ import rocketuc.*;
 
 ROCKETuC launchpad;
 
+char led = ROCKETuC.P16;
+char button = ROCKETuC.P13;
+
 void setup() {
-  size(640, 480);
   println(ROCKETuC.list());
   launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600);
-  launchpad.pinMode(ROCKETuC.P20, ROCKETuC.OUTPUT);
-  launchpad.pinMode(ROCKETuC.P13, ROCKETuC.INPUT);
-  launchpad.pinMode(ROCKETuC.P15, ROCKETuC.ANALOG);
-  // launchpad.digitalWrite(ROCKETuC.P13, ROCKETuC.HIGH);
+  launchpad.pinMode(led, ROCKETuC.OUTPUT);
+  launchpad.pinMode(button, ROCKETuC.PULLUP);
+  launchpad.pinMode(ROCKETuC.P14, ROCKETuC.OUTPUT);
+  launchpad.digitalWrite(ROCKETuC.P14, ROCKETuC.HIGH);
 }
 
 void draw() {
- 
-  println(hex(launchpad.digitalRead(ROCKETuC.P13)));
 
-  launchpad.digitalWrite(ROCKETuC.P20, ROCKETuC.HIGH);
-  println(launchpad.analogRead(ROCKETuC.P15));
-  delay(500);
-  launchpad.digitalWrite(ROCKETuC.P20, ROCKETuC.LOW);
-  println(launchpad.analogRead(ROCKETuC.P15));
-  delay(500);
+  if (launchpad.digitalRead(button) == 0)
+  {
+    background(random(0,255),random(0,255),random(0,255));
+    fill(0, 255, 0);
+    ellipse (50, 50, 50, 50);
+  }
+  else
+  {
+    fill(255, 0, 0);
+    ellipse (50, 50, 50, 50);
+  }
+
+  if (mousePressed)
+  {
+    launchpad.digitalWrite(led, ROCKETuC.HIGH);
+  }
+  else
+  {
+    launchpad.digitalWrite(led, ROCKETuC.LOW);
+  }
 }
 
