@@ -26,9 +26,9 @@ Serial port;      // The serial port
 int tCount = 0;
 int tFail  = 0;
 
-byte[] rocketXfer(int data[]) {
+int[] rocketXfer(int data[]) {
   
-  byte pl[] = {};
+  int pl[] = {};
   
   for(int i = 0; i < data.length; i++) {
     port.write(data[i]);
@@ -45,24 +45,24 @@ byte[] rocketXfer(int data[]) {
     
     pl = new int[l];
     
-    pl[0] = s;
-    pl[1] = l;
+    pl[0] = (int)s;
+    pl[1] = (int)l;
     
     for(int i = 0; i < l - 3; i++) {
-      while((pl[i+2] = port.read()) == -1);
+      while((pl[i+2] = (int)port.read()) == -1);
     }   
     
     while((c = port.read()) == -1);
-    pl[l-1] = c;
+    pl[l-1] = (int)c;
   }
   else {
-    println("ERROR: unexpected start byte");
+    println("ERROR: unexpected start int");
   }
   
   return pl;
 }
 
-void printData(byte data[]) {
+void printData(int data[]) {
   
   print("data={");
   
@@ -73,7 +73,7 @@ void printData(byte data[]) {
   println("}");  
 }
 
-boolean dataEquals(byte[] d1, byte[] d2) {
+boolean dataEquals(int[] d1, int[] d2) {
   
   if(d1.length != d2.length) {
     return false;
@@ -88,7 +88,7 @@ boolean dataEquals(byte[] d1, byte[] d2) {
   return true;
 }
 
-void testPacket(String test, byte[] outp, byte[] refInp) {
+void testPacket(String test, int[] outp, int[] refInp) {
   
   tCount++;
   
@@ -97,7 +97,7 @@ void testPacket(String test, byte[] outp, byte[] refInp) {
   printData(outp);
   print(" <- ");
   
-  byte inp[] = rocketXfer(outp);
+  int inp[] = rocketXfer(outp);
   
   printData(inp);
   
@@ -117,47 +117,47 @@ void setup() {
   String portName = "/dev/ttyUSB0";
   port = new Serial(this, portName, 9600);
 
-  byte refAck[] = {0x2B, 0x05, 0x01, 0x01, 0x32};
+  int refAck[] = {0x2B, 0x05, 0x01, 0x01, 0x32};
   
   // NULL Packet
-  byte pNull[] = {0x24, 0x04, 0x00, 0x28};
+  int pNull[] = {0x24, 0x04, 0x00, 0x28};
   
   testPacket("NULL packet", pNull, refAck);
 
   // SYSTEM INFO Packet
-  byte pSys[] = {0x24, 0x04, 0x02, 0x2A};
-  byte refSys[] = {0x2B, 0x07, 0x02, 0xCA, 0xFF, 0xEE, 0xEB};
+  int pSys[] = {0x24, 0x04, 0x02, 0x2A};
+  int refSys[] = {0x2B, 0x07, 0x02, 0xCA, 0xFF, 0xEE, 0xEB};
   
   testPacket("SYSTEM INFO packet", pSys, refSys);
 
   // PIN FUNCTION digital p1.0 Packet
-  byte pPf1[] = {0x24, 0x06, 0x04, 0x10, 0x03, 0x41};
+  int pPf1[] = {0x24, 0x06, 0x04, 0x10, 0x03, 0x41};
   
   testPacket("PIN FUNCTION digital p1.0 packet", pPf1, refAck);
 
   // PIN CONTROL digital p1.0 HIGH Packet
-  byte pPc1[] = {0x24, 0x06, 0x05, 0x10, 0x01, 0x40};
+  int pPc1[] = {0x24, 0x06, 0x05, 0x10, 0x01, 0x40};
   
   testPacket("PIN CONTROL digital p1.0 HIGH packet", pPc1, refAck);
   
   delay(1000);
 
   // PIN CONTROL digital p1.0 LOW Packet
-  byte pPc2[] = {0x24, 0x06, 0x05, 0x10, 0x00, 0x3F};
+  int pPc2[] = {0x24, 0x06, 0x05, 0x10, 0x00, 0x3F};
   
   testPacket("PIN CONTROL digital p1.0 LOW packet", pPc2, refAck);
 
   // PIN FUNCTION digital IN p1.3 Packet
-  byte pPf2[] = {0x24, 0x06, 0x04, 0x13, 0x00, 0x41};
+  int pPf2[] = {0x24, 0x06, 0x04, 0x13, 0x00, 0x41};
   
   testPacket("PIN FUNCTION digital IN p1.3 packet", pPf2, refAck);
 
   // PIN CONTROL digital p1.0 READ Packet
-  byte pPc3[] = {0x24, 0x06, 0x05, 0x13, 0x03, 0x45};
+  int pPc3[] = {0x24, 0x06, 0x05, 0x13, 0x03, 0x45};
   // only if button not pressed
-  byte refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x01, 0x48};
+  int refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x01, 0x48};
   // if button  pressed
-  // byte refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x00, 0x47};
+  // int refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x00, 0x47};
   
   testPacket("PIN CONTROL digital p1.3 READ packet", pPc3, refDr1);
 
@@ -167,9 +167,9 @@ void setup() {
   testPacket("PIN FUNCTION analog IN p1.5 packet", pPf3, refAck);
   
   // PIN CONTROL analog p1.5 READ Packet
-  byte pPc4[] = {0x24, 0x06, 0x05, 0x15, 0x04, 0x48};
+  int pPc4[] = {0x24, 0x06, 0x05, 0x15, 0x04, 0x48};
   // only if valu of poti is 0
-  byte refAr1[] = {0x2B, 0x07, 0x04, 0x15, 0x00, 0x00, 0x4B};
+  int refAr1[] = {0x2B, 0x07, 0x04, 0x15, 0x00, 0x00, 0x4B};
   
   testPacket("PIN CONTROL digital p1.3 READ packet", pPc4, refAr1);
 
