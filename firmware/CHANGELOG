@@ -1,3 +1,15 @@
+ROCKETuC firmware CHANGELOG 
+07.04.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+
+Pre Alpha
+--------------------------------------------------------------------------
+
+25.04.2012	sw	added support for hardware (Timer_A) based PWM
+				on P1.2/P1.6 and P2.1/P2.2
+
 18.04.2012	sw	initial firmware version of "serial-rocket"
 				provides basic digital IO (set/clear/toggle/read)
 				provides analog read
