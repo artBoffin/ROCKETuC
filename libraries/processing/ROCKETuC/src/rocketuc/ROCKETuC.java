@@ -30,6 +30,14 @@
 
 package rocketuc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Properties;
+
 import processing.core.*;
 import processing.serial.*;
 
@@ -47,10 +55,11 @@ public class ROCKETuC {
 	PApplet myParent;
 	Serial serial;
 	SerialProxy serialProxy;
-
+	Properties properties = new Properties();
 
 	public final static String VERSION = "v0.1.1";
 
+	private static String DEVICE = null;
 
 	private final static int CTRL_SERIAL_WAIT =						1000; //milliseconds to wait for initial connect
 	private final static int CTRL_PACKET_TIMEOUT =					40; //milliseconds to wait before re-sending un-ACKed packet
@@ -104,22 +113,6 @@ public class ROCKETuC {
 	private final static char CMD_PIN_ANAG_READ =					0x04; //CMD function for pin control "analog read" 	
 	private final static char CMD_PIN_PWM_READ =					0x05; //CMD function for pin control "pwm read" 
 
-	//port and pin defns 
-	private final static char PORT_0 =								0x00; //port 0/A definition 
-	private final static char PORT_1 =								0x10; //port 1/B definition 
-	private final static char PORT_2 =								0x20; //port 2/C definition 
-	private final static char PORT_3 =								0x30; //port 3/D definition 
-	private final static char PORT_4 =								0x40; //port 4/E definition 
-	private final static char PORT_5 =								0x50; //port 5/F definition 
-
-	private final static char PIN_0 =								0x00; //pin 0 definition 
-	private final static char PIN_1 =								0x01; //pin 1 definition 
-	private final static char PIN_2 =								0x02; //pin 2 definition 
-	private final static char PIN_3 =								0x03; //pin 3 definition 
-	private final static char PIN_4 =								0x04; //pin 4 definition 
-	private final static char PIN_5 =								0x05; //pin 5 definition 
-	private final static char PIN_6 =								0x06; //pin 6 definition 
-	private final static char PIN_7 =								0x07; //pin 7 definition 
 
 	//in pakcet defns
 	private final static char PKIN_NULL =							0x00; //IN-bound packet NULL 
@@ -127,9 +120,6 @@ public class ROCKETuC {
 	private final static char PKIN_ACK=								0x01; //IN-bound ACK
 	private final static char PKIN_STAT_ERR=						0x01; //IN-bound packet type "STATUS / ERROR"
 	private final static char PKIN_STAT_ERR_LEN=					0x05; //IN-bound packet type "STATUS / ERROR" length
-
-
-	private final static char[] PKIN_PKET_ACK = {PKIN_START, PKIN_STAT_ERR_LEN, PKIN_STAT_ERR, PKIN_ACK, 0x07};	
 
 
 
@@ -164,71 +154,6 @@ public class ROCKETuC {
 	 * Constant to set a pin to input mode analog(in a call to pinMode()).
 	 */
 	public final static char ANALOG = CMD_PIN_ANAG_READ;
-
-	/**
-	 * Constant of pin name P1.0
-	 */
-	public final static char P10 = PORT_1 | PIN_0;
-	/**
-	 * Constant of pin name P1.1
-	 */
-	public final static char P11 = PORT_1 | PIN_1;
-	/**
-	 * Constant of pin name P1.2
-	 */
-	public final static char P12 = PORT_1 | PIN_2;
-	/**
-	 * Constant of pin name P1.3
-	 */
-	public final static char P13 = PORT_1 | PIN_3;
-	/**
-	 * Constant of pin name P1.4
-	 */
-	public final static char P14 = PORT_1 | PIN_4;
-	/**
-	 * Constant of pin name P1.5
-	 */
-	public final static char P15 = PORT_1 | PIN_5;
-	/**
-	 * Constant of pin name P1.6
-	 */
-	public final static char P16 = PORT_1 | PIN_6;
-	/**
-	 * Constant of pin name P1.7
-	 */
-	public final static char P17 = PORT_1 | PIN_7;
-	/**
-	 * Constant of pin name P2.0
-	 */
-	public final static char P20 = PORT_2 | PIN_0;
-	/**
-	 * Constant of pin name P2.1
-	 */
-	public final static char P21 = PORT_2 | PIN_1;
-	/**
-	 * Constant of pin name P2.2
-	 */
-	public final static char P22 = PORT_2 | PIN_2;
-	/**
-	 * Constant of pin name P2.3
-	 */
-	public final static char P23 = PORT_2 | PIN_3;
-	/**
-	 * Constant of pin name P2.4
-	 */
-	public final static char P24 = PORT_2 | PIN_4;
-	/**
-	 * Constant of pin name P2.5
-	 */
-	public final static char P25 = PORT_2 | PIN_5;
-	/**
-	 * Constant of pin name P2.6
-	 */
-	public final static char P26 = PORT_2 | PIN_6;
-	/**
-	 * Constant of pin name P2.7
-	 */
-	public final static char P27 = PORT_2 | PIN_7;
 
 
 	/**
@@ -283,8 +208,8 @@ public class ROCKETuC {
 	 * @param iname the name of the serial device associated with the ROCKETuC
 	 * board (e.g. one the elements of the array returned by ROCKETuC.list())
 	 */
-	public ROCKETuC(PApplet myParent, String iname) {
-		this(myParent, iname, 9600);
+	public ROCKETuC(PApplet myParent, String iname, String idevice) {
+		this(myParent, iname, 9600, idevice);
 	}
 
 	/**
@@ -298,11 +223,12 @@ public class ROCKETuC {
 	 * (the ROCKETuC library defaults to 9600, and the examples use this rate,
 	 * but other firmwares may override it) 
 	 */
-	public ROCKETuC (PApplet myParent, String iname, int irate){
+	public ROCKETuC (PApplet myParent, String iname, int irate, String idevice){
 		this.myParent = myParent;
 		this.serialProxy = new SerialProxy();
 		this.serial = new Serial(serialProxy, iname, irate);
-
+		DEVICE = idevice; //set device type
+		
 		try {
 			System.out.println("ROCKETuC > Connecting ...");
 			Thread.sleep(CTRL_SERIAL_WAIT); //time for serial init?
@@ -310,12 +236,48 @@ public class ROCKETuC {
 		{
 			System.err.println("ROCKETuC > ERR: Serial connect problem, check your connection");
 		}
+		//load device properties file
+
+		URL root = getClass().getProtectionDomain().getCodeSource().getLocation();
+		String path = null;
+		try {
+			path = (new File(root.toURI())).getParentFile().getPath();
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+		}
+		try {
+		    properties.load(new FileInputStream(path + "\\devices\\" + DEVICE + ".properties"));
+		} catch (Exception e) {
+			System.err.println("ROCKETuC > ERR: Properties file not found or unaccessable, check for " + path + "\\devices\\" + DEVICE + ".properties");
+		}
 
 		//do stuff on first connect
 		System.out.println("ROCKETuC > Connected");
 		myParent.registerDispose(this);
 	}
+	
+	/**
+	 * Return property from properties file
+	 *
+	 * @param string of key for property 
+	 *
+	 */
+	
+	public String getProperty(String property) {
+		return properties.getProperty(property);
+	}
 
+	/**
+	 * Return pin property
+	 *
+	 * @param pin name
+	 *
+	 */
+	
+	public char getPin(String pin) {
+	return (char)Integer.parseInt(getProperty(pin)); ///convert string to int then to char
+	}
+	
 
 	/**
 	 * Send NULL packet 

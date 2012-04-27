@@ -2,23 +2,24 @@ import rocketuc.*;
 
 ROCKETuC launchpad;
 
-char led = ROCKETuC.P16;
-char button = ROCKETuC.P13;
+char led;
+char button;
 
 void setup() {
   println(ROCKETuC.list());
-  launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600);
+  launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600, "launchpad");
+
+  led = launchpad.getPin("P1.3");
+  button = launchpad.getPin("P1.4");
   launchpad.pinMode(led, ROCKETuC.OUTPUT);
   launchpad.pinMode(button, ROCKETuC.PULLUP);
-  launchpad.pinMode(ROCKETuC.P14, ROCKETuC.OUTPUT);
-  launchpad.digitalWrite(ROCKETuC.P14, ROCKETuC.HIGH);
 }
 
 void draw() {
 
   if (launchpad.digitalRead(button) == 0)
   {
-    background(random(0,255),random(0,255),random(0,255));
+    background(random(0, 255), random(0, 255), random(0, 255));
     fill(0, 255, 0);
     ellipse (50, 50, 50, 50);
   }
