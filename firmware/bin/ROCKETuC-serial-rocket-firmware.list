@@ -18,7 +18,7 @@ Disassembly of section .text:
     c014:	07 24       	jz	$+16     	;abs 0xc024
     c016:	82 45 20 01 	mov	r5,	&0x0120	
     c01a:	2f 83       	decd	r15		
-    c01c:	9f 4f 6c cb 	mov	-13460(r15),512(r15);0xcb6c(r15), 0x0200(r15)
+    c01c:	9f 4f 44 db 	mov	-9404(r15),512(r15);0xdb44(r15), 0x0200(r15)
     c020:	00 02 
     c022:	f9 23       	jnz	$-12     	;abs 0xc016
 
@@ -52,7 +52,7 @@ int main(void)
 
 	while (1) {
 		packet_do_handle();
-    c050:	b0 12 a2 c7 	call	#0xc7a2	
+    c050:	b0 12 ac c8 	call	#0xc8ac	
     c054:	fd 3f       	jmp	$-4      	;abs 0xc050
 
 0000c056 <__stop_progExec__>:
@@ -60,7 +60,7 @@ int main(void)
     c05a:	fd 3f       	jmp	$-4      	;abs 0xc056
 
 0000c05c <__ctors_end>:
-    c05c:	30 40 6a cb 	br	#0xcb6a	
+    c05c:	30 40 42 db 	br	#0xdb42	
 
 0000c060 <clock_init>:
 
@@ -366,7 +366,7 @@ void serial_init(unsigned int baudrate)
     c1f2:	3d 40 0f 00 	mov	#15,	r13	;#0x000f
     c1f6:	0a 4f       	mov	r15,	r10	
     c1f8:	0b 47       	mov	r7,	r11	
-    c1fa:	b0 12 f6 ca 	call	#0xcaf6	
+    c1fa:	b0 12 ce da 	call	#0xdace	
 
   	UCA0BR0  = br;                          // 1MHz / baudrate 
     c1fe:	c2 4c 62 00 	mov.b	r12,	&0x0062	
@@ -558,1817 +558,3554 @@ void pin_set_curr_func(unsigned char pin, unsigned char func)
 
 void pin_reserve(unsigned char pin) 
 {
-	pin_set_curr_func(pin, 0);	
-    c2b4:	4e 43       	clr.b	r14		
-    c2b6:	b0 12 8c c2 	call	#0xc28c	
+	pin_set_curr_func(pin, PIN_FUNCTION_RESERVED);	
+    c2b4:	7e 40 fe ff 	mov.b	#-2,	r14	;#0xfffe
+    c2b8:	b0 12 8c c2 	call	#0xc28c	
 }
-    c2ba:	30 41       	ret			
+    c2bc:	30 41       	ret			
 
-0000c2bc <pin_function>:
+0000c2be <pin_function>:
 
 unsigned char pin_function(unsigned char pin) 
 {
 	int port    = (0xF0 & pin) >> 4;
-    c2bc:	4e 4f       	mov.b	r15,	r14	
-    c2be:	12 c3       	clrc			
-    c2c0:	4e 10       	rrc.b	r14		
-    c2c2:	4e 11       	rra.b	r14		
+    c2be:	4e 4f       	mov.b	r15,	r14	
+    c2c0:	12 c3       	clrc			
+    c2c2:	4e 10       	rrc.b	r14		
     c2c4:	4e 11       	rra.b	r14		
     c2c6:	4e 11       	rra.b	r14		
-    c2c8:	4e 4e       	mov.b	r14,	r14	
+    c2c8:	4e 11       	rra.b	r14		
+    c2ca:	4e 4e       	mov.b	r14,	r14	
 	int bit_num = (0x0F & pin);
 	int idx  	= (port - 1) * 8 + bit_num;
-    c2ca:	3e 53       	add	#-1,	r14	;r3 As==11
-    c2cc:	0e 5e       	rla	r14		
+    c2cc:	3e 53       	add	#-1,	r14	;r3 As==11
     c2ce:	0e 5e       	rla	r14		
     c2d0:	0e 5e       	rla	r14		
+    c2d2:	0e 5e       	rla	r14		
 }
 
 unsigned char pin_function(unsigned char pin) 
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
-    c2d2:	3f f0 0f 00 	and	#15,	r15	;#0x000f
+    c2d4:	3f f0 0f 00 	and	#15,	r15	;#0x000f
 	int idx  	= (port - 1) * 8 + bit_num;
-    c2d6:	0e 5f       	add	r15,	r14	
+    c2d8:	0e 5f       	add	r15,	r14	
 
-	if((unsigned int)idx > sizeof(pin_curr_func)) {
-    c2d8:	3e 90 11 00 	cmp	#17,	r14	;#0x0011
-    c2dc:	03 2c       	jc	$+8      	;abs 0xc2e4
-		return 0;
+	if((unsigned int)idx >= 16) {
+    c2da:	3e 90 10 00 	cmp	#16,	r14	;#0x0010
+    c2de:	03 2c       	jc	$+8      	;abs 0xc2e6
+		return PIN_FUNCTION_UNKNOWN;
 	}
 
 	return pin_curr_func[idx];
-    c2de:	5f 4e 32 02 	mov.b	562(r14),r15	;0x0232(r14)
-    c2e2:	30 41       	ret			
+    c2e0:	5f 4e 32 02 	mov.b	562(r14),r15	;0x0232(r14)
+    c2e4:	30 41       	ret			
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
 	int idx  	= (port - 1) * 8 + bit_num;
 
-	if((unsigned int)idx > sizeof(pin_curr_func)) {
-		return 0;
-    c2e4:	4f 43       	clr.b	r15		
+	if((unsigned int)idx >= 16) {
+		return PIN_FUNCTION_UNKNOWN;
+    c2e6:	7f 43       	mov.b	#-1,	r15	;r3 As==11
 	}
 
 	return pin_curr_func[idx];
 }
-    c2e6:	30 41       	ret			
+    c2e8:	30 41       	ret			
 
-0000c2e8 <pin_with_function>:
+0000c2ea <pin_with_function>:
 
 unsigned char pin_with_function(unsigned char pin, unsigned char function) 
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
 	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
-    c2e8:	4f 93       	tst.b	r15		
-    c2ea:	10 24       	jz	$+34     	;abs 0xc30c
+    c2ea:	4f 93       	tst.b	r15		
+    c2ec:	10 24       	jz	$+34     	;abs 0xc30e
 }
 
 unsigned char pin_with_function(unsigned char pin, unsigned char function) 
 {
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
-    c2ec:	0d 4f       	mov	r15,	r13	
-    c2ee:	3d f0 0f 00 	and	#15,	r13	;#0x000f
+    c2ee:	0d 4f       	mov	r15,	r13	
+    c2f0:	3d f0 0f 00 	and	#15,	r13	;#0x000f
 	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
-    c2f2:	1d 53       	inc	r13		
+    c2f4:	1d 53       	inc	r13		
 	return pin_curr_func[idx];
 }
 
 unsigned char pin_with_function(unsigned char pin, unsigned char function) 
 {
 	int port    = (0xF0 & pin) >> 4;
-    c2f4:	12 c3       	clrc			
-    c2f6:	4f 10       	rrc.b	r15		
-    c2f8:	4f 11       	rra.b	r15		
+    c2f6:	12 c3       	clrc			
+    c2f8:	4f 10       	rrc.b	r15		
     c2fa:	4f 11       	rra.b	r15		
     c2fc:	4f 11       	rra.b	r15		
-    c2fe:	4f 4f       	mov.b	r15,	r15	
+    c2fe:	4f 11       	rra.b	r15		
+    c300:	4f 4f       	mov.b	r15,	r15	
 	int bit_num = (0x0F & pin);
 	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
-    c300:	3f 53       	add	#-1,	r15	;r3 As==11
-    c302:	0f 5f       	rla	r15		
+    c302:	3f 53       	add	#-1,	r15	;r3 As==11
     c304:	0f 5f       	rla	r15		
     c306:	0f 5f       	rla	r15		
-    c308:	0d 5f       	add	r15,	r13	
-    c30a:	01 3c       	jmp	$+4      	;abs 0xc30e
-    c30c:	0d 43       	clr	r13		
+    c308:	0f 5f       	rla	r15		
+    c30a:	0d 5f       	add	r15,	r13	
+    c30c:	01 3c       	jmp	$+4      	;abs 0xc310
+    c30e:	0d 43       	clr	r13		
 	int i;
 
 	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
-    c30e:	1d 53       	inc	r13		
-    c310:	3f 40 0f 00 	mov	#15,	r15	;#0x000f
-    c314:	11 3c       	jmp	$+36     	;abs 0xc338
+    c310:	1d 53       	inc	r13		
+    c312:	3f 40 0f 00 	mov	#15,	r15	;#0x000f
+    c316:	11 3c       	jmp	$+36     	;abs 0xc33a
 		if(pin_curr_func[i] == function) {
-    c316:	cd 9e 32 02 	cmp.b	r14,	562(r13);0x0232(r13)
-    c31a:	0d 20       	jnz	$+28     	;abs 0xc336
+    c318:	cd 9e 32 02 	cmp.b	r14,	562(r13);0x0232(r13)
+    c31c:	0d 20       	jnz	$+28     	;abs 0xc338
 			return (((i / 8 + 1) << 4) + (i % 8));
-    c31c:	0f 4d       	mov	r13,	r15	
-    c31e:	0f 11       	rra	r15		
+    c31e:	0f 4d       	mov	r13,	r15	
     c320:	0f 11       	rra	r15		
     c322:	0f 11       	rra	r15		
-    c324:	5f 53       	inc.b	r15		
-    c326:	4f 5f       	rla.b	r15		
+    c324:	0f 11       	rra	r15		
+    c326:	5f 53       	inc.b	r15		
     c328:	4f 5f       	rla.b	r15		
     c32a:	4f 5f       	rla.b	r15		
     c32c:	4f 5f       	rla.b	r15		
-    c32e:	3d f0 07 00 	and	#7,	r13	;#0x0007
-    c332:	4f 5d       	add.b	r13,	r15	
-    c334:	30 41       	ret			
+    c32e:	4f 5f       	rla.b	r15		
+    c330:	3d f0 07 00 	and	#7,	r13	;#0x0007
+    c334:	4f 5d       	add.b	r13,	r15	
+    c336:	30 41       	ret			
 	int port    = (0xF0 & pin) >> 4;
 	int bit_num = (0x0F & pin);
 	int idx  	= (pin == 0 ? 0 : (port - 1) * 8 + bit_num + 1) ;
 	int i;
 
 	for(i = idx + 1; (unsigned int)i < sizeof(pin_curr_func); i++) {
-    c336:	1d 53       	inc	r13		
-    c338:	0f 9d       	cmp	r13,	r15	
-    c33a:	ed 2f       	jc	$-36     	;abs 0xc316
+    c338:	1d 53       	inc	r13		
+    c33a:	0f 9d       	cmp	r13,	r15	
+    c33c:	ed 2f       	jc	$-36     	;abs 0xc318
 		if(pin_curr_func[i] == function) {
 			return (((i / 8 + 1) << 4) + (i % 8));
 		}
 	}
 
 	return 0;
-    c33c:	4f 43       	clr.b	r15		
+    c33e:	4f 43       	clr.b	r15		
 }
-    c33e:	30 41       	ret			
+    c340:	30 41       	ret			
 
-0000c340 <pin_capabilities>:
+0000c342 <pin_capabilities>:
+
 int pin_capabilities(unsigned char pin) 
 {
-	int caps = 0;
-
-	// PIN_CAP_INPUT
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-    c340:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
-    c344:	4a 24       	jz	$+150    	;abs 0xc3da
-    c346:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
-    c34a:	8a 24       	jz	$+278    	;abs 0xc460
-    c34c:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
-    c350:	44 24       	jz	$+138    	;abs 0xc3da
-    c352:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
-    c356:	1e 24       	jz	$+62     	;abs 0xc394
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-    c358:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
-    c35c:	1b 24       	jz	$+56     	;abs 0xc394
-    c35e:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
-    c362:	18 24       	jz	$+50     	;abs 0xc394
-    c364:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
-    c368:	15 24       	jz	$+44     	;abs 0xc394
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-    c36a:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
-    c36e:	12 24       	jz	$+38     	;abs 0xc394
-    c370:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
-    c374:	0f 24       	jz	$+32     	;abs 0xc394
-    c376:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
-    c37a:	0c 24       	jz	$+26     	;abs 0xc394
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-    c37c:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
-    c380:	09 24       	jz	$+20     	;abs 0xc394
-    c382:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
-    c386:	06 24       	jz	$+14     	;abs 0xc394
-    c388:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
-    c38c:	03 24       	jz	$+8      	;abs 0xc394
-		pin == PIN_2_6 || pin == PIN_2_7) {
-    c38e:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
-    c392:	68 20       	jnz	$+210    	;abs 0xc464
-	
-		caps |= PIN_CAP_INPUT;
-	} 
-
-	// PIN_CAP_INPUT_RE
-	if( pin == PIN_1_0 || pin == PIN_1_4 ||
-    c394:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
-    c398:	20 24       	jz	$+66     	;abs 0xc3da
-    c39a:	1e 43       	mov	#1,	r14	;r3 As==01
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-    c39c:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
-    c3a0:	1d 24       	jz	$+60     	;abs 0xc3dc
-    c3a2:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
-    c3a6:	1a 24       	jz	$+54     	;abs 0xc3dc
-    c3a8:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
-    c3ac:	17 24       	jz	$+48     	;abs 0xc3dc
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-    c3ae:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
-    c3b2:	14 24       	jz	$+42     	;abs 0xc3dc
-    c3b4:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
-    c3b8:	11 24       	jz	$+36     	;abs 0xc3dc
-    c3ba:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
-    c3be:	0e 24       	jz	$+30     	;abs 0xc3dc
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-    c3c0:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
-    c3c4:	0b 24       	jz	$+24     	;abs 0xc3dc
-    c3c6:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
-    c3ca:	08 24       	jz	$+18     	;abs 0xc3dc
-    c3cc:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
-    c3d0:	05 24       	jz	$+12     	;abs 0xc3dc
-		pin == PIN_2_6 || pin == PIN_2_7) {
-    c3d2:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
-    c3d6:	06 20       	jnz	$+14     	;abs 0xc3e4
-    c3d8:	01 3c       	jmp	$+4      	;abs 0xc3dc
-	
-		caps |= PIN_CAP_INPUT;
-	} 
-
-	// PIN_CAP_INPUT_RE
-	if( pin == PIN_1_0 || pin == PIN_1_4 ||
-    c3da:	1e 43       	mov	#1,	r14	;r3 As==01
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-		pin == PIN_2_6 || pin == PIN_2_7) {
-	
-		caps |= PIN_CAP_INPUT_RE;
-    c3dc:	2e d3       	bis	#2,	r14	;r3 As==10
-
+    c342:	4e 4f       	mov.b	r15,	r14	
 	// PIN_CAP_OUTPUT
-	// PIN_CAP_PWM
 	// PIN_CAP_UARTRX
 	// PIN_CAP_UARTTX
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-    c3de:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
-    c3e2:	27 24       	jz	$+80     	;abs 0xc432
-    c3e4:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
-    c3e8:	24 24       	jz	$+74     	;abs 0xc432
-    c3ea:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
-    c3ee:	21 24       	jz	$+68     	;abs 0xc432
-    c3f0:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
-    c3f4:	1e 24       	jz	$+62     	;abs 0xc432
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7 ||	 
-    c3f6:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
-    c3fa:	1b 24       	jz	$+56     	;abs 0xc432
-    c3fc:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
-    c400:	18 24       	jz	$+50     	;abs 0xc432
-    c402:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
-    c406:	15 24       	jz	$+44     	;abs 0xc432
-	    pin == PIN_2_0 || pin == PIN_2_1 || pin == PIN_2_2 ||
-    c408:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
-    c40c:	12 24       	jz	$+38     	;abs 0xc432
-    c40e:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
-    c412:	0f 24       	jz	$+32     	;abs 0xc432
-    c414:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
-    c418:	0c 24       	jz	$+26     	;abs 0xc432
-        pin == PIN_2_3 || pin == PIN_2_4 || pin == PIN_2_5 || 
-    c41a:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
-    c41e:	09 24       	jz	$+20     	;abs 0xc432
-    c420:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
-    c424:	06 24       	jz	$+14     	;abs 0xc432
-    c426:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
-    c42a:	03 24       	jz	$+8      	;abs 0xc432
-		pin == PIN_2_6 || pin == PIN_2_7) {
-    c42c:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
-    c430:	0b 20       	jnz	$+24     	;abs 0xc448
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
+    c344:	4d 4f       	mov.b	r15,	r13	
+    c346:	7d 50 f0 ff 	add.b	#-16,	r13	;#0xfff0
+
+	// PIN_CAP_INPUT
+	// PIN_CAP_OUTPUT
+	// PIN_CAP_UARTRX
+	// PIN_CAP_UARTTX
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+    c34a:	7d 92       	cmp.b	#8,	r13	;r2 As==11
+    c34c:	19 28       	jnc	$+52     	;abs 0xc380
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
+    c34e:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
+    c352:	2d 24       	jz	$+92     	;abs 0xc3ae
+    c354:	7f 90 21 00 	cmp.b	#33,	r15	;#0x0021
+    c358:	22 24       	jz	$+70     	;abs 0xc39e
+		pin == PIN_2_1 || pin == PIN_2_2 || pin == PIN_2_3 || 
+    c35a:	7f 90 22 00 	cmp.b	#34,	r15	;#0x0022
+    c35e:	1f 24       	jz	$+64     	;abs 0xc39e
+    c360:	7f 90 23 00 	cmp.b	#35,	r15	;#0x0023
+    c364:	24 24       	jz	$+74     	;abs 0xc3ae
+    c366:	7f 90 24 00 	cmp.b	#36,	r15	;#0x0024
+    c36a:	21 24       	jz	$+68     	;abs 0xc3ae
+		pin == PIN_2_4 || pin == PIN_2_5 || pin == PIN_2_6 || 
+    c36c:	7f 90 25 00 	cmp.b	#37,	r15	;#0x0025
+    c370:	1e 24       	jz	$+62     	;abs 0xc3ae
+    c372:	7f 90 26 00 	cmp.b	#38,	r15	;#0x0026
+    c376:	1b 24       	jz	$+56     	;abs 0xc3ae
+    c378:	7f 90 27 00 	cmp.b	#39,	r15	;#0x0027
+    c37c:	1b 20       	jnz	$+56     	;abs 0xc3b4
+    c37e:	17 3c       	jmp	$+48     	;abs 0xc3ae
+		caps |= PIN_CAP_INPUT + PIN_CAP_INPUT_RE + PIN_CAP_OUTPUT + 
+				PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+	} 
+
+	// PIN_CAP_PWM
+	if( pin == PIN_1_2 || pin == PIN_1_6 || pin == PIN_2_1 || 
+    c380:	7f 90 12 00 	cmp.b	#18,	r15	;#0x0012
+    c384:	0c 24       	jz	$+26     	;abs 0xc39e
+    c386:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
+    c38a:	09 24       	jz	$+20     	;abs 0xc39e
+    c38c:	3f 40 67 00 	mov	#103,	r15	;#0x0067
+    c390:	7e 90 21 00 	cmp.b	#33,	r14	;#0x0021
+    c394:	06 24       	jz	$+14     	;abs 0xc3a2
+    c396:	7e 90 22 00 	cmp.b	#34,	r14	;#0x0022
+    c39a:	05 20       	jnz	$+12     	;abs 0xc3a6
+    c39c:	02 3c       	jmp	$+6      	;abs 0xc3a2
+    c39e:	3f 40 67 00 	mov	#103,	r15	;#0x0067
+		pin == PIN_2_2) {
 	
-		caps |= PIN_CAP_OUTPUT + PIN_CAP_PWM + PIN_CAP_UARTTX + PIN_CAP_UARTRX;
-    c432:	3e d0 74 00 	bis	#116,	r14	;#0x0074
+		caps |= PIN_CAP_PWM;
+    c3a2:	3f d0 10 00 	bis	#16,	r15	;#0x0010
 	} 
 
 	// PIN_CAP_ANALOG_IN
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-    c436:	7f 90 10 00 	cmp.b	#16,	r15	;#0x0010
-    c43a:	0f 24       	jz	$+32     	;abs 0xc45a
-    c43c:	7f 90 13 00 	cmp.b	#19,	r15	;#0x0013
-    c440:	0c 24       	jz	$+26     	;abs 0xc45a
-    c442:	7f 90 14 00 	cmp.b	#20,	r15	;#0x0014
-    c446:	09 24       	jz	$+20     	;abs 0xc45a
-    c448:	7f 90 15 00 	cmp.b	#21,	r15	;#0x0015
-    c44c:	06 24       	jz	$+14     	;abs 0xc45a
-		pin == PIN_1_5 || pin == PIN_1_6 || pin == PIN_1_7) {
-    c44e:	7f 90 16 00 	cmp.b	#22,	r15	;#0x0016
-    c452:	03 24       	jz	$+8      	;abs 0xc45a
-    c454:	7f 90 17 00 	cmp.b	#23,	r15	;#0x0017
-    c458:	01 20       	jnz	$+4      	;abs 0xc45c
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+    c3a6:	7d 92       	cmp.b	#8,	r13	;r2 As==11
+    c3a8:	01 2c       	jc	$+4      	;abs 0xc3ac
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7) {
 	
 		caps |= PIN_CAP_ANALOG_IN;
-    c45a:	3e d2       	bis	#8,	r14	;r2 As==11
+    c3aa:	3f d2       	bis	#8,	r15	;r2 As==11
 	} 
 
 	return caps;
 }
-    c45c:	0f 4e       	mov	r14,	r15	
-    c45e:	30 41       	ret			
-int pin_capabilities(unsigned char pin) 
-{
-	int caps = 0;
-
-	// PIN_CAP_INPUT
-	if( pin == PIN_1_0 || pin == PIN_1_3 || pin == PIN_1_4 ||
-    c460:	1e 43       	mov	#1,	r14	;r3 As==01
-    c462:	e7 3f       	jmp	$-48     	;abs 0xc432
+    c3ac:	30 41       	ret			
+	// PIN_CAP_UARTTX
+	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
+		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
+		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
+		pin == PIN_2_1 || pin == PIN_2_2 || pin == PIN_2_3 || 
+		pin == PIN_2_4 || pin == PIN_2_5 || pin == PIN_2_6 || 
+    c3ae:	3f 40 67 00 	mov	#103,	r15	;#0x0067
+    c3b2:	f9 3f       	jmp	$-12     	;abs 0xc3a6
 	return 0;
 }
 
 int pin_capabilities(unsigned char pin) 
 {
 	int caps = 0;
-    c464:	0e 43       	clr	r14		
-    c466:	9a 3f       	jmp	$-202    	;abs 0xc39c
+    c3b4:	0f 43       	clr	r15		
+    c3b6:	ec 3f       	jmp	$-38     	;abs 0xc390
 
-0000c468 <pin_has_capabilities>:
+0000c3b8 <pin_has_capabilities>:
 
 	return caps;
 }
 
 int pin_has_capabilities(unsigned char pin, int capabilities) 
 {
-    c468:	0b 12       	push	r11		
-    c46a:	0b 4e       	mov	r14,	r11	
+    c3b8:	0b 12       	push	r11		
+    c3ba:	0b 4e       	mov	r14,	r11	
 	return ((pin_capabilities(pin) & capabilities) == capabilities ? 1 : 0);
-    c46c:	b0 12 40 c3 	call	#0xc340	
-    c470:	0e 4f       	mov	r15,	r14	
-    c472:	0e fb       	and	r11,	r14	
-    c474:	1f 43       	mov	#1,	r15	;r3 As==01
-    c476:	0e 9b       	cmp	r11,	r14	
-    c478:	01 24       	jz	$+4      	;abs 0xc47c
-    c47a:	0f 43       	clr	r15		
+    c3bc:	b0 12 42 c3 	call	#0xc342	
+    c3c0:	0e 4f       	mov	r15,	r14	
+    c3c2:	0e fb       	and	r11,	r14	
+    c3c4:	1f 43       	mov	#1,	r15	;r3 As==01
+    c3c6:	0e 9b       	cmp	r11,	r14	
+    c3c8:	01 24       	jz	$+4      	;abs 0xc3cc
+    c3ca:	0f 43       	clr	r15		
 }
-    c47c:	3b 41       	pop	r11		
-    c47e:	30 41       	ret			
+    c3cc:	3b 41       	pop	r11		
+    c3ce:	30 41       	ret			
 
-0000c480 <pin_setup>:
+0000c3d0 <pin_setup>:
 
 int pin_setup(unsigned char pin, unsigned char function)
 {
-    c480:	0b 12       	push	r11		
-    c482:	0a 12       	push	r10		
-    c484:	09 12       	push	r9		
-    c486:	08 12       	push	r8		
-    c488:	49 4f       	mov.b	r15,	r9	
-    c48a:	48 4e       	mov.b	r14,	r8	
+    c3d0:	0b 12       	push	r11		
+    c3d2:	0a 12       	push	r10		
+    c3d4:	09 12       	push	r9		
+    c3d6:	08 12       	push	r8		
+    c3d8:	49 4f       	mov.b	r15,	r9	
+    c3da:	48 4e       	mov.b	r14,	r8	
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-    c48c:	b0 12 44 c2 	call	#0xc244	
-    c490:	0b 4f       	mov	r15,	r11	
-    c492:	0f 93       	tst	r15		
-    c494:	ae 38       	jl	$+350    	;abs 0xc5f2
+    c3dc:	b0 12 44 c2 	call	#0xc244	
+    c3e0:	0b 4f       	mov	r15,	r11	
+    c3e2:	0f 93       	tst	r15		
+    c3e4:	02 34       	jge	$+6      	;abs 0xc3ea
+    c3e6:	30 40 ce c5 	br	#0xc5ce	
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c496:	4f 49       	mov.b	r9,	r15	
-    c498:	b0 12 5e c2 	call	#0xc25e	
-    c49c:	0a 4f       	mov	r15,	r10	
-    c49e:	0f 93       	tst	r15		
-    c4a0:	a3 38       	jl	$+328    	;abs 0xc5e8
+    c3ea:	4f 49       	mov.b	r9,	r15	
+    c3ec:	b0 12 5e c2 	call	#0xc25e	
+    c3f0:	0a 4f       	mov	r15,	r10	
+    c3f2:	0f 93       	tst	r15		
+    c3f4:	02 34       	jge	$+6      	;abs 0xc3fa
+    c3f6:	30 40 c4 c5 	br	#0xc5c4	
+
+	unsigned char f;
+
+	f = pin_function(pin); 
+    c3fa:	4f 49       	mov.b	r9,	r15	
+    c3fc:	b0 12 be c2 	call	#0xc2be	
+#ifdef PIN_DBG
+	cio_printf("pin %x has current function %x\n\r", pin, f);
+#endif
 
 	// see if PIN is already configured for the given function
-	if(pin_function(pin) == function) { 
-    c4a2:	4f 49       	mov.b	r9,	r15	
-    c4a4:	b0 12 bc c2 	call	#0xc2bc	
-    c4a8:	4f 98       	cmp.b	r8,	r15	
-    c4aa:	a0 24       	jz	$+322    	;abs 0xc5ec
+	if(f == function) { 
+    c400:	4f 98       	cmp.b	r8,	r15	
+    c402:	02 20       	jnz	$+6      	;abs 0xc408
+    c404:	30 40 c8 c5 	br	#0xc5c8	
 		return PIN_STAT_OK;
+	}
+	// PIN is reserved
+	else if(f == PIN_FUNCTION_RESERVED) {
+    c408:	7f 90 fe ff 	cmp.b	#-2,	r15	;#0xfffe
+    c40c:	02 20       	jnz	$+6      	;abs 0xc412
+    c40e:	30 40 cc c5 	br	#0xc5cc	
+		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
 	switch(function) {
-    c4ac:	78 92       	cmp.b	#8,	r8	;r2 As==11
-    c4ae:	a0 2c       	jc	$+322    	;abs 0xc5f0
-    c4b0:	4f 48       	mov.b	r8,	r15	
-    c4b2:	0f 5f       	rla	r15		
-    c4b4:	10 4f b8 c4 	br	-15176(r15)	;0xc4b8(r15)
-    c4b8:	c8 c4 ec c4 	bic.b	r4,	-15124(r8);0xc4ec(r8)
-    c4bc:	14 c5 4c c5 	bic	-15028(r5),r4	;0xc54c(r5)
-    c4c0:	80 c5 9e c5 	bic	r5,	0xc59e	;PC rel. 0x08a62
-    c4c4:	ae c5 c2 c5 	bic	@r5,	-14910(r14);0xc5c2(r14)
+    c412:	78 92       	cmp.b	#8,	r8	;r2 As==11
+    c414:	02 28       	jnc	$+6      	;abs 0xc41a
+    c416:	30 40 cc c5 	br	#0xc5cc	
+    c41a:	4f 48       	mov.b	r8,	r15	
+    c41c:	0f 5f       	rla	r15		
+    c41e:	10 4f 22 c4 	br	-15326(r15)	;0xc422(r15)
+    c422:	32 c4       	bic	@r4+,	r2	
+    c424:	56 c4 86 c4 	bic.b	-15226(r4),r6	;0xc486(r4)
+    c428:	c6 c4 02 c5 	bic.b	r4,	-15102(r6);0xc502(r6)
+    c42c:	24 c5       	bic	@r5,	r4	
+    c42e:	88 c5 9c c5 	bic	r5,	-14948(r8);0xc59c(r8)
 	case PIN_FUNCTION_INPUT_FLOAT:
 		if(!pin_has_capabilities(pin, PIN_CAP_INPUT)) {
-    c4c8:	1e 43       	mov	#1,	r14	;r3 As==01
-    c4ca:	4f 49       	mov.b	r9,	r15	
-    c4cc:	b0 12 68 c4 	call	#0xc468	
-    c4d0:	0f 93       	tst	r15		
-    c4d2:	8e 24       	jz	$+286    	;abs 0xc5f0
+    c432:	1e 43       	mov	#1,	r14	;r3 As==01
+    c434:	4f 49       	mov.b	r9,	r15	
+    c436:	b0 12 b8 c3 	call	#0xc3b8	
+    c43a:	0f 93       	tst	r15		
+    c43c:	c7 24       	jz	$+400    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		if(port == 1) {
-    c4d4:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c4d6:	04 20       	jnz	$+10     	;abs 0xc4e0
+    c43e:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c440:	04 20       	jnz	$+10     	;abs 0xc44a
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c4d8:	7a e3       	xor.b	#-1,	r10	;r3 As==11
-    c4da:	c2 fa 22 00 	and.b	r10,	&0x0022	
-    c4de:	43 3c       	jmp	$+136    	;abs 0xc566
+    c442:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c444:	c2 fa 22 00 	and.b	r10,	&0x0022	
+    c448:	4b 3c       	jmp	$+152    	;abs 0xc4e0
 			P1REN &= ~bit; 	                // disable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
-    c4e0:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c4e2:	7d 20       	jnz	$+252    	;abs 0xc5de
+    c44a:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c44c:	b6 20       	jnz	$+366    	;abs 0xc5ba
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c4e4:	7a e3       	xor.b	#-1,	r10	;r3 As==11
-    c4e6:	c2 fa 2a 00 	and.b	r10,	&0x002a	
-    c4ea:	47 3c       	jmp	$+144    	;abs 0xc57a
+    c44e:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c450:	c2 fa 2a 00 	and.b	r10,	&0x002a	
+    c454:	51 3c       	jmp	$+164    	;abs 0xc4f8
 			P2REN &= ~bit; 	                // disable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLUP:
 		if(!pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
-    c4ec:	2e 43       	mov	#2,	r14	;r3 As==10
-    c4ee:	4f 49       	mov.b	r9,	r15	
-    c4f0:	b0 12 68 c4 	call	#0xc468	
-    c4f4:	0f 93       	tst	r15		
-    c4f6:	7c 24       	jz	$+250    	;abs 0xc5f0
+    c456:	2e 43       	mov	#2,	r14	;r3 As==10
+    c458:	4f 49       	mov.b	r9,	r15	
+    c45a:	b0 12 b8 c3 	call	#0xc3b8	
+    c45e:	0f 93       	tst	r15		
+    c460:	b5 24       	jz	$+364    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		if(port == 1) {
-    c4f8:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c4fa:	05 20       	jnz	$+12     	;abs 0xc506
+    c462:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c464:	07 20       	jnz	$+16     	;abs 0xc474
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c4fc:	c2 ca 22 00 	bic.b	r10,	&0x0022	
+    c466:	4f 4a       	mov.b	r10,	r15	
+    c468:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c46a:	c2 ff 22 00 	and.b	r15,	&0x0022	
   			P1OUT |=  bit;					// setting out to HIGH enables pull-up                     
-    c500:	c2 da 21 00 	bis.b	r10,	&0x0021	
-    c504:	15 3c       	jmp	$+44     	;abs 0xc530
+    c46e:	c2 da 21 00 	bis.b	r10,	&0x0021	
+    c472:	17 3c       	jmp	$+48     	;abs 0xc4a2
 			P1REN |=  bit; 	                // enable pull-up/down 
+  			P1SEL &= ~bit;                  // remove option
 		}
 		else if(port == 2) {
-    c506:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c508:	6a 20       	jnz	$+214    	;abs 0xc5de
+    c474:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c476:	a1 20       	jnz	$+324    	;abs 0xc5ba
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c50a:	c2 ca 2a 00 	bic.b	r10,	&0x002a	
+    c478:	4f 4a       	mov.b	r10,	r15	
+    c47a:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c47c:	c2 ff 2a 00 	and.b	r15,	&0x002a	
   			P2OUT |=  bit;					// setting out to HIGH enables pull-up                     
-    c50e:	c2 da 29 00 	bis.b	r10,	&0x0029	
-    c512:	19 3c       	jmp	$+52     	;abs 0xc546
+    c480:	c2 da 29 00 	bis.b	r10,	&0x0029	
+    c484:	1b 3c       	jmp	$+56     	;abs 0xc4bc
 			P2REN |=  bit; 	                // enable pull-up/down 
+  			P2SEL &= ~bit;                  // remove option
 		}
 		break;
 	case PIN_FUNCTION_INPUT_PULLDOWN:
 		if(!pin_has_capabilities(pin, PIN_CAP_INPUT_RE)) { 
-    c514:	2e 43       	mov	#2,	r14	;r3 As==10
-    c516:	4f 49       	mov.b	r9,	r15	
-    c518:	b0 12 68 c4 	call	#0xc468	
-    c51c:	0f 93       	tst	r15		
-    c51e:	68 24       	jz	$+210    	;abs 0xc5f0
+    c486:	2e 43       	mov	#2,	r14	;r3 As==10
+    c488:	4f 49       	mov.b	r9,	r15	
+    c48a:	b0 12 b8 c3 	call	#0xc3b8	
+    c48e:	0f 93       	tst	r15		
+    c490:	9d 24       	jz	$+316    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		if(port == 1) {
-    c520:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c522:	09 20       	jnz	$+20     	;abs 0xc536
+    c492:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c494:	0b 20       	jnz	$+24     	;abs 0xc4ac
 			P1DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c524:	4f 4a       	mov.b	r10,	r15	
-    c526:	7f e3       	xor.b	#-1,	r15	;r3 As==11
-    c528:	c2 ff 22 00 	and.b	r15,	&0x0022	
+    c496:	4f 4a       	mov.b	r10,	r15	
+    c498:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c49a:	c2 ff 22 00 	and.b	r15,	&0x0022	
   			P1OUT &= ~bit;					// setting out to LOW enables pull-down                     
-    c52c:	c2 ff 21 00 	and.b	r15,	&0x0021	
+    c49e:	c2 ff 21 00 	and.b	r15,	&0x0021	
 			P1REN |=  bit; 	                // enable pull-up/down 
-    c530:	c2 da 27 00 	bis.b	r10,	&0x0027	
-    c534:	54 3c       	jmp	$+170    	;abs 0xc5de
+    c4a2:	c2 da 27 00 	bis.b	r10,	&0x0027	
+  			P1SEL &= ~bit;                  // remove option
+    c4a6:	c2 ff 26 00 	and.b	r15,	&0x0026	
+    c4aa:	87 3c       	jmp	$+272    	;abs 0xc5ba
 		}
 		else if(port == 2) {
-    c536:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c538:	52 20       	jnz	$+166    	;abs 0xc5de
+    c4ac:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c4ae:	85 20       	jnz	$+268    	;abs 0xc5ba
 			P2DIR &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c53a:	4f 4a       	mov.b	r10,	r15	
-    c53c:	7f e3       	xor.b	#-1,	r15	;r3 As==11
-    c53e:	c2 ff 2a 00 	and.b	r15,	&0x002a	
+    c4b0:	4f 4a       	mov.b	r10,	r15	
+    c4b2:	7f e3       	xor.b	#-1,	r15	;r3 As==11
+    c4b4:	c2 ff 2a 00 	and.b	r15,	&0x002a	
   			P2OUT &= ~bit;					// setting out to LOW enables pull-down                     
-    c542:	c2 ff 29 00 	and.b	r15,	&0x0029	
+    c4b8:	c2 ff 29 00 	and.b	r15,	&0x0029	
 			P2REN |=  bit; 	                // enable pull-up/down 
-    c546:	c2 da 2f 00 	bis.b	r10,	&0x002f	
-    c54a:	49 3c       	jmp	$+148    	;abs 0xc5de
+    c4bc:	c2 da 2f 00 	bis.b	r10,	&0x002f	
+  			P2SEL &= ~bit;                  // remove option
+    c4c0:	c2 ff 2e 00 	and.b	r15,	&0x002e	
+    c4c4:	7a 3c       	jmp	$+246    	;abs 0xc5ba
 		}
 		break;
 	case PIN_FUNCTION_OUTPUT:
 		if(!pin_has_capabilities(pin, PIN_CAP_OUTPUT)) { 
-    c54c:	2e 42       	mov	#4,	r14	;r2 As==10
-    c54e:	4f 49       	mov.b	r9,	r15	
-    c550:	b0 12 68 c4 	call	#0xc468	
-    c554:	0f 93       	tst	r15		
-    c556:	4c 24       	jz	$+154    	;abs 0xc5f0
+    c4c6:	2e 42       	mov	#4,	r14	;r2 As==10
+    c4c8:	4f 49       	mov.b	r9,	r15	
+    c4ca:	b0 12 b8 c3 	call	#0xc3b8	
+    c4ce:	0f 93       	tst	r15		
+    c4d0:	7d 24       	jz	$+252    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		if(port == 1) {
-    c558:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c55a:	08 20       	jnz	$+18     	;abs 0xc56c
+    c4d2:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c4d4:	0a 20       	jnz	$+22     	;abs 0xc4ea
 			P1DIR |=  bit;					// set direction to out                 
-    c55c:	c2 da 22 00 	bis.b	r10,	&0x0022	
+    c4d6:	c2 da 22 00 	bis.b	r10,	&0x0022	
   			P1OUT &= ~bit;					// set to LOW initially                     
-    c560:	7a e3       	xor.b	#-1,	r10	;r3 As==11
-    c562:	c2 fa 21 00 	and.b	r10,	&0x0021	
+    c4da:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c4dc:	c2 fa 21 00 	and.b	r10,	&0x0021	
 			P1REN &= ~bit; 	                // disable pull-up/down 
-    c566:	c2 fa 27 00 	and.b	r10,	&0x0027	
-    c56a:	39 3c       	jmp	$+116    	;abs 0xc5de
+    c4e0:	c2 fa 27 00 	and.b	r10,	&0x0027	
+  			P1SEL &= ~bit;                  // remove option
+    c4e4:	c2 fa 26 00 	and.b	r10,	&0x0026	
+    c4e8:	68 3c       	jmp	$+210    	;abs 0xc5ba
 		}
 		else if(port == 2) {
-    c56c:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c56e:	37 20       	jnz	$+112    	;abs 0xc5de
+    c4ea:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c4ec:	66 20       	jnz	$+206    	;abs 0xc5ba
 			P2DIR |=  bit;					// set direction to out                 
-    c570:	c2 da 2a 00 	bis.b	r10,	&0x002a	
+    c4ee:	c2 da 2a 00 	bis.b	r10,	&0x002a	
   			P2OUT &= ~bit;					// set to LOW initially                     
-    c574:	7a e3       	xor.b	#-1,	r10	;r3 As==11
-    c576:	c2 fa 29 00 	and.b	r10,	&0x0029	
+    c4f2:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c4f4:	c2 fa 29 00 	and.b	r10,	&0x0029	
 			P2REN &= ~bit; 	                // disable pull-up/down 
-    c57a:	c2 fa 2f 00 	and.b	r10,	&0x002f	
-    c57e:	2f 3c       	jmp	$+96     	;abs 0xc5de
+    c4f8:	c2 fa 2f 00 	and.b	r10,	&0x002f	
+  			P2SEL &= ~bit;                  // remove option
+    c4fc:	c2 fa 2e 00 	and.b	r10,	&0x002e	
+    c500:	5c 3c       	jmp	$+186    	;abs 0xc5ba
 		}
 		break;
 	case PIN_FUNCTION_ANALOG_IN:
 		if(!pin_has_capabilities(pin, PIN_CAP_ANALOG_IN)) { 
-    c580:	3e 42       	mov	#8,	r14	;r2 As==11
-    c582:	4f 49       	mov.b	r9,	r15	
-    c584:	b0 12 68 c4 	call	#0xc468	
-    c588:	0f 93       	tst	r15		
-    c58a:	32 24       	jz	$+102    	;abs 0xc5f0
+    c502:	3e 42       	mov	#8,	r14	;r2 As==11
+    c504:	4f 49       	mov.b	r9,	r15	
+    c506:	b0 12 b8 c3 	call	#0xc3b8	
+    c50a:	0f 93       	tst	r15		
+    c50c:	5f 24       	jz	$+192    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		P1DIR    &= ~bit;					// make sure to clear OUT flag for the pin                 
-    c58c:	7a e3       	xor.b	#-1,	r10	;r3 As==11
-    c58e:	c2 fa 22 00 	and.b	r10,	&0x0022	
+
+		P1DIR &= ~bit;						// make sure to clear OUT flag for the pin                 
+    c50e:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c510:	c2 fa 22 00 	and.b	r10,	&0x0022	
 		P1REN &= ~bit; 	                	// disable pull-up/down 
-    c592:	c2 fa 27 00 	and.b	r10,	&0x0027	
+    c514:	c2 fa 27 00 	and.b	r10,	&0x0027	
+  		P1SEL &= ~bit;                  	// remove option
+    c518:	c2 fa 26 00 	and.b	r10,	&0x0026	
 
 		// VCC as +VRef, VSS as -VRef, 16 x ADC10CLKs
    		ADC10CTL0 = SREF_0 + ADC10SHT_2 + REFON + ADC10ON;
-    c596:	b2 40 30 10 	mov	#4144,	&0x01b0	;#0x1030
-    c59a:	b0 01 
-    c59c:	20 3c       	jmp	$+66     	;abs 0xc5de
+    c51c:	b2 40 30 10 	mov	#4144,	&0x01b0	;#0x1030
+    c520:	b0 01 
+    c522:	4b 3c       	jmp	$+152    	;abs 0xc5ba
 
 		break;
 	case PIN_FUNCTION_PWM:
 		if(!pin_has_capabilities(pin, PIN_CAP_PWM)) { 
-    c59e:	3e 40 10 00 	mov	#16,	r14	;#0x0010
-    c5a2:	4f 49       	mov.b	r9,	r15	
-    c5a4:	b0 12 68 c4 	call	#0xc468	
-    c5a8:	0f 93       	tst	r15		
-    c5aa:	19 20       	jnz	$+52     	;abs 0xc5de
-    c5ac:	21 3c       	jmp	$+68     	;abs 0xc5f0
+    c524:	3e 40 10 00 	mov	#16,	r14	;#0x0010
+    c528:	4f 49       	mov.b	r9,	r15	
+    c52a:	b0 12 b8 c3 	call	#0xc3b8	
+    c52e:	0f 93       	tst	r15		
+    c530:	4d 24       	jz	$+156    	;abs 0xc5cc
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
-		// TODO
+
+		if(port == 1) {
+    c532:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c534:	14 20       	jnz	$+42     	;abs 0xc55e
+			// only one pin on port 1 is able to perform PWM
+			if(pin_with_function(PIN_1_0, function) < PIN_2_0) { 
+    c536:	7e 40 05 00 	mov.b	#5,	r14	;#0x0005
+    c53a:	7f 40 10 00 	mov.b	#16,	r15	;#0x0010
+    c53e:	b0 12 ea c2 	call	#0xc2ea	
+    c542:	7f 90 20 00 	cmp.b	#32,	r15	;#0x0020
+    c546:	42 28       	jnc	$+134    	;abs 0xc5cc
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
+			P1DIR |=  bit;					// set direction to out                 
+    c548:	4f 4a       	mov.b	r10,	r15	
+    c54a:	c2 da 22 00 	bis.b	r10,	&0x0022	
+  			P1OUT &= ~bit;					// set to LOW initially                     
+    c54e:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c550:	c2 fa 21 00 	and.b	r10,	&0x0021	
+			P1REN &= ~bit; 	                // disable pull-up/down 
+    c554:	c2 fa 27 00 	and.b	r10,	&0x0027	
+  			P1SEL |=  bit;                  // select TA option
+    c558:	c2 df 26 00 	bis.b	r15,	&0x0026	
+    c55c:	2e 3c       	jmp	$+94     	;abs 0xc5ba
+		}
+		else if(port == 2) {
+    c55e:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c560:	2c 20       	jnz	$+90     	;abs 0xc5ba
+			// only one pin on port 2 is able to perform PWM
+			if(pin_with_function(PIN_2_0, function)) { 
+    c562:	7e 40 05 00 	mov.b	#5,	r14	;#0x0005
+    c566:	7f 40 20 00 	mov.b	#32,	r15	;#0x0020
+    c56a:	b0 12 ea c2 	call	#0xc2ea	
+    c56e:	4f 93       	tst.b	r15		
+    c570:	2d 20       	jnz	$+92     	;abs 0xc5cc
+				return PIN_STAT_ERR_UNSUPFUNC;
+			}
+			P2DIR |=  bit;					// set direction to out                 
+    c572:	4f 4a       	mov.b	r10,	r15	
+    c574:	c2 da 2a 00 	bis.b	r10,	&0x002a	
+  			P2OUT &= ~bit;					// set to LOW initially                     
+    c578:	7a e3       	xor.b	#-1,	r10	;r3 As==11
+    c57a:	c2 fa 29 00 	and.b	r10,	&0x0029	
+			P2REN &= ~bit; 	                // disable pull-up/down 
+    c57e:	c2 fa 2f 00 	and.b	r10,	&0x002f	
+  			P2SEL |=  bit;                  // select TA option
+    c582:	c2 df 2e 00 	bis.b	r15,	&0x002e	
+    c586:	19 3c       	jmp	$+52     	;abs 0xc5ba
+		}
 		break;
 	case PIN_FUNCTION_UARTRX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
-    c5ae:	3e 40 20 00 	mov	#32,	r14	;#0x0020
-    c5b2:	4f 49       	mov.b	r9,	r15	
-    c5b4:	b0 12 68 c4 	call	#0xc468	
-    c5b8:	0f 93       	tst	r15		
-    c5ba:	1a 24       	jz	$+54     	;abs 0xc5f0
-			pin_with_function(0, function)) { 
-    c5bc:	7e 40 06 00 	mov.b	#6,	r14	;#0x0006
-    c5c0:	09 3c       	jmp	$+20     	;abs 0xc5d4
+    c588:	3e 40 20 00 	mov	#32,	r14	;#0x0020
+    c58c:	4f 49       	mov.b	r9,	r15	
+    c58e:	b0 12 b8 c3 	call	#0xc3b8	
+    c592:	0f 93       	tst	r15		
+    c594:	1b 24       	jz	$+56     	;abs 0xc5cc
+			pin_with_function(PIN_1_0, function)) { 
+    c596:	7e 40 06 00 	mov.b	#6,	r14	;#0x0006
+    c59a:	09 3c       	jmp	$+20     	;abs 0xc5ae
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-    c5c2:	3e 40 40 00 	mov	#64,	r14	;#0x0040
-    c5c6:	4f 49       	mov.b	r9,	r15	
-    c5c8:	b0 12 68 c4 	call	#0xc468	
-    c5cc:	0f 93       	tst	r15		
-    c5ce:	10 24       	jz	$+34     	;abs 0xc5f0
-			pin_with_function(0, function)) { 
-    c5d0:	7e 40 07 00 	mov.b	#7,	r14	;#0x0007
-    c5d4:	4f 43       	clr.b	r15		
-    c5d6:	b0 12 e8 c2 	call	#0xc2e8	
+    c59c:	3e 40 40 00 	mov	#64,	r14	;#0x0040
+    c5a0:	4f 49       	mov.b	r9,	r15	
+    c5a2:	b0 12 b8 c3 	call	#0xc3b8	
+    c5a6:	0f 93       	tst	r15		
+    c5a8:	11 24       	jz	$+36     	;abs 0xc5cc
+			pin_with_function(PIN_1_0, function)) { 
+    c5aa:	7e 40 07 00 	mov.b	#7,	r14	;#0x0007
+    c5ae:	7f 40 10 00 	mov.b	#16,	r15	;#0x0010
+    c5b2:	b0 12 ea c2 	call	#0xc2ea	
 			return PIN_STAT_ERR_UNSUPFUNC;
 		}
 		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-    c5da:	4f 93       	tst.b	r15		
-    c5dc:	09 20       	jnz	$+20     	;abs 0xc5f0
+    c5b6:	4f 93       	tst.b	r15		
+    c5b8:	09 20       	jnz	$+20     	;abs 0xc5cc
 		break;
 	default:
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
 	pin_set_curr_func(pin, function);
-    c5de:	4e 48       	mov.b	r8,	r14	
-    c5e0:	4f 49       	mov.b	r9,	r15	
-    c5e2:	b0 12 8c c2 	call	#0xc28c	
-    c5e6:	02 3c       	jmp	$+6      	;abs 0xc5ec
+    c5ba:	4e 48       	mov.b	r8,	r14	
+    c5bc:	4f 49       	mov.b	r9,	r15	
+    c5be:	b0 12 8c c2 	call	#0xc28c	
+    c5c2:	02 3c       	jmp	$+6      	;abs 0xc5c8
 {
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c5e8:	0b 4f       	mov	r15,	r11	
-    c5ea:	03 3c       	jmp	$+8      	;abs 0xc5f2
+    c5c4:	0b 4f       	mov	r15,	r11	
+    c5c6:	03 3c       	jmp	$+8      	;abs 0xc5ce
+	cio_printf("pin %x has current function %x\n\r", pin, f);
+#endif
 
 	// see if PIN is already configured for the given function
-	if(pin_function(pin) == function) { 
+	if(f == function) { 
 		return PIN_STAT_OK;
-    c5ec:	0b 43       	clr	r11		
-    c5ee:	01 3c       	jmp	$+4      	;abs 0xc5f2
+    c5c8:	0b 43       	clr	r11		
+    c5ca:	01 3c       	jmp	$+4      	;abs 0xc5ce
 		// TODO	
 		break;
 	case PIN_FUNCTION_UARTTX:
 		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-			pin_with_function(0, function)) { 
+			pin_with_function(PIN_1_0, function)) { 
 			return PIN_STAT_ERR_UNSUPFUNC;
-    c5f0:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c5cc:	3b 43       	mov	#-1,	r11	;r3 As==11
 	}
 
 	pin_set_curr_func(pin, function);
 
 	return PIN_STAT_OK;
 }
-    c5f2:	0f 4b       	mov	r11,	r15	
-    c5f4:	38 41       	pop	r8		
-    c5f6:	39 41       	pop	r9		
-    c5f8:	3a 41       	pop	r10		
-    c5fa:	3b 41       	pop	r11		
-    c5fc:	30 41       	ret			
+    c5ce:	0f 4b       	mov	r11,	r15	
+    c5d0:	38 41       	pop	r8		
+    c5d2:	39 41       	pop	r9		
+    c5d4:	3a 41       	pop	r10		
+    c5d6:	3b 41       	pop	r11		
+    c5d8:	30 41       	ret			
 
-0000c5fe <pin_clear>:
+0000c5da <pin_clear>:
 
 int pin_clear(unsigned char pin)
 {
-    c5fe:	0b 12       	push	r11		
-    c600:	0a 12       	push	r10		
-    c602:	4a 4f       	mov.b	r15,	r10	
+    c5da:	0b 12       	push	r11		
+    c5dc:	0a 12       	push	r10		
+    c5de:	4a 4f       	mov.b	r15,	r10	
 	unsigned char pf = pin_function(pin);
-    c604:	b0 12 bc c2 	call	#0xc2bc	
+    c5e0:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_OUTPUT) { 
-    c608:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
-    c60c:	15 20       	jnz	$+44     	;abs 0xc638
+    c5e4:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c5e8:	15 20       	jnz	$+44     	;abs 0xc614
 	}
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-    c60e:	4f 4a       	mov.b	r10,	r15	
-    c610:	b0 12 44 c2 	call	#0xc244	
-    c614:	0b 4f       	mov	r15,	r11	
-    c616:	0f 93       	tst	r15		
-    c618:	14 38       	jl	$+42     	;abs 0xc642
+    c5ea:	4f 4a       	mov.b	r10,	r15	
+    c5ec:	b0 12 44 c2 	call	#0xc244	
+    c5f0:	0b 4f       	mov	r15,	r11	
+    c5f2:	0f 93       	tst	r15		
+    c5f4:	14 38       	jl	$+42     	;abs 0xc61e
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c61a:	4f 4a       	mov.b	r10,	r15	
-    c61c:	b0 12 5e c2 	call	#0xc25e	
-    c620:	0f 93       	tst	r15		
-    c622:	0c 38       	jl	$+26     	;abs 0xc63c
+    c5f6:	4f 4a       	mov.b	r10,	r15	
+    c5f8:	b0 12 5e c2 	call	#0xc25e	
+    c5fc:	0f 93       	tst	r15		
+    c5fe:	0c 38       	jl	$+26     	;abs 0xc618
 
 	if(port == 1) {
-    c624:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c626:	03 20       	jnz	$+8      	;abs 0xc62e
+    c600:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c602:	03 20       	jnz	$+8      	;abs 0xc60a
   		P1OUT &= ~bit;					// set to LOW                   
-    c628:	c2 cf 21 00 	bic.b	r15,	&0x0021	
-    c62c:	09 3c       	jmp	$+20     	;abs 0xc640
+    c604:	c2 cf 21 00 	bic.b	r15,	&0x0021	
+    c608:	09 3c       	jmp	$+20     	;abs 0xc61c
 	}
 	else if(port == 2) {
-    c62e:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c630:	07 20       	jnz	$+16     	;abs 0xc640
+    c60a:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c60c:	07 20       	jnz	$+16     	;abs 0xc61c
   		P2OUT &= ~bit;					// set to LOW                    
-    c632:	c2 cf 29 00 	bic.b	r15,	&0x0029	
-    c636:	04 3c       	jmp	$+10     	;abs 0xc640
+    c60e:	c2 cf 29 00 	bic.b	r15,	&0x0029	
+    c612:	04 3c       	jmp	$+10     	;abs 0xc61c
 int pin_clear(unsigned char pin)
 {
 	unsigned char pf = pin_function(pin);
  
 	if(pf != PIN_FUNCTION_OUTPUT) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c638:	3b 43       	mov	#-1,	r11	;r3 As==11
-    c63a:	03 3c       	jmp	$+8      	;abs 0xc642
+    c614:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c616:	03 3c       	jmp	$+8      	;abs 0xc61e
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c63c:	0b 4f       	mov	r15,	r11	
-    c63e:	01 3c       	jmp	$+4      	;abs 0xc642
+    c618:	0b 4f       	mov	r15,	r11	
+    c61a:	01 3c       	jmp	$+4      	;abs 0xc61e
 	}
 	else if(port == 2) {
   		P2OUT &= ~bit;					// set to LOW                    
 	}
 
 	return PIN_STAT_OK;
-    c640:	0b 43       	clr	r11		
+    c61c:	0b 43       	clr	r11		
 }
-    c642:	0f 4b       	mov	r11,	r15	
-    c644:	3a 41       	pop	r10		
-    c646:	3b 41       	pop	r11		
-    c648:	30 41       	ret			
+    c61e:	0f 4b       	mov	r11,	r15	
+    c620:	3a 41       	pop	r10		
+    c622:	3b 41       	pop	r11		
+    c624:	30 41       	ret			
 
-0000c64a <pin_set>:
+0000c626 <pin_set>:
 
 int pin_set(unsigned char pin)
 {
-    c64a:	0b 12       	push	r11		
-    c64c:	0a 12       	push	r10		
-    c64e:	4a 4f       	mov.b	r15,	r10	
+    c626:	0b 12       	push	r11		
+    c628:	0a 12       	push	r10		
+    c62a:	4a 4f       	mov.b	r15,	r10	
 	unsigned char pf = pin_function(pin);
-    c650:	b0 12 bc c2 	call	#0xc2bc	
+    c62c:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_OUTPUT) { 
-    c654:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
-    c658:	15 20       	jnz	$+44     	;abs 0xc684
+    c630:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c634:	15 20       	jnz	$+44     	;abs 0xc660
 	}
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-    c65a:	4f 4a       	mov.b	r10,	r15	
-    c65c:	b0 12 44 c2 	call	#0xc244	
-    c660:	0b 4f       	mov	r15,	r11	
-    c662:	0f 93       	tst	r15		
-    c664:	14 38       	jl	$+42     	;abs 0xc68e
+    c636:	4f 4a       	mov.b	r10,	r15	
+    c638:	b0 12 44 c2 	call	#0xc244	
+    c63c:	0b 4f       	mov	r15,	r11	
+    c63e:	0f 93       	tst	r15		
+    c640:	14 38       	jl	$+42     	;abs 0xc66a
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c666:	4f 4a       	mov.b	r10,	r15	
-    c668:	b0 12 5e c2 	call	#0xc25e	
-    c66c:	0f 93       	tst	r15		
-    c66e:	0c 38       	jl	$+26     	;abs 0xc688
+    c642:	4f 4a       	mov.b	r10,	r15	
+    c644:	b0 12 5e c2 	call	#0xc25e	
+    c648:	0f 93       	tst	r15		
+    c64a:	0c 38       	jl	$+26     	;abs 0xc664
 
 	if(port == 1) {
-    c670:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c672:	03 20       	jnz	$+8      	;abs 0xc67a
+    c64c:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c64e:	03 20       	jnz	$+8      	;abs 0xc656
   		P1OUT |= bit;					// set to HIGH 
-    c674:	c2 df 21 00 	bis.b	r15,	&0x0021	
-    c678:	09 3c       	jmp	$+20     	;abs 0xc68c
+    c650:	c2 df 21 00 	bis.b	r15,	&0x0021	
+    c654:	09 3c       	jmp	$+20     	;abs 0xc668
 	}
 	else if(port == 2) {
-    c67a:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c67c:	07 20       	jnz	$+16     	;abs 0xc68c
+    c656:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c658:	07 20       	jnz	$+16     	;abs 0xc668
   		P2OUT |= bit;					// set to HIGH               
-    c67e:	c2 df 29 00 	bis.b	r15,	&0x0029	
-    c682:	04 3c       	jmp	$+10     	;abs 0xc68c
+    c65a:	c2 df 29 00 	bis.b	r15,	&0x0029	
+    c65e:	04 3c       	jmp	$+10     	;abs 0xc668
 int pin_set(unsigned char pin)
 {
 	unsigned char pf = pin_function(pin);
  
 	if(pf != PIN_FUNCTION_OUTPUT) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c684:	3b 43       	mov	#-1,	r11	;r3 As==11
-    c686:	03 3c       	jmp	$+8      	;abs 0xc68e
+    c660:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c662:	03 3c       	jmp	$+8      	;abs 0xc66a
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c688:	0b 4f       	mov	r15,	r11	
-    c68a:	01 3c       	jmp	$+4      	;abs 0xc68e
+    c664:	0b 4f       	mov	r15,	r11	
+    c666:	01 3c       	jmp	$+4      	;abs 0xc66a
 	}
 	else if(port == 2) {
   		P2OUT |= bit;					// set to HIGH               
 	}
 
 	return PIN_STAT_OK;
-    c68c:	0b 43       	clr	r11		
+    c668:	0b 43       	clr	r11		
 }
-    c68e:	0f 4b       	mov	r11,	r15	
-    c690:	3a 41       	pop	r10		
-    c692:	3b 41       	pop	r11		
-    c694:	30 41       	ret			
+    c66a:	0f 4b       	mov	r11,	r15	
+    c66c:	3a 41       	pop	r10		
+    c66e:	3b 41       	pop	r11		
+    c670:	30 41       	ret			
 
-0000c696 <pin_toggle>:
+0000c672 <pin_toggle>:
 
 int pin_toggle(unsigned char pin)
 {
-    c696:	0b 12       	push	r11		
-    c698:	0a 12       	push	r10		
-    c69a:	4a 4f       	mov.b	r15,	r10	
+    c672:	0b 12       	push	r11		
+    c674:	0a 12       	push	r10		
+    c676:	4a 4f       	mov.b	r15,	r10	
 	unsigned char pf = pin_function(pin);
-    c69c:	b0 12 bc c2 	call	#0xc2bc	
+    c678:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_OUTPUT)  { 
-    c6a0:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
-    c6a4:	15 20       	jnz	$+44     	;abs 0xc6d0
+    c67c:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c680:	15 20       	jnz	$+44     	;abs 0xc6ac
 	}
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-    c6a6:	4f 4a       	mov.b	r10,	r15	
-    c6a8:	b0 12 44 c2 	call	#0xc244	
-    c6ac:	0b 4f       	mov	r15,	r11	
-    c6ae:	0f 93       	tst	r15		
-    c6b0:	14 38       	jl	$+42     	;abs 0xc6da
+    c682:	4f 4a       	mov.b	r10,	r15	
+    c684:	b0 12 44 c2 	call	#0xc244	
+    c688:	0b 4f       	mov	r15,	r11	
+    c68a:	0f 93       	tst	r15		
+    c68c:	14 38       	jl	$+42     	;abs 0xc6b6
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c6b2:	4f 4a       	mov.b	r10,	r15	
-    c6b4:	b0 12 5e c2 	call	#0xc25e	
-    c6b8:	0f 93       	tst	r15		
-    c6ba:	0c 38       	jl	$+26     	;abs 0xc6d4
+    c68e:	4f 4a       	mov.b	r10,	r15	
+    c690:	b0 12 5e c2 	call	#0xc25e	
+    c694:	0f 93       	tst	r15		
+    c696:	0c 38       	jl	$+26     	;abs 0xc6b0
 
 	if(port == 1) {
-    c6bc:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c6be:	03 20       	jnz	$+8      	;abs 0xc6c6
+    c698:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c69a:	03 20       	jnz	$+8      	;abs 0xc6a2
   		P1OUT ^= bit;					// toggle 
-    c6c0:	c2 ef 21 00 	xor.b	r15,	&0x0021	
-    c6c4:	09 3c       	jmp	$+20     	;abs 0xc6d8
+    c69c:	c2 ef 21 00 	xor.b	r15,	&0x0021	
+    c6a0:	09 3c       	jmp	$+20     	;abs 0xc6b4
 	}
 	else if(port == 2) {
-    c6c6:	2b 93       	cmp	#2,	r11	;r3 As==10
-    c6c8:	07 20       	jnz	$+16     	;abs 0xc6d8
+    c6a2:	2b 93       	cmp	#2,	r11	;r3 As==10
+    c6a4:	07 20       	jnz	$+16     	;abs 0xc6b4
   		P2OUT ^= bit;					// toggle           
-    c6ca:	c2 ef 29 00 	xor.b	r15,	&0x0029	
-    c6ce:	04 3c       	jmp	$+10     	;abs 0xc6d8
+    c6a6:	c2 ef 29 00 	xor.b	r15,	&0x0029	
+    c6aa:	04 3c       	jmp	$+10     	;abs 0xc6b4
 int pin_toggle(unsigned char pin)
 {
 	unsigned char pf = pin_function(pin);
  
 	if(pf != PIN_FUNCTION_OUTPUT)  { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c6d0:	3b 43       	mov	#-1,	r11	;r3 As==11
-    c6d2:	03 3c       	jmp	$+8      	;abs 0xc6da
+    c6ac:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c6ae:	03 3c       	jmp	$+8      	;abs 0xc6b6
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c6d4:	0b 4f       	mov	r15,	r11	
-    c6d6:	01 3c       	jmp	$+4      	;abs 0xc6da
+    c6b0:	0b 4f       	mov	r15,	r11	
+    c6b2:	01 3c       	jmp	$+4      	;abs 0xc6b6
 	}
 	else if(port == 2) {
   		P2OUT ^= bit;					// toggle           
 	}
 
 	return PIN_STAT_OK;
-    c6d8:	0b 43       	clr	r11		
+    c6b4:	0b 43       	clr	r11		
 }
-    c6da:	0f 4b       	mov	r11,	r15	
-    c6dc:	3a 41       	pop	r10		
-    c6de:	3b 41       	pop	r11		
-    c6e0:	30 41       	ret			
+    c6b6:	0f 4b       	mov	r11,	r15	
+    c6b8:	3a 41       	pop	r10		
+    c6ba:	3b 41       	pop	r11		
+    c6bc:	30 41       	ret			
 
-0000c6e2 <pin_digital_read>:
+0000c6be <pin_digital_read>:
 
 int pin_digital_read(unsigned char pin)
 {
-    c6e2:	0b 12       	push	r11		
-    c6e4:	0a 12       	push	r10		
-    c6e6:	4a 4f       	mov.b	r15,	r10	
+    c6be:	0b 12       	push	r11		
+    c6c0:	0a 12       	push	r10		
+    c6c2:	4a 4f       	mov.b	r15,	r10	
 	unsigned char pf = pin_function(pin);
-    c6e8:	b0 12 bc c2 	call	#0xc2bc	
+    c6c4:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && 
-    c6ec:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
-    c6f0:	09 24       	jz	$+20     	;abs 0xc704
-    c6f2:	4f 93       	tst.b	r15		
-    c6f4:	07 24       	jz	$+16     	;abs 0xc704
-    c6f6:	5f 93       	cmp.b	#1,	r15	;r3 As==01
-    c6f8:	05 24       	jz	$+12     	;abs 0xc704
+    c6c8:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c6cc:	09 24       	jz	$+20     	;abs 0xc6e0
+    c6ce:	4f 93       	tst.b	r15		
+    c6d0:	07 24       	jz	$+16     	;abs 0xc6e0
+    c6d2:	5f 93       	cmp.b	#1,	r15	;r3 As==01
+    c6d4:	05 24       	jz	$+12     	;abs 0xc6e0
 	   pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
-    c6fa:	6f 93       	cmp.b	#2,	r15	;r3 As==10
-    c6fc:	03 24       	jz	$+8      	;abs 0xc704
+    c6d6:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c6d8:	03 24       	jz	$+8      	;abs 0xc6e0
 	   && pf != PIN_FUNCTION_PWM) { 
-    c6fe:	7f 90 05 00 	cmp.b	#5,	r15	;#0x0005
-    c702:	19 20       	jnz	$+52     	;abs 0xc736
+    c6da:	7f 90 05 00 	cmp.b	#5,	r15	;#0x0005
+    c6de:	19 20       	jnz	$+52     	;abs 0xc712
 	}
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
-    c704:	4f 4a       	mov.b	r10,	r15	
-    c706:	b0 12 44 c2 	call	#0xc244	
-    c70a:	0b 4f       	mov	r15,	r11	
-    c70c:	0f 93       	tst	r15		
-    c70e:	16 38       	jl	$+46     	;abs 0xc73c
+    c6e0:	4f 4a       	mov.b	r10,	r15	
+    c6e2:	b0 12 44 c2 	call	#0xc244	
+    c6e6:	0b 4f       	mov	r15,	r11	
+    c6e8:	0f 93       	tst	r15		
+    c6ea:	16 38       	jl	$+46     	;abs 0xc718
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c710:	4f 4a       	mov.b	r10,	r15	
-    c712:	b0 12 5e c2 	call	#0xc25e	
-    c716:	0f 93       	tst	r15		
-    c718:	10 38       	jl	$+34     	;abs 0xc73a
+    c6ec:	4f 4a       	mov.b	r10,	r15	
+    c6ee:	b0 12 5e c2 	call	#0xc25e	
+    c6f2:	0f 93       	tst	r15		
+    c6f4:	10 38       	jl	$+34     	;abs 0xc716
 
 	if(port == 1) {
-    c71a:	1b 93       	cmp	#1,	r11	;r3 As==01
-    c71c:	04 20       	jnz	$+10     	;abs 0xc726
+    c6f6:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c6f8:	04 20       	jnz	$+10     	;abs 0xc702
   		return ((P1IN & bit) == bit ? 1 : 0);	// read and return 
-    c71e:	5e 42 20 00 	mov.b	&0x0020,r14	
-    c722:	0e ff       	and	r15,	r14	
-    c724:	04 3c       	jmp	$+10     	;abs 0xc72e
+    c6fa:	5e 42 20 00 	mov.b	&0x0020,r14	
+    c6fe:	0e ff       	and	r15,	r14	
+    c700:	04 3c       	jmp	$+10     	;abs 0xc70a
 	}
 
 	return ((P2IN & bit) == bit ? 1 : 0);	// read and return 
-    c726:	5e 42 28 00 	mov.b	&0x0028,r14	
-    c72a:	0e ff       	and	r15,	r14	
-    c72c:	1b 43       	mov	#1,	r11	;r3 As==01
-    c72e:	0e 9f       	cmp	r15,	r14	
-    c730:	05 24       	jz	$+12     	;abs 0xc73c
-    c732:	0b 43       	clr	r11		
-    c734:	03 3c       	jmp	$+8      	;abs 0xc73c
+    c702:	5e 42 28 00 	mov.b	&0x0028,r14	
+    c706:	0e ff       	and	r15,	r14	
+    c708:	1b 43       	mov	#1,	r11	;r3 As==01
+    c70a:	0e 9f       	cmp	r15,	r14	
+    c70c:	05 24       	jz	$+12     	;abs 0xc718
+    c70e:	0b 43       	clr	r11		
+    c710:	03 3c       	jmp	$+8      	;abs 0xc718
 	unsigned char pf = pin_function(pin);
  
 	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_INPUT_FLOAT && 
 	   pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN
 	   && pf != PIN_FUNCTION_PWM) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c736:	3b 43       	mov	#-1,	r11	;r3 As==11
-    c738:	01 3c       	jmp	$+4      	;abs 0xc73c
+    c712:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c714:	01 3c       	jmp	$+4      	;abs 0xc718
 
 	int port;
 	int bit;
 
 	if((port = pin2port(pin)) < 0) return port;
 	if((bit  = pin2bit(pin))  < 0) return bit;
-    c73a:	0b 4f       	mov	r15,	r11	
+    c716:	0b 4f       	mov	r15,	r11	
 	if(port == 1) {
   		return ((P1IN & bit) == bit ? 1 : 0);	// read and return 
 	}
 
 	return ((P2IN & bit) == bit ? 1 : 0);	// read and return 
 }
-    c73c:	0f 4b       	mov	r11,	r15	
-    c73e:	3a 41       	pop	r10		
-    c740:	3b 41       	pop	r11		
-    c742:	30 41       	ret			
+    c718:	0f 4b       	mov	r11,	r15	
+    c71a:	3a 41       	pop	r10		
+    c71c:	3b 41       	pop	r11		
+    c71e:	30 41       	ret			
 
-0000c744 <pin_analog_read>:
+0000c720 <pin_analog_read>:
 
 int pin_analog_read(unsigned char pin)
 {
-    c744:	0b 12       	push	r11		
-    c746:	4b 4f       	mov.b	r15,	r11	
+    c720:	0b 12       	push	r11		
+    c722:	4b 4f       	mov.b	r15,	r11	
 	unsigned char pf = pin_function(pin);
-    c748:	b0 12 bc c2 	call	#0xc2bc	
+    c724:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_ANALOG_IN) { 
-    c74c:	7f 50 fd ff 	add.b	#-3,	r15	;#0xfffd
-    c750:	6f 93       	cmp.b	#2,	r15	;r3 As==10
-    c752:	1b 2c       	jc	$+56     	;abs 0xc78a
+    c728:	7f 50 fd ff 	add.b	#-3,	r15	;#0xfffd
+    c72c:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c72e:	1b 2c       	jc	$+56     	;abs 0xc766
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
 	int s;
 
 	if((s = pin2port(pin)) < 0) return s;
-    c754:	4f 4b       	mov.b	r11,	r15	
-    c756:	b0 12 44 c2 	call	#0xc244	
-    c75a:	0f 93       	tst	r15		
-    c75c:	17 38       	jl	$+48     	;abs 0xc78c
+    c730:	4f 4b       	mov.b	r11,	r15	
+    c732:	b0 12 44 c2 	call	#0xc244	
+    c736:	0f 93       	tst	r15		
+    c738:	17 38       	jl	$+48     	;abs 0xc768
 	if((s = pin2bit(pin))  < 0) return s;
-    c75e:	4f 4b       	mov.b	r11,	r15	
-    c760:	b0 12 5e c2 	call	#0xc25e	
-    c764:	0f 93       	tst	r15		
-    c766:	12 38       	jl	$+38     	;abs 0xc78c
+    c73a:	4f 4b       	mov.b	r11,	r15	
+    c73c:	b0 12 5e c2 	call	#0xc25e	
+    c740:	0f 93       	tst	r15		
+    c742:	12 38       	jl	$+38     	;abs 0xc768
 
 	// configure channel
    	ADC10CTL1 = 0xF000 & (pin << 12); 
-    c768:	4f 4b       	mov.b	r11,	r15	
-    c76a:	8f 10       	swpb	r15		
-    c76c:	0f 5f       	rla	r15		
-    c76e:	0f 5f       	rla	r15		
-    c770:	0f 5f       	rla	r15		
-    c772:	0f 5f       	rla	r15		
-    c774:	82 4f b2 01 	mov	r15,	&0x01b2	
+    c744:	4f 4b       	mov.b	r11,	r15	
+    c746:	8f 10       	swpb	r15		
+    c748:	0f 5f       	rla	r15		
+    c74a:	0f 5f       	rla	r15		
+    c74c:	0f 5f       	rla	r15		
+    c74e:	0f 5f       	rla	r15		
+    c750:	82 4f b2 01 	mov	r15,	&0x01b2	
 
     ADC10CTL0 |= ENC + ADC10SC;             // sample 
-    c778:	b2 d0 03 00 	bis	#3,	&0x01b0	;#0x0003
-    c77c:	b0 01 
+    c754:	b2 d0 03 00 	bis	#3,	&0x01b0	;#0x0003
+    c758:	b0 01 
     while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
-    c77e:	92 b3 b2 01 	bit	#1,	&0x01b2	;r3 As==01
-    c782:	fd 23       	jnz	$-4      	;abs 0xc77e
+    c75a:	92 b3 b2 01 	bit	#1,	&0x01b2	;r3 As==01
+    c75e:	fd 23       	jnz	$-4      	;abs 0xc75a
 
 	return ADC10MEM;
-    c784:	1f 42 b4 01 	mov	&0x01b4,r15	
-    c788:	01 3c       	jmp	$+4      	;abs 0xc78c
+    c760:	1f 42 b4 01 	mov	&0x01b4,r15	
+    c764:	01 3c       	jmp	$+4      	;abs 0xc768
 int pin_analog_read(unsigned char pin)
 {
 	unsigned char pf = pin_function(pin);
  
 	if(pf != PIN_FUNCTION_OUTPUT && pf != PIN_FUNCTION_ANALOG_IN) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c78a:	3f 43       	mov	#-1,	r15	;r3 As==11
+    c766:	3f 43       	mov	#-1,	r15	;r3 As==11
 
     ADC10CTL0 |= ENC + ADC10SC;             // sample 
     while (ADC10CTL1 & ADC10BUSY);          // wait while ADC10BUSY
 
 	return ADC10MEM;
 }
-    c78c:	3b 41       	pop	r11		
-    c78e:	30 41       	ret			
+    c768:	3b 41       	pop	r11		
+    c76a:	30 41       	ret			
 
-0000c790 <pin_pulselength_read>:
+0000c76c <pin_pulselength_read>:
 
 int pin_pulselength_read(unsigned char pin)
 {
 	unsigned char pf = pin_function(pin);
-    c790:	b0 12 bc c2 	call	#0xc2bc	
+    c76c:	b0 12 be c2 	call	#0xc2be	
  
 	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && 
-    c794:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
-    c798:	02 28       	jnc	$+6      	;abs 0xc79e
+    c770:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    c774:	02 28       	jnc	$+6      	;abs 0xc77a
 	   pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
 		return PIN_STAT_ERR_UNSUPFUNC;
-    c79a:	3f 43       	mov	#-1,	r15	;r3 As==11
-    c79c:	30 41       	ret			
+    c776:	3f 43       	mov	#-1,	r15	;r3 As==11
+    c778:	30 41       	ret			
 	}
 
 	// TODO
 	return 0;
-    c79e:	0f 43       	clr	r15		
+    c77a:	0f 43       	clr	r15		
 }
-    c7a0:	30 41       	ret			
+    c77c:	30 41       	ret			
 
-0000c7a2 <packet_do_handle>:
+0000c77e <pin_pwm_function>:
+
+int pin_pwm_function(unsigned char pin, int period)
+{
+    c77e:	0b 12       	push	r11		
+    c780:	0a 12       	push	r10		
+    c782:	09 12       	push	r9		
+    c784:	4a 4f       	mov.b	r15,	r10	
+    c786:	09 4e       	mov	r14,	r9	
+	unsigned char pf = pin_function(pin);
+    c788:	b0 12 be c2 	call	#0xc2be	
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+    c78c:	7f 90 05 00 	cmp.b	#5,	r15	;#0x0005
+    c790:	22 20       	jnz	$+70     	;abs 0xc7d6
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c792:	4f 4a       	mov.b	r10,	r15	
+    c794:	b0 12 44 c2 	call	#0xc244	
+    c798:	0b 4f       	mov	r15,	r11	
+    c79a:	0f 93       	tst	r15		
+    c79c:	1f 38       	jl	$+64     	;abs 0xc7dc
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c79e:	4f 4a       	mov.b	r10,	r15	
+    c7a0:	b0 12 5e c2 	call	#0xc25e	
+    c7a4:	0f 93       	tst	r15		
+    c7a6:	19 38       	jl	$+52     	;abs 0xc7da
+    c7a8:	0e 49       	mov	r9,	r14	
+    c7aa:	3e 53       	add	#-1,	r14	;r3 As==11
+
+	if(port == 1) {
+    c7ac:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c7ae:	09 20       	jnz	$+20     	;abs 0xc7c2
+  		TA0CCR0  = period - 1;					// Set period 
+    c7b0:	82 4e 72 01 	mov	r14,	&0x0172	
+		TA0CCTL1 = OUTMOD_7;                    // CCR1 reset/set
+    c7b4:	b2 40 e0 00 	mov	#224,	&0x0164	;#0x00e0
+    c7b8:	64 01 
+		TA0CTL   = TASSEL_2 + MC_1;             // SMCLK, up mode
+    c7ba:	b2 40 10 02 	mov	#528,	&0x0160	;#0x0210
+    c7be:	60 01 
+    c7c0:	08 3c       	jmp	$+18     	;abs 0xc7d2
+	}
+	else {
+  		TA1CCR0  = period - 1;					// Set period 
+    c7c2:	82 4e 92 01 	mov	r14,	&0x0192	
+		TA1CCTL1 = OUTMOD_7;                    // CCR1 reset/set
+    c7c6:	b2 40 e0 00 	mov	#224,	&0x0184	;#0x00e0
+    c7ca:	84 01 
+		TA1CTL   = TASSEL_2 + MC_1;             // SMCLK, up mode
+    c7cc:	b2 40 10 02 	mov	#528,	&0x0180	;#0x0210
+    c7d0:	80 01 
+	}
+
+	return PIN_STAT_OK;
+    c7d2:	0b 43       	clr	r11		
+    c7d4:	03 3c       	jmp	$+8      	;abs 0xc7dc
+int pin_pwm_function(unsigned char pin, int period)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    c7d6:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c7d8:	01 3c       	jmp	$+4      	;abs 0xc7dc
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c7da:	0b 4f       	mov	r15,	r11	
+		TA1CCTL1 = OUTMOD_7;                    // CCR1 reset/set
+		TA1CTL   = TASSEL_2 + MC_1;             // SMCLK, up mode
+	}
+
+	return PIN_STAT_OK;
+}
+    c7dc:	0f 4b       	mov	r11,	r15	
+    c7de:	39 41       	pop	r9		
+    c7e0:	3a 41       	pop	r10		
+    c7e2:	3b 41       	pop	r11		
+    c7e4:	30 41       	ret			
+
+0000c7e6 <pin_pwm_control>:
+
+int pin_pwm_control(unsigned char pin, unsigned char duty_cycle)
+{
+    c7e6:	0b 12       	push	r11		
+    c7e8:	0a 12       	push	r10		
+    c7ea:	09 12       	push	r9		
+    c7ec:	4a 4f       	mov.b	r15,	r10	
+    c7ee:	49 4e       	mov.b	r14,	r9	
+	unsigned char pf = pin_function(pin);
+    c7f0:	b0 12 be c2 	call	#0xc2be	
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+    c7f4:	7f 90 05 00 	cmp.b	#5,	r15	;#0x0005
+    c7f8:	51 20       	jnz	$+164    	;abs 0xc89c
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+    c7fa:	4f 4a       	mov.b	r10,	r15	
+    c7fc:	b0 12 44 c2 	call	#0xc244	
+    c800:	0b 4f       	mov	r15,	r11	
+    c802:	0f 93       	tst	r15		
+    c804:	4e 38       	jl	$+158    	;abs 0xc8a2
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c806:	4f 4a       	mov.b	r10,	r15	
+    c808:	b0 12 5e c2 	call	#0xc25e	
+    c80c:	0f 93       	tst	r15		
+    c80e:	48 38       	jl	$+146    	;abs 0xc8a0
+    c810:	49 49       	mov.b	r9,	r9	
+
+	if(port == 1) {
+    c812:	1b 93       	cmp	#1,	r11	;r3 As==01
+    c814:	21 20       	jnz	$+68     	;abs 0xc858
+		// e.g. DC=50%: (20000 / 100) * (128 / 2.55) ~ 10000 
+		TA0CCR1 = (TA0CCR0 / 100) * (duty_cycle / 2.55); 
+    c816:	1c 42 72 01 	mov	&0x0172,r12	
+    c81a:	3a 40 64 00 	mov	#100,	r10	;#0x0064
+    c81e:	b0 12 b2 da 	call	#0xdab2	
+    c822:	0e 4c       	mov	r12,	r14	
+    c824:	0f 43       	clr	r15		
+    c826:	b0 12 d8 d4 	call	#0xd4d8	
+    c82a:	0a 4e       	mov	r14,	r10	
+    c82c:	0b 4f       	mov	r15,	r11	
+    c82e:	0e 49       	mov	r9,	r14	
+    c830:	0f 43       	clr	r15		
+    c832:	b0 12 ac d3 	call	#0xd3ac	
+    c836:	3c 40 33 33 	mov	#13107,	r12	;#0x3333
+    c83a:	3d 40 23 40 	mov	#16419,	r13	;#0x4023
+    c83e:	b0 12 f4 d1 	call	#0xd1f4	
+    c842:	0c 4e       	mov	r14,	r12	
+    c844:	0d 4f       	mov	r15,	r13	
+    c846:	0e 4a       	mov	r10,	r14	
+    c848:	0f 4b       	mov	r11,	r15	
+    c84a:	b0 12 f6 cf 	call	#0xcff6	
+    c84e:	b0 12 62 cc 	call	#0xcc62	
+    c852:	82 4e 74 01 	mov	r14,	&0x0174	
+    c856:	20 3c       	jmp	$+66     	;abs 0xc898
+	}
+	else {
+		// e.g. DC=50%: (20000 / 100) * (128 / 2.55) ~ 10000 
+		TA1CCR1 = (TA1CCR0 / 100) * (duty_cycle / 2.55); 
+    c858:	1c 42 92 01 	mov	&0x0192,r12	
+    c85c:	3a 40 64 00 	mov	#100,	r10	;#0x0064
+    c860:	b0 12 b2 da 	call	#0xdab2	
+    c864:	0e 4c       	mov	r12,	r14	
+    c866:	0f 43       	clr	r15		
+    c868:	b0 12 d8 d4 	call	#0xd4d8	
+    c86c:	0a 4e       	mov	r14,	r10	
+    c86e:	0b 4f       	mov	r15,	r11	
+    c870:	0e 49       	mov	r9,	r14	
+    c872:	0f 43       	clr	r15		
+    c874:	b0 12 ac d3 	call	#0xd3ac	
+    c878:	3c 40 33 33 	mov	#13107,	r12	;#0x3333
+    c87c:	3d 40 23 40 	mov	#16419,	r13	;#0x4023
+    c880:	b0 12 f4 d1 	call	#0xd1f4	
+    c884:	0c 4e       	mov	r14,	r12	
+    c886:	0d 4f       	mov	r15,	r13	
+    c888:	0e 4a       	mov	r10,	r14	
+    c88a:	0f 4b       	mov	r11,	r15	
+    c88c:	b0 12 f6 cf 	call	#0xcff6	
+    c890:	b0 12 62 cc 	call	#0xcc62	
+    c894:	82 4e 94 01 	mov	r14,	&0x0194	
+	}
+
+	return PIN_STAT_OK;
+    c898:	0b 43       	clr	r11		
+    c89a:	03 3c       	jmp	$+8      	;abs 0xc8a2
+int pin_pwm_control(unsigned char pin, unsigned char duty_cycle)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_PWM) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+    c89c:	3b 43       	mov	#-1,	r11	;r3 As==11
+    c89e:	01 3c       	jmp	$+4      	;abs 0xc8a2
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+    c8a0:	0b 4f       	mov	r15,	r11	
+		// e.g. DC=50%: (20000 / 100) * (128 / 2.55) ~ 10000 
+		TA1CCR1 = (TA1CCR0 / 100) * (duty_cycle / 2.55); 
+	}
+
+	return PIN_STAT_OK;
+}
+    c8a2:	0f 4b       	mov	r11,	r15	
+    c8a4:	39 41       	pop	r9		
+    c8a6:	3a 41       	pop	r10		
+    c8a8:	3b 41       	pop	r11		
+    c8aa:	30 41       	ret			
+
+0000c8ac <packet_do_handle>:
 	}
 };
 
 void packet_do_handle()
 {
 	if(packet_receive(&inp, PACKET_INBOUND_START) == PACKET_STAT_OK) {
-    c7a2:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
-    c7a6:	3f 40 d6 02 	mov	#726,	r15	;#0x02d6
-    c7aa:	b0 12 48 ca 	call	#0xca48	
-    c7ae:	0f 93       	tst	r15		
-    c7b0:	0e 20       	jnz	$+30     	;abs 0xc7ce
+    c8ac:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
+    c8b0:	3f 40 d6 02 	mov	#726,	r15	;#0x02d6
+    c8b4:	b0 12 b4 cb 	call	#0xcbb4	
+    c8b8:	0f 93       	tst	r15		
+    c8ba:	0e 20       	jnz	$+30     	;abs 0xc8d8
 		if(packet_process_received(&packet_handlers, &inp) == PACKET_STAT_ERR_UNKPACK) {
-    c7b2:	3e 40 d6 02 	mov	#726,	r14	;#0x02d6
-    c7b6:	3f 40 00 02 	mov	#512,	r15	;#0x0200
-    c7ba:	b0 12 b6 ca 	call	#0xcab6	
-    c7be:	3f 90 fd ff 	cmp	#-3,	r15	;#0xfffd
-    c7c2:	08 20       	jnz	$+18     	;abs 0xc7d4
+    c8bc:	3e 40 d6 02 	mov	#726,	r14	;#0x02d6
+    c8c0:	3f 40 00 02 	mov	#512,	r15	;#0x0200
+    c8c4:	b0 12 22 cc 	call	#0xcc22	
+    c8c8:	3f 90 fd ff 	cmp	#-3,	r15	;#0xfffd
+    c8cc:	08 20       	jnz	$+18     	;abs 0xc8de
 			send_status_packet(PACKET_RETURN_INVALID_PACKET);
-    c7c4:	7f 50 06 00 	add.b	#6,	r15	;#0x0006
-    c7c8:	b0 12 d6 c7 	call	#0xc7d6	
-    c7cc:	30 41       	ret			
+    c8ce:	7f 50 06 00 	add.b	#6,	r15	;#0x0006
+    c8d2:	b0 12 e0 c8 	call	#0xc8e0	
+    c8d6:	30 41       	ret			
 		}
 	}
 	else {
 		send_status_packet(PACKET_RETURN_BAD_PACKET);
-    c7ce:	6f 43       	mov.b	#2,	r15	;r3 As==10
-    c7d0:	b0 12 d6 c7 	call	#0xc7d6	
-    c7d4:	30 41       	ret			
+    c8d8:	6f 43       	mov.b	#2,	r15	;r3 As==10
+    c8da:	b0 12 e0 c8 	call	#0xc8e0	
+    c8de:	30 41       	ret			
 
-0000c7d6 <send_status_packet>:
+0000c8e0 <send_status_packet>:
  * IN-bound packet instance.
  */
 packet inp;
 
 void send_status_packet(unsigned char stat)
 {
-    c7d6:	0b 12       	push	r11		
+    c8e0:	0b 12       	push	r11		
 	packet_data_out_status *pd = (packet_data_out_status *)&outp.data[0];
 
 	outp.start	= PACKET_OUTBOUND_START;
-    c7d8:	3b 40 1a 03 	mov	#794,	r11	;#0x031a
-    c7dc:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
-    c7e0:	00 00 
+    c8e2:	3b 40 1a 03 	mov	#794,	r11	;#0x031a
+    c8e6:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
+    c8ea:	00 00 
 	outp.length	= 5;
-    c7e2:	fb 40 05 00 	mov.b	#5,	1(r11)	;#0x0005, 0x0001(r11)
-    c7e6:	01 00 
+    c8ec:	fb 40 05 00 	mov.b	#5,	1(r11)	;#0x0005, 0x0001(r11)
+    c8f0:	01 00 
 	outp.type 	= PACKET_OUT_STATUS;
-    c7e8:	db 43 02 00 	mov.b	#1,	2(r11)	;r3 As==01, 0x0002(r11)
+    c8f2:	db 43 02 00 	mov.b	#1,	2(r11)	;r3 As==01, 0x0002(r11)
 	pd->status  = stat;
-    c7ec:	cb 4f 03 00 	mov.b	r15,	3(r11)	;0x0003(r11)
+    c8f6:	cb 4f 03 00 	mov.b	r15,	3(r11)	;0x0003(r11)
 	outp.crc	= packet_calc_crc(&outp);
-    c7f0:	0f 4b       	mov	r11,	r15	
-    c7f2:	b0 12 b2 c9 	call	#0xc9b2	
-    c7f6:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
+    c8fa:	0f 4b       	mov	r11,	r15	
+    c8fc:	b0 12 1e cb 	call	#0xcb1e	
+    c900:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
 
 	packet_send(&outp);
-    c7fa:	0f 4b       	mov	r11,	r15	
-    c7fc:	b0 12 f2 c9 	call	#0xc9f2	
+    c904:	0f 4b       	mov	r11,	r15	
+    c906:	b0 12 5e cb 	call	#0xcb5e	
 }
-    c800:	3b 41       	pop	r11		
-    c802:	30 41       	ret			
+    c90a:	3b 41       	pop	r11		
+    c90c:	30 41       	ret			
 
-0000c804 <handle_packet_null>:
+0000c90e <handle_packet_null>:
 #include "core_handlers.h"
 #include "rocketcore.h"
 
 int handle_packet_null(unsigned char length, unsigned char *data)
 {
 	send_status_packet(PACKET_RETURN_ACK);
-    c804:	5f 43       	mov.b	#1,	r15	;r3 As==01
-    c806:	b0 12 d6 c7 	call	#0xc7d6	
+    c90e:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c910:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c80a:	0f 43       	clr	r15		
-    c80c:	30 41       	ret			
+    c914:	0f 43       	clr	r15		
+    c916:	30 41       	ret			
 
-0000c80e <handle_packet_reserved>:
+0000c918 <handle_packet_reserved>:
 
 int handle_packet_reserved(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c80e:	4f 43       	clr.b	r15		
-    c810:	b0 12 d6 c7 	call	#0xc7d6	
+    c918:	4f 43       	clr.b	r15		
+    c91a:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c814:	0f 43       	clr	r15		
-    c816:	30 41       	ret			
+    c91e:	0f 43       	clr	r15		
+    c920:	30 41       	ret			
 
-0000c818 <handle_packet_system_info>:
+0000c922 <handle_packet_system_info>:
 
 int handle_packet_system_info(unsigned char length, unsigned char *data)
 {
-    c818:	0b 12       	push	r11		
+    c922:	0b 12       	push	r11		
 	packet_data_out_system_info *pd = (packet_data_out_system_info *)&outp.data[0];
 
 	outp.start	= PACKET_OUTBOUND_START;
-    c81a:	3b 40 1a 03 	mov	#794,	r11	;#0x031a
-    c81e:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
-    c822:	00 00 
+    c924:	3b 40 1a 03 	mov	#794,	r11	;#0x031a
+    c928:	fb 40 2b 00 	mov.b	#43,	0(r11)	;#0x002b, 0x0000(r11)
+    c92c:	00 00 
 	outp.length	= 7;
-    c824:	fb 40 07 00 	mov.b	#7,	1(r11)	;#0x0007, 0x0001(r11)
-    c828:	01 00 
+    c92e:	fb 40 07 00 	mov.b	#7,	1(r11)	;#0x0007, 0x0001(r11)
+    c932:	01 00 
 	outp.type 	= PACKET_OUT_SYSTEM_INFO;
-    c82a:	eb 43 02 00 	mov.b	#2,	2(r11)	;r3 As==10, 0x0002(r11)
+    c934:	eb 43 02 00 	mov.b	#2,	2(r11)	;r3 As==10, 0x0002(r11)
 	
 	// TODO replace 0xCAFFEE with data from constants
 	pd->board_type	= 0xCA;
-    c82e:	f2 40 ca ff 	mov.b	#-54,	&0x031d	;#0xffca
-    c832:	1d 03 
+    c938:	f2 40 ca ff 	mov.b	#-54,	&0x031d	;#0xffca
+    c93c:	1d 03 
 	pd->mcu_type	= 0xFF;
-    c834:	f2 43 1e 03 	mov.b	#-1,	&0x031e	;r3 As==11
+    c93e:	f2 43 1e 03 	mov.b	#-1,	&0x031e	;r3 As==11
 	pd->firmware_rev= 0xEE;
-    c838:	f2 40 ee ff 	mov.b	#-18,	&0x031f	;#0xffee
-    c83c:	1f 03 
+    c942:	f2 40 ee ff 	mov.b	#-18,	&0x031f	;#0xffee
+    c946:	1f 03 
 
 	outp.crc	= packet_calc_crc(&outp);
-    c83e:	0f 4b       	mov	r11,	r15	
-    c840:	b0 12 b2 c9 	call	#0xc9b2	
-    c844:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
+    c948:	0f 4b       	mov	r11,	r15	
+    c94a:	b0 12 1e cb 	call	#0xcb1e	
+    c94e:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
 
 	packet_send(&outp);
-    c848:	0f 4b       	mov	r11,	r15	
-    c84a:	b0 12 f2 c9 	call	#0xc9f2	
+    c952:	0f 4b       	mov	r11,	r15	
+    c954:	b0 12 5e cb 	call	#0xcb5e	
 
 	return PACKET_STAT_OK;
 }
-    c84e:	0f 43       	clr	r15		
-    c850:	3b 41       	pop	r11		
-    c852:	30 41       	ret			
+    c958:	0f 43       	clr	r15		
+    c95a:	3b 41       	pop	r11		
+    c95c:	30 41       	ret			
 
-0000c854 <handle_packet_device_control>:
+0000c95e <handle_packet_device_control>:
 
 int handle_packet_device_control(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c854:	4f 43       	clr.b	r15		
-    c856:	b0 12 d6 c7 	call	#0xc7d6	
+    c95e:	4f 43       	clr.b	r15		
+    c960:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c85a:	0f 43       	clr	r15		
-    c85c:	30 41       	ret			
+    c964:	0f 43       	clr	r15		
+    c966:	30 41       	ret			
 
-0000c85e <handle_packet_pin_function>:
+0000c968 <handle_packet_pin_function>:
 
 int handle_packet_pin_function(unsigned char length, unsigned char *data)
 {
-    c85e:	0b 12       	push	r11		
-    c860:	0d 4e       	mov	r14,	r13	
+    c968:	0b 12       	push	r11		
+    c96a:	0d 4e       	mov	r14,	r13	
 	int s;
 
 	// check if length matches for packet-data
 	if(length != 2) {
-    c862:	6f 93       	cmp.b	#2,	r15	;r3 As==10
-    c864:	06 24       	jz	$+14     	;abs 0xc872
+    c96c:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c96e:	06 24       	jz	$+14     	;abs 0xc97c
 		send_status_packet(PACKET_RETURN_INAVLID_DATA);
-    c866:	6f 42       	mov.b	#4,	r15	;r2 As==10
-    c868:	b0 12 d6 c7 	call	#0xc7d6	
+    c970:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    c972:	b0 12 e0 c8 	call	#0xc8e0	
 		return PACKET_STAT_ERR_DATA;
-    c86c:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
-    c870:	0e 3c       	jmp	$+30     	;abs 0xc88e
+    c976:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+    c97a:	0e 3c       	jmp	$+30     	;abs 0xc998
 	}
 
 	packet_data_in_pin_function *pd = (packet_data_in_pin_function *)&data[0];
 
 	if((s = pin_setup(pd->pin, pd->function)) != PACKET_STAT_OK) {
-    c872:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
-    c876:	6f 4d       	mov.b	@r13,	r15	
-    c878:	b0 12 80 c4 	call	#0xc480	
-    c87c:	0b 4f       	mov	r15,	r11	
-    c87e:	0f 93       	tst	r15		
-    c880:	03 24       	jz	$+8      	;abs 0xc888
+    c97c:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
+    c980:	6f 4d       	mov.b	@r13,	r15	
+    c982:	b0 12 d0 c3 	call	#0xc3d0	
+    c986:	0b 4f       	mov	r15,	r11	
+    c988:	0f 93       	tst	r15		
+    c98a:	03 24       	jz	$+8      	;abs 0xc992
 		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
-    c882:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
-    c886:	01 3c       	jmp	$+4      	;abs 0xc88a
+    c98c:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c990:	01 3c       	jmp	$+4      	;abs 0xc994
 	}
 	else {
 		send_status_packet(PACKET_RETURN_ACK);
-    c888:	5f 43       	mov.b	#1,	r15	;r3 As==01
-    c88a:	b0 12 d6 c7 	call	#0xc7d6	
+    c992:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c994:	b0 12 e0 c8 	call	#0xc8e0	
 	}
 
 	return s;
 }
-    c88e:	0f 4b       	mov	r11,	r15	
-    c890:	3b 41       	pop	r11		
-    c892:	30 41       	ret			
+    c998:	0f 4b       	mov	r11,	r15	
+    c99a:	3b 41       	pop	r11		
+    c99c:	30 41       	ret			
 
-0000c894 <handle_packet_pin_control>:
+0000c99e <handle_packet_pin_control>:
 
 int handle_packet_pin_control(unsigned char length, unsigned char *data)
 {
-    c894:	0b 12       	push	r11		
-    c896:	0a 12       	push	r10		
-    c898:	0a 4e       	mov	r14,	r10	
+    c99e:	0b 12       	push	r11		
+    c9a0:	0a 12       	push	r10		
+    c9a2:	0a 4e       	mov	r14,	r10	
 	int s = PACKET_STAT_OK;
 
 	// check if length matches for packet-data
 	if(length != 2) {
-    c89a:	6f 93       	cmp.b	#2,	r15	;r3 As==10
-    c89c:	02 24       	jz	$+6      	;abs 0xc8a2
+    c9a4:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    c9a6:	02 24       	jz	$+6      	;abs 0xc9ac
 		send_status_packet(PACKET_RETURN_INAVLID_DATA);
-    c89e:	6f 42       	mov.b	#4,	r15	;r2 As==10
-    c8a0:	62 3c       	jmp	$+198    	;abs 0xc966
+    c9a8:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    c9aa:	62 3c       	jmp	$+198    	;abs 0xca70
 		return PACKET_STAT_ERR_DATA;
 	}
 
 	packet_data_in_pin_control *pd = (packet_data_in_pin_control *)&data[0];
 
 	switch(pd->control) {
-    c8a2:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
-    c8a6:	5f 9e 01 00 	cmp.b	1(r14),	r15	;0x0001(r14)
-    c8aa:	5d 28       	jnc	$+188    	;abs 0xc966
-    c8ac:	5f 4e 01 00 	mov.b	1(r14),	r15	;0x0001(r14)
-    c8b0:	0f 5f       	rla	r15		
-    c8b2:	10 4f b6 c8 	br	-14154(r15)	;0xc8b6(r15)
-    c8b6:	c2 c8 ca c8 	bic.b	r8,	&0xc8ca	
-    c8ba:	d2 c8 e6 c8 	bic.b	-14106(r8),&0xc90e	;0xc8e6(r8)
-    c8be:	0e c9 
-    c8c0:	5a c9 6f 4e 	bic.b	20079(r9),r10	;0x4e6f(r9)
+    c9ac:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    c9b0:	5f 9e 01 00 	cmp.b	1(r14),	r15	;0x0001(r14)
+    c9b4:	5d 28       	jnc	$+188    	;abs 0xca70
+    c9b6:	5f 4e 01 00 	mov.b	1(r14),	r15	;0x0001(r14)
+    c9ba:	0f 5f       	rla	r15		
+    c9bc:	10 4f c0 c9 	br	-13888(r15)	;0xc9c0(r15)
+    c9c0:	cc c9 d4 c9 	bic.b	r9,	-13868(r12);0xc9d4(r12)
+    c9c4:	dc c9 f0 c9 	bic.b	-13840(r9),-13800(r12);0xc9f0(r9), 0xca18(r12)
+    c9c8:	18 ca 
+    c9ca:	64 ca       	bic.b	@r10,	r4	
 		case PIN_CONTROL_CLEAR:
 			if((s = pin_clear(pd->pin)) != PACKET_STAT_OK) {
-    c8c4:	b0 12 fe c5 	call	#0xc5fe	
-    c8c8:	07 3c       	jmp	$+16     	;abs 0xc8d8
+    c9cc:	6f 4e       	mov.b	@r14,	r15	
+    c9ce:	b0 12 da c5 	call	#0xc5da	
+    c9d2:	07 3c       	jmp	$+16     	;abs 0xc9e2
 			else {
 				send_status_packet(PACKET_RETURN_ACK);
 			}
 			break;
 		case PIN_CONTROL_SET:
 			if((s = pin_set(pd->pin)) != PACKET_STAT_OK) {
-    c8ca:	6f 4e       	mov.b	@r14,	r15	
-    c8cc:	b0 12 4a c6 	call	#0xc64a	
-    c8d0:	03 3c       	jmp	$+8      	;abs 0xc8d8
+    c9d4:	6f 4e       	mov.b	@r14,	r15	
+    c9d6:	b0 12 26 c6 	call	#0xc626	
+    c9da:	03 3c       	jmp	$+8      	;abs 0xc9e2
 			else {
 				send_status_packet(PACKET_RETURN_ACK);
 			}
 			break;
 		case PIN_CONTROL_TOGGLE:
 			if((s = pin_toggle(pd->pin)) != PACKET_STAT_OK) {
-    c8d2:	6f 4e       	mov.b	@r14,	r15	
-    c8d4:	b0 12 96 c6 	call	#0xc696	
-    c8d8:	0b 4f       	mov	r15,	r11	
-    c8da:	0f 93       	tst	r15		
-    c8dc:	1e 20       	jnz	$+62     	;abs 0xc91a
+    c9dc:	6f 4e       	mov.b	@r14,	r15	
+    c9de:	b0 12 72 c6 	call	#0xc672	
+    c9e2:	0b 4f       	mov	r15,	r11	
+    c9e4:	0f 93       	tst	r15		
+    c9e6:	1e 20       	jnz	$+62     	;abs 0xca24
 				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
 			}
 			else {
 				send_status_packet(PACKET_RETURN_ACK);
-    c8de:	5f 43       	mov.b	#1,	r15	;r3 As==01
-    c8e0:	b0 12 d6 c7 	call	#0xc7d6	
-    c8e4:	44 3c       	jmp	$+138    	;abs 0xc96e
+    c9e8:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    c9ea:	b0 12 e0 c8 	call	#0xc8e0	
+    c9ee:	44 3c       	jmp	$+138    	;abs 0xca78
 			}
 			break;
 		case PIN_CONTROL_DIGITAL_READ:
 			if((s = pin_digital_read(pd->pin)) < 0) {
-    c8e6:	6f 4e       	mov.b	@r14,	r15	
-    c8e8:	b0 12 e2 c6 	call	#0xc6e2	
-    c8ec:	0b 4f       	mov	r15,	r11	
-    c8ee:	0f 93       	tst	r15		
-    c8f0:	14 38       	jl	$+42     	;abs 0xc91a
+    c9f0:	6f 4e       	mov.b	@r14,	r15	
+    c9f2:	b0 12 be c6 	call	#0xc6be	
+    c9f6:	0b 4f       	mov	r15,	r11	
+    c9f8:	0f 93       	tst	r15		
+    c9fa:	14 38       	jl	$+42     	;abs 0xca24
 				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
 			}
 			else {
 				packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
 
 				outp.start	= PACKET_OUTBOUND_START;
-    c8f2:	f2 40 2b 00 	mov.b	#43,	&0x031a	;#0x002b
-    c8f6:	1a 03 
+    c9fc:	f2 40 2b 00 	mov.b	#43,	&0x031a	;#0x002b
+    ca00:	1a 03 
 				outp.length	= 6;
-    c8f8:	f2 40 06 00 	mov.b	#6,	&0x031b	;#0x0006
-    c8fc:	1b 03 
+    ca02:	f2 40 06 00 	mov.b	#6,	&0x031b	;#0x0006
+    ca06:	1b 03 
 				outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
-    c8fe:	f2 40 03 00 	mov.b	#3,	&0x031c	;#0x0003
-    c902:	1c 03 
+    ca08:	f2 40 03 00 	mov.b	#3,	&0x031c	;#0x0003
+    ca0c:	1c 03 
 	
 				pdo->pin   = pd->pin;
-    c904:	e2 4a 1d 03 	mov.b	@r10,	&0x031d	
+    ca0e:	e2 4a 1d 03 	mov.b	@r10,	&0x031d	
 				pdo->state = s;
-    c908:	c2 4f 1e 03 	mov.b	r15,	&0x031e	
-    c90c:	1b 3c       	jmp	$+56     	;abs 0xc944
+    ca12:	c2 4f 1e 03 	mov.b	r15,	&0x031e	
+    ca16:	1b 3c       	jmp	$+56     	;abs 0xca4e
 
 				packet_send(&outp);
 			}
 			break;
 		case PIN_CONTROL_ANALOG_READ:
 			if((s = pin_analog_read(pd->pin)) < 0) {
-    c90e:	6f 4e       	mov.b	@r14,	r15	
-    c910:	b0 12 44 c7 	call	#0xc744	
-    c914:	0b 4f       	mov	r15,	r11	
-    c916:	0f 93       	tst	r15		
-    c918:	03 34       	jge	$+8      	;abs 0xc920
+    ca18:	6f 4e       	mov.b	@r14,	r15	
+    ca1a:	b0 12 20 c7 	call	#0xc720	
+    ca1e:	0b 4f       	mov	r15,	r11	
+    ca20:	0f 93       	tst	r15		
+    ca22:	03 34       	jge	$+8      	;abs 0xca2a
 				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
-    c91a:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
-    c91e:	e0 3f       	jmp	$-62     	;abs 0xc8e0
+    ca24:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    ca28:	e0 3f       	jmp	$-62     	;abs 0xc9ea
 			}
 			else {
 				packet_data_out_analog_pin_read *pdo = (packet_data_out_analog_pin_read *)&outp.data[0];
 
 				outp.start	= PACKET_OUTBOUND_START;
-    c920:	f2 40 2b 00 	mov.b	#43,	&0x031a	;#0x002b
-    c924:	1a 03 
+    ca2a:	f2 40 2b 00 	mov.b	#43,	&0x031a	;#0x002b
+    ca2e:	1a 03 
 				outp.length	= 7;
-    c926:	f2 40 07 00 	mov.b	#7,	&0x031b	;#0x0007
-    c92a:	1b 03 
+    ca30:	f2 40 07 00 	mov.b	#7,	&0x031b	;#0x0007
+    ca34:	1b 03 
 				outp.type 	= PACKET_OUT_ANALOG_PIN_READ;
-    c92c:	e2 42 1c 03 	mov.b	#4,	&0x031c	;r2 As==10
+    ca36:	e2 42 1c 03 	mov.b	#4,	&0x031c	;r2 As==10
 	
 				pdo->pin       = pd->pin;
-    c930:	e2 4a 1d 03 	mov.b	@r10,	&0x031d	
+    ca3a:	e2 4a 1d 03 	mov.b	@r10,	&0x031d	
 				pdo->value_lsb = (0x00FF & s);
-    c934:	c2 4f 1e 03 	mov.b	r15,	&0x031e	
+    ca3e:	c2 4f 1e 03 	mov.b	r15,	&0x031e	
 				pdo->value_msb = (0x0F00 & s) >> 8;
-    c938:	3f f0 00 0f 	and	#3840,	r15	;#0x0f00
-    c93c:	8f 10       	swpb	r15		
-    c93e:	8f 11       	sxt	r15		
-    c940:	c2 4f 1f 03 	mov.b	r15,	&0x031f	
+    ca42:	3f f0 00 0f 	and	#3840,	r15	;#0x0f00
+    ca46:	8f 10       	swpb	r15		
+    ca48:	8f 11       	sxt	r15		
+    ca4a:	c2 4f 1f 03 	mov.b	r15,	&0x031f	
 
 				outp.crc = packet_calc_crc(&outp);
-    c944:	3f 40 1a 03 	mov	#794,	r15	;#0x031a
-    c948:	b0 12 b2 c9 	call	#0xc9b2	
-    c94c:	c2 4f 5d 03 	mov.b	r15,	&0x035d	
+    ca4e:	3f 40 1a 03 	mov	#794,	r15	;#0x031a
+    ca52:	b0 12 1e cb 	call	#0xcb1e	
+    ca56:	c2 4f 5d 03 	mov.b	r15,	&0x035d	
 
 				packet_send(&outp);
-    c950:	3f 40 1a 03 	mov	#794,	r15	;#0x031a
-    c954:	b0 12 f2 c9 	call	#0xc9f2	
-    c958:	0a 3c       	jmp	$+22     	;abs 0xc96e
+    ca5a:	3f 40 1a 03 	mov	#794,	r15	;#0x031a
+    ca5e:	b0 12 5e cb 	call	#0xcb5e	
+    ca62:	0a 3c       	jmp	$+22     	;abs 0xca78
 			}
 			break;
 		case PIN_CONTROL_PULSELENGTH_READ:
 			// TODO implement
 			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
-    c95a:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
-    c95e:	b0 12 d6 c7 	call	#0xc7d6	
+    ca64:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    ca68:	b0 12 e0 c8 	call	#0xc8e0	
 	return s;
 }
 
 int handle_packet_pin_control(unsigned char length, unsigned char *data)
 {
 	int s = PACKET_STAT_OK;
-    c962:	0b 43       	clr	r11		
-    c964:	04 3c       	jmp	$+10     	;abs 0xc96e
+    ca6c:	0b 43       	clr	r11		
+    ca6e:	04 3c       	jmp	$+10     	;abs 0xca78
 		case PIN_CONTROL_PULSELENGTH_READ:
 			// TODO implement
 			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
 			break;
 		default:
 			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
-    c966:	b0 12 d6 c7 	call	#0xc7d6	
+    ca70:	b0 12 e0 c8 	call	#0xc8e0	
 			s = PACKET_STAT_ERR_DATA;
-    c96a:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+    ca74:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
 	}
 
 	return s;
 }
-    c96e:	0f 4b       	mov	r11,	r15	
-    c970:	3a 41       	pop	r10		
-    c972:	3b 41       	pop	r11		
-    c974:	30 41       	ret			
+    ca78:	0f 4b       	mov	r11,	r15	
+    ca7a:	3a 41       	pop	r10		
+    ca7c:	3b 41       	pop	r11		
+    ca7e:	30 41       	ret			
 
-0000c976 <handle_packet_pwm_function>:
+0000ca80 <handle_packet_pwm_function>:
 
 int handle_packet_pwm_function(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c976:	4f 43       	clr.b	r15		
-    c978:	b0 12 d6 c7 	call	#0xc7d6	
+    ca80:	0b 12       	push	r11		
+    ca82:	0d 4e       	mov	r14,	r13	
+	int s;
 
-	return PACKET_STAT_OK;
+	// check if length matches for packet-data
+	if(length != 3) {
+    ca84:	7f 90 03 00 	cmp.b	#3,	r15	;#0x0003
+    ca88:	06 24       	jz	$+14     	;abs 0xca96
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+    ca8a:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    ca8c:	b0 12 e0 c8 	call	#0xc8e0	
+		return PACKET_STAT_ERR_DATA;
+    ca90:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+    ca94:	12 3c       	jmp	$+38     	;abs 0xcaba
+	}
+
+	packet_data_in_pwm_function *pd = (packet_data_in_pwm_function *)&data[0];
+
+	int p = (0x00FF & pd->period_lsb) | (0xFF00 & (pd->period_msb << 8));
+    ca96:	5f 4e 02 00 	mov.b	2(r14),	r15	;0x0002(r14)
+    ca9a:	8f 10       	swpb	r15		
+    ca9c:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
+
+	if((s = pin_pwm_function(pd->pin, p)) != PACKET_STAT_OK) {
+    caa0:	0e df       	bis	r15,	r14	
+    caa2:	6f 4d       	mov.b	@r13,	r15	
+    caa4:	b0 12 7e c7 	call	#0xc77e	
+    caa8:	0b 4f       	mov	r15,	r11	
+    caaa:	0f 93       	tst	r15		
+    caac:	03 24       	jz	$+8      	;abs 0xcab4
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    caae:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    cab2:	01 3c       	jmp	$+4      	;abs 0xcab6
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+    cab4:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    cab6:	b0 12 e0 c8 	call	#0xc8e0	
+	}
+
+	return s;
 }
-    c97c:	0f 43       	clr	r15		
-    c97e:	30 41       	ret			
+    caba:	0f 4b       	mov	r11,	r15	
+    cabc:	3b 41       	pop	r11		
+    cabe:	30 41       	ret			
 
-0000c980 <handle_packet_pwm_control>:
+0000cac0 <handle_packet_pwm_control>:
 
 int handle_packet_pwm_control(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c980:	4f 43       	clr.b	r15		
-    c982:	b0 12 d6 c7 	call	#0xc7d6	
+    cac0:	0b 12       	push	r11		
+    cac2:	0d 4e       	mov	r14,	r13	
+	int s;
 
-	return PACKET_STAT_OK;
+	// check if length matches for packet-data
+	if(length != 2) {
+    cac4:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    cac6:	06 24       	jz	$+14     	;abs 0xcad4
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+    cac8:	6f 42       	mov.b	#4,	r15	;r2 As==10
+    caca:	b0 12 e0 c8 	call	#0xc8e0	
+		return PACKET_STAT_ERR_DATA;
+    cace:	3b 40 fc ff 	mov	#-4,	r11	;#0xfffc
+    cad2:	0e 3c       	jmp	$+30     	;abs 0xcaf0
+	}
+
+	packet_data_in_pwm_control *pd = (packet_data_in_pwm_control *)&data[0];
+
+	if((s = pin_pwm_control(pd->pin, pd->duty_cycle)) != PACKET_STAT_OK) {
+    cad4:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
+    cad8:	6f 4d       	mov.b	@r13,	r15	
+    cada:	b0 12 e6 c7 	call	#0xc7e6	
+    cade:	0b 4f       	mov	r15,	r11	
+    cae0:	0f 93       	tst	r15		
+    cae2:	03 24       	jz	$+8      	;abs 0xcaea
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+    cae4:	7f 40 05 00 	mov.b	#5,	r15	;#0x0005
+    cae8:	01 3c       	jmp	$+4      	;abs 0xcaec
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+    caea:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    caec:	b0 12 e0 c8 	call	#0xc8e0	
+	}
+
+	return s;
 }
-    c986:	0f 43       	clr	r15		
-    c988:	30 41       	ret			
+    caf0:	0f 4b       	mov	r11,	r15	
+    caf2:	3b 41       	pop	r11		
+    caf4:	30 41       	ret			
 
-0000c98a <handle_packet_serial_function>:
+0000caf6 <handle_packet_serial_function>:
 
 int handle_packet_serial_function(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c98a:	4f 43       	clr.b	r15		
-    c98c:	b0 12 d6 c7 	call	#0xc7d6	
+    caf6:	4f 43       	clr.b	r15		
+    caf8:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c990:	0f 43       	clr	r15		
-    c992:	30 41       	ret			
+    cafc:	0f 43       	clr	r15		
+    cafe:	30 41       	ret			
 
-0000c994 <handle_packet_serial_data>:
+0000cb00 <handle_packet_serial_data>:
 
 int handle_packet_serial_data(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c994:	4f 43       	clr.b	r15		
-    c996:	b0 12 d6 c7 	call	#0xc7d6	
+    cb00:	4f 43       	clr.b	r15		
+    cb02:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c99a:	0f 43       	clr	r15		
-    c99c:	30 41       	ret			
+    cb06:	0f 43       	clr	r15		
+    cb08:	30 41       	ret			
 
-0000c99e <handle_packet_external_interrupt_function>:
+0000cb0a <handle_packet_external_interrupt_function>:
 
 int handle_packet_external_interrupt_function(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c99e:	4f 43       	clr.b	r15		
-    c9a0:	b0 12 d6 c7 	call	#0xc7d6	
+    cb0a:	4f 43       	clr.b	r15		
+    cb0c:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c9a4:	0f 43       	clr	r15		
-    c9a6:	30 41       	ret			
+    cb10:	0f 43       	clr	r15		
+    cb12:	30 41       	ret			
 
-0000c9a8 <handle_packet_reset>:
+0000cb14 <handle_packet_reset>:
 
 int handle_packet_reset(unsigned char length, unsigned char *data)
 {
 	// TODO define + implement
 	send_status_packet(PACKET_RETURN_UNKNOWN);
-    c9a8:	4f 43       	clr.b	r15		
-    c9aa:	b0 12 d6 c7 	call	#0xc7d6	
+    cb14:	4f 43       	clr.b	r15		
+    cb16:	b0 12 e0 c8 	call	#0xc8e0	
 
 	return PACKET_STAT_OK;
 }
-    c9ae:	0f 43       	clr	r15		
-    c9b0:	30 41       	ret			
+    cb1a:	0f 43       	clr	r15		
+    cb1c:	30 41       	ret			
 
-0000c9b2 <packet_calc_crc>:
+0000cb1e <packet_calc_crc>:
  * 02111-1307 USA.  
  */
 
 #include "packet.h"
 
 unsigned char packet_calc_crc(packet *pkt) {
-    c9b2:	0b 12       	push	r11		
+    cb1e:	0b 12       	push	r11		
 
 	unsigned char i;
 	unsigned char crc = 0;
 
 	crc += pkt->start;
 	crc += pkt->length;
-    c9b4:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
-    c9b8:	6e 4f       	mov.b	@r15,	r14	
-    c9ba:	4e 5d       	add.b	r13,	r14	
+    cb20:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
+    cb24:	6e 4f       	mov.b	@r15,	r14	
+    cb26:	4e 5d       	add.b	r13,	r14	
 	crc += pkt->type;
-    c9bc:	5e 5f 02 00 	add.b	2(r15),	r14	;0x0002(r15)
+    cb28:	5e 5f 02 00 	add.b	2(r15),	r14	;0x0002(r15)
 
 	for(i = 0; i < pkt->length - 4; i++) {
-    c9c0:	4c 43       	clr.b	r12		
-    c9c2:	2d 82       	sub	#4,	r13	;r2 As==10
-    c9c4:	04 3c       	jmp	$+10     	;abs 0xc9ce
+    cb2c:	4c 43       	clr.b	r12		
+    cb2e:	2d 82       	sub	#4,	r13	;r2 As==10
+    cb30:	04 3c       	jmp	$+10     	;abs 0xcb3a
 		crc += pkt->data[i];
-    c9c6:	0b 5f       	add	r15,	r11	
-    c9c8:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
+    cb32:	0b 5f       	add	r15,	r11	
+    cb34:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
 
 	crc += pkt->start;
 	crc += pkt->length;
 	crc += pkt->type;
 
 	for(i = 0; i < pkt->length - 4; i++) {
-    c9cc:	5c 53       	inc.b	r12		
-    c9ce:	4b 4c       	mov.b	r12,	r11	
-    c9d0:	0b 9d       	cmp	r13,	r11	
-    c9d2:	f9 3b       	jl	$-12     	;abs 0xc9c6
+    cb38:	5c 53       	inc.b	r12		
+    cb3a:	4b 4c       	mov.b	r12,	r11	
+    cb3c:	0b 9d       	cmp	r13,	r11	
+    cb3e:	f9 3b       	jl	$-12     	;abs 0xcb32
 		crc += pkt->data[i];
 	} 
 
 	return crc;
 }
-    c9d4:	4f 4e       	mov.b	r14,	r15	
-    c9d6:	3b 41       	pop	r11		
-    c9d8:	30 41       	ret			
+    cb40:	4f 4e       	mov.b	r14,	r15	
+    cb42:	3b 41       	pop	r11		
+    cb44:	30 41       	ret			
 
-0000c9da <packet_check_crc>:
+0000cb46 <packet_check_crc>:
 
 int	packet_check_crc(packet *pkt) {
-    c9da:	0b 12       	push	r11		
-    c9dc:	0b 4f       	mov	r15,	r11	
+    cb46:	0b 12       	push	r11		
+    cb48:	0b 4f       	mov	r15,	r11	
 
 	if(packet_calc_crc(pkt) == pkt->crc) {
-    c9de:	b0 12 b2 c9 	call	#0xc9b2	
+    cb4a:	b0 12 1e cb 	call	#0xcb1e	
 		return 1;
-    c9e2:	1e 43       	mov	#1,	r14	;r3 As==01
-    c9e4:	5f 9b 43 00 	cmp.b	67(r11),r15	;0x0043(r11)
-    c9e8:	01 24       	jz	$+4      	;abs 0xc9ec
-    c9ea:	0e 43       	clr	r14		
+    cb4e:	1e 43       	mov	#1,	r14	;r3 As==01
+    cb50:	5f 9b 43 00 	cmp.b	67(r11),r15	;0x0043(r11)
+    cb54:	01 24       	jz	$+4      	;abs 0xcb58
+    cb56:	0e 43       	clr	r14		
 	}
 
 	return 0;
 }
-    c9ec:	0f 4e       	mov	r14,	r15	
-    c9ee:	3b 41       	pop	r11		
-    c9f0:	30 41       	ret			
+    cb58:	0f 4e       	mov	r14,	r15	
+    cb5a:	3b 41       	pop	r11		
+    cb5c:	30 41       	ret			
 
-0000c9f2 <packet_send>:
+0000cb5e <packet_send>:
 
 int packet_send(packet *pkt) {
-    c9f2:	0b 12       	push	r11		
-    c9f4:	0a 12       	push	r10		
-    c9f6:	0b 4f       	mov	r15,	r11	
+    cb5e:	0b 12       	push	r11		
+    cb60:	0a 12       	push	r10		
+    cb62:	0b 4f       	mov	r15,	r11	
 
 	unsigned char  i;
 
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
-    c9f8:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
-    c9fc:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
-    ca00:	1f 34       	jge	$+64     	;abs 0xca40
+    cb64:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    cb68:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
+    cb6c:	1f 34       	jge	$+64     	;abs 0xcbac
 		return PACKET_STAT_ERR_LENGTH;
 	}
  
 	// write start byte
 	packet_byte_to_sendq(pkt->start);
-    ca02:	6f 4b       	mov.b	@r11,	r15	
-    ca04:	b0 12 a8 c0 	call	#0xc0a8	
+    cb6e:	6f 4b       	mov.b	@r11,	r15	
+    cb70:	b0 12 a8 c0 	call	#0xc0a8	
 
 	// write length
 	packet_byte_to_sendq(pkt->length);
-    ca08:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    ca0c:	b0 12 a8 c0 	call	#0xc0a8	
+    cb74:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    cb78:	b0 12 a8 c0 	call	#0xc0a8	
 
 	// write type
 	packet_byte_to_sendq(pkt->type);
-    ca10:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
-    ca14:	b0 12 a8 c0 	call	#0xc0a8	
+    cb7c:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
+    cb80:	b0 12 a8 c0 	call	#0xc0a8	
 
 	// write data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    ca18:	4a 43       	clr.b	r10		
-    ca1a:	06 3c       	jmp	$+14     	;abs 0xca28
+    cb84:	4a 43       	clr.b	r10		
+    cb86:	06 3c       	jmp	$+14     	;abs 0xcb94
 		packet_byte_to_sendq(pkt->data[i]); 
-    ca1c:	0e 5b       	add	r11,	r14	
-    ca1e:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
-    ca22:	b0 12 a8 c0 	call	#0xc0a8	
+    cb88:	0e 5b       	add	r11,	r14	
+    cb8a:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
+    cb8e:	b0 12 a8 c0 	call	#0xc0a8	
 
 	// write type
 	packet_byte_to_sendq(pkt->type);
 
 	// write data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    ca26:	5a 53       	inc.b	r10		
-    ca28:	4e 4a       	mov.b	r10,	r14	
-    ca2a:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    ca2e:	2f 82       	sub	#4,	r15	;r2 As==10
-    ca30:	0e 9f       	cmp	r15,	r14	
-    ca32:	f4 3b       	jl	$-22     	;abs 0xca1c
+    cb92:	5a 53       	inc.b	r10		
+    cb94:	4e 4a       	mov.b	r10,	r14	
+    cb96:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    cb9a:	2f 82       	sub	#4,	r15	;r2 As==10
+    cb9c:	0e 9f       	cmp	r15,	r14	
+    cb9e:	f4 3b       	jl	$-22     	;abs 0xcb88
 		packet_byte_to_sendq(pkt->data[i]); 
 	}
 
 	// write crc 
 	packet_byte_to_sendq(pkt->crc);
-    ca34:	5f 4b 43 00 	mov.b	67(r11),r15	;0x0043(r11)
-    ca38:	b0 12 a8 c0 	call	#0xc0a8	
+    cba0:	5f 4b 43 00 	mov.b	67(r11),r15	;0x0043(r11)
+    cba4:	b0 12 a8 c0 	call	#0xc0a8	
 	
 	return PACKET_STAT_OK;
-    ca3c:	0f 43       	clr	r15		
-    ca3e:	01 3c       	jmp	$+4      	;abs 0xca42
+    cba8:	0f 43       	clr	r15		
+    cbaa:	01 3c       	jmp	$+4      	;abs 0xcbae
 
 	unsigned char  i;
 
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
 		return PACKET_STAT_ERR_LENGTH;
-    ca40:	3f 43       	mov	#-1,	r15	;r3 As==11
+    cbac:	3f 43       	mov	#-1,	r15	;r3 As==11
 
 	// write crc 
 	packet_byte_to_sendq(pkt->crc);
 	
 	return PACKET_STAT_OK;
 }
-    ca42:	3a 41       	pop	r10		
-    ca44:	3b 41       	pop	r11		
-    ca46:	30 41       	ret			
+    cbae:	3a 41       	pop	r10		
+    cbb0:	3b 41       	pop	r11		
+    cbb2:	30 41       	ret			
 
-0000ca48 <packet_receive>:
+0000cbb4 <packet_receive>:
 
 int packet_receive(packet *pkt, unsigned char start) {
-    ca48:	0b 12       	push	r11		
-    ca4a:	0a 12       	push	r10		
-    ca4c:	09 12       	push	r9		
-    ca4e:	0b 4f       	mov	r15,	r11	
-    ca50:	4a 4e       	mov.b	r14,	r10	
+    cbb4:	0b 12       	push	r11		
+    cbb6:	0a 12       	push	r10		
+    cbb8:	09 12       	push	r9		
+    cbba:	0b 4f       	mov	r15,	r11	
+    cbbc:	4a 4e       	mov.b	r14,	r10	
 
 	unsigned char  i;
 
 	// discard everything until start byte found in buffer
 	while(packet_byte_from_rcvq() != start);
-    ca52:	b0 12 ce c0 	call	#0xc0ce	
-    ca56:	4f 9a       	cmp.b	r10,	r15	
-    ca58:	fc 23       	jnz	$-6      	;abs 0xca52
+    cbbe:	b0 12 ce c0 	call	#0xc0ce	
+    cbc2:	4f 9a       	cmp.b	r10,	r15	
+    cbc4:	fc 23       	jnz	$-6      	;abs 0xcbbe
 
 	pkt->start = start;
-    ca5a:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
+    cbc6:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
 
 	// read length
 	pkt->length = packet_byte_from_rcvq();
-    ca5e:	b0 12 ce c0 	call	#0xc0ce	
-    ca62:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
+    cbca:	b0 12 ce c0 	call	#0xc0ce	
+    cbce:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
 	
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
-    ca66:	4f 4f       	mov.b	r15,	r15	
-    ca68:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
-    ca6c:	1d 34       	jge	$+60     	;abs 0xcaa8
+    cbd2:	4f 4f       	mov.b	r15,	r15	
+    cbd4:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
+    cbd8:	1d 34       	jge	$+60     	;abs 0xcc14
 		return PACKET_STAT_ERR_LENGTH;
 	}
  
 	// read type
 	pkt->type = packet_byte_from_rcvq();
-    ca6e:	b0 12 ce c0 	call	#0xc0ce	
-    ca72:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
+    cbda:	b0 12 ce c0 	call	#0xc0ce	
+    cbde:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
  	
 	// read data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    ca76:	4a 43       	clr.b	r10		
-    ca78:	06 3c       	jmp	$+14     	;abs 0xca86
+    cbe2:	4a 43       	clr.b	r10		
+    cbe4:	06 3c       	jmp	$+14     	;abs 0xcbf2
 		pkt->data[i] = packet_byte_from_rcvq();
-    ca7a:	b0 12 ce c0 	call	#0xc0ce	
-    ca7e:	09 5b       	add	r11,	r9	
-    ca80:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
+    cbe6:	b0 12 ce c0 	call	#0xc0ce	
+    cbea:	09 5b       	add	r11,	r9	
+    cbec:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
  
 	// read type
 	pkt->type = packet_byte_from_rcvq();
  	
 	// read data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    ca84:	5a 53       	inc.b	r10		
-    ca86:	49 4a       	mov.b	r10,	r9	
-    ca88:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    ca8c:	2f 82       	sub	#4,	r15	;r2 As==10
-    ca8e:	09 9f       	cmp	r15,	r9	
-    ca90:	f4 3b       	jl	$-22     	;abs 0xca7a
+    cbf0:	5a 53       	inc.b	r10		
+    cbf2:	49 4a       	mov.b	r10,	r9	
+    cbf4:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    cbf8:	2f 82       	sub	#4,	r15	;r2 As==10
+    cbfa:	09 9f       	cmp	r15,	r9	
+    cbfc:	f4 3b       	jl	$-22     	;abs 0xcbe6
 		pkt->data[i] = packet_byte_from_rcvq();
 	}
 	
 	// read crc 
 	pkt->crc = packet_byte_from_rcvq();
-    ca92:	b0 12 ce c0 	call	#0xc0ce	
-    ca96:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
+    cbfe:	b0 12 ce c0 	call	#0xc0ce	
+    cc02:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
 	
 	// check crc
 	if(!packet_check_crc(pkt)) {
-    ca9a:	0f 4b       	mov	r11,	r15	
-    ca9c:	b0 12 da c9 	call	#0xc9da	
-    caa0:	0f 93       	tst	r15		
-    caa2:	04 20       	jnz	$+10     	;abs 0xcaac
+    cc06:	0f 4b       	mov	r11,	r15	
+    cc08:	b0 12 46 cb 	call	#0xcb46	
+    cc0c:	0f 93       	tst	r15		
+    cc0e:	04 20       	jnz	$+10     	;abs 0xcc18
 		return PACKET_STAT_ERR_CRC;
-    caa4:	2f 83       	decd	r15		
-    caa6:	03 3c       	jmp	$+8      	;abs 0xcaae
+    cc10:	2f 83       	decd	r15		
+    cc12:	03 3c       	jmp	$+8      	;abs 0xcc1a
 	// read length
 	pkt->length = packet_byte_from_rcvq();
 	
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
 		return PACKET_STAT_ERR_LENGTH;
-    caa8:	3f 43       	mov	#-1,	r15	;r3 As==11
-    caaa:	01 3c       	jmp	$+4      	;abs 0xcaae
+    cc14:	3f 43       	mov	#-1,	r15	;r3 As==11
+    cc16:	01 3c       	jmp	$+4      	;abs 0xcc1a
 	// check crc
 	if(!packet_check_crc(pkt)) {
 		return PACKET_STAT_ERR_CRC;
 	}
 
 	return PACKET_STAT_OK;
-    caac:	0f 43       	clr	r15		
+    cc18:	0f 43       	clr	r15		
 }
-    caae:	39 41       	pop	r9		
-    cab0:	3a 41       	pop	r10		
-    cab2:	3b 41       	pop	r11		
-    cab4:	30 41       	ret			
+    cc1a:	39 41       	pop	r9		
+    cc1c:	3a 41       	pop	r10		
+    cc1e:	3b 41       	pop	r11		
+    cc20:	30 41       	ret			
 
-0000cab6 <packet_process_received>:
+0000cc22 <packet_process_received>:
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
-    cab6:	0b 12       	push	r11		
-    cab8:	0a 12       	push	r10		
-    caba:	0c 4e       	mov	r14,	r12	
+    cc22:	0b 12       	push	r11		
+    cc24:	0a 12       	push	r10		
+    cc26:	0c 4e       	mov	r14,	r12	
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    cabc:	6b 4f       	mov.b	@r15,	r11	
+    cc28:	6b 4f       	mov.b	@r15,	r11	
 	}
 
 	return PACKET_STAT_OK;
 }
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
-    cabe:	0e 4f       	mov	r15,	r14	
-    cac0:	2e 53       	incd	r14		
+    cc2a:	0e 4f       	mov	r15,	r14	
+    cc2c:	2e 53       	incd	r14		
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    cac2:	0d 43       	clr	r13		
-    cac4:	11 3c       	jmp	$+36     	;abs 0xcae8
+    cc2e:	0d 43       	clr	r13		
+    cc30:	11 3c       	jmp	$+36     	;abs 0xcc54
 		if(rh->handlers[i].type == pkt->type) {
-    cac6:	6a 4e       	mov.b	@r14,	r10	
-    cac8:	2e 52       	add	#4,	r14	;r2 As==10
-    caca:	1d 53       	inc	r13		
-    cacc:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
-    cad0:	0b 20       	jnz	$+24     	;abs 0xcae8
+    cc32:	6a 4e       	mov.b	@r14,	r10	
+    cc34:	2e 52       	add	#4,	r14	;r2 As==10
+    cc36:	1d 53       	inc	r13		
+    cc38:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
+    cc3c:	0b 20       	jnz	$+24     	;abs 0xcc54
 			// call handler function
     		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
-    cad2:	0d 5d       	rla	r13		
-    cad4:	0d 5d       	rla	r13		
-    cad6:	0d 5f       	add	r15,	r13	
-    cad8:	0e 4c       	mov	r12,	r14	
-    cada:	3e 50 03 00 	add	#3,	r14	;#0x0003
-    cade:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
-    cae2:	6f 82       	sub.b	#4,	r15	;r2 As==10
-    cae4:	ad 12       	call	@r13		
-    cae6:	04 3c       	jmp	$+10     	;abs 0xcaf0
+    cc3e:	0d 5d       	rla	r13		
+    cc40:	0d 5d       	rla	r13		
+    cc42:	0d 5f       	add	r15,	r13	
+    cc44:	0e 4c       	mov	r12,	r14	
+    cc46:	3e 50 03 00 	add	#3,	r14	;#0x0003
+    cc4a:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
+    cc4e:	6f 82       	sub.b	#4,	r15	;r2 As==10
+    cc50:	ad 12       	call	@r13		
+    cc52:	04 3c       	jmp	$+10     	;abs 0xcc5c
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    cae8:	0d 9b       	cmp	r11,	r13	
-    caea:	ed 3b       	jl	$-36     	;abs 0xcac6
+    cc54:	0d 9b       	cmp	r11,	r13	
+    cc56:	ed 3b       	jl	$-36     	;abs 0xcc32
 			// call handler function
     		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
 		}
     }
 
 	return PACKET_STAT_ERR_UNKPACK;
-    caec:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
+    cc58:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
 }
-    caf0:	3a 41       	pop	r10		
-    caf2:	3b 41       	pop	r11		
-    caf4:	30 41       	ret			
+    cc5c:	3a 41       	pop	r10		
+    cc5e:	3b 41       	pop	r11		
+    cc60:	30 41       	ret			
 
-0000caf6 <__divmodsi4>:
-    caf6:	08 43       	clr	r8		
-    caf8:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
-    cafc:	05 24       	jz	$+12     	;abs 0xcb08
-    cafe:	3d e3       	inv	r13		
-    cb00:	3c e3       	inv	r12		
-    cb02:	1c 53       	inc	r12		
-    cb04:	0d 63       	adc	r13		
-    cb06:	28 d2       	bis	#4,	r8	;r2 As==10
-    cb08:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
-    cb0c:	05 24       	jz	$+12     	;abs 0xcb18
-    cb0e:	3b e3       	inv	r11		
-    cb10:	3a e3       	inv	r10		
-    cb12:	1a 53       	inc	r10		
-    cb14:	0b 63       	adc	r11		
-    cb16:	38 d2       	bis	#8,	r8	;r2 As==11
-    cb18:	b0 12 40 cb 	call	#0xcb40	
-    cb1c:	08 10       	rrc	r8		
-    cb1e:	28 b2       	bit	#4,	r8	;r2 As==10
-    cb20:	08 24       	jz	$+18     	;abs 0xcb32
-    cb22:	3e e3       	inv	r14		
-    cb24:	3f e3       	inv	r15		
-    cb26:	1e 53       	inc	r14		
-    cb28:	0f 63       	adc	r15		
-    cb2a:	3c e3       	inv	r12		
-    cb2c:	3d e3       	inv	r13		
-    cb2e:	1c 53       	inc	r12		
-    cb30:	0d 63       	adc	r13		
-    cb32:	38 b2       	bit	#8,	r8	;r2 As==11
-    cb34:	04 24       	jz	$+10     	;abs 0xcb3e
-    cb36:	3c e3       	inv	r12		
-    cb38:	3d e3       	inv	r13		
-    cb3a:	1c 53       	inc	r12		
-    cb3c:	0d 63       	adc	r13		
-    cb3e:	30 41       	ret			
+0000cc62 <__fixunssfsi>:
+    cc62:	0b 12       	push	r11		
+    cc64:	0a 12       	push	r10		
+    cc66:	0a 4e       	mov	r14,	r10	
+    cc68:	0b 4f       	mov	r15,	r11	
+    cc6a:	0c 43       	clr	r12		
+    cc6c:	3d 40 00 4f 	mov	#20224,	r13	;#0x4f00
+    cc70:	b0 12 54 d3 	call	#0xd354	
+    cc74:	0f 93       	tst	r15		
+    cc76:	07 34       	jge	$+16     	;abs 0xcc86
+    cc78:	0e 4a       	mov	r10,	r14	
+    cc7a:	0f 4b       	mov	r11,	r15	
+    cc7c:	b0 12 46 d4 	call	#0xd446	
+    cc80:	3a 41       	pop	r10		
+    cc82:	3b 41       	pop	r11		
+    cc84:	30 41       	ret			
+    cc86:	0c 43       	clr	r12		
+    cc88:	3d 40 00 4f 	mov	#20224,	r13	;#0x4f00
+    cc8c:	0e 4a       	mov	r10,	r14	
+    cc8e:	0f 4b       	mov	r11,	r15	
+    cc90:	b0 12 a2 cf 	call	#0xcfa2	
+    cc94:	b0 12 46 d4 	call	#0xd446	
+    cc98:	0e 53       	add	#0,	r14	;r3 As==00
+    cc9a:	3f 60 00 80 	addc	#-32768,r15	;#0x8000
+    cc9e:	3a 41       	pop	r10		
+    cca0:	3b 41       	pop	r11		
+    cca2:	30 41       	ret			
 
-0000cb40 <__udivmodsi4>:
-    cb40:	0f ef       	xor	r15,	r15	
-    cb42:	0e ee       	xor	r14,	r14	
-    cb44:	39 40 21 00 	mov	#33,	r9	;#0x0021
-    cb48:	0a 3c       	jmp	$+22     	;abs 0xcb5e
-    cb4a:	08 10       	rrc	r8		
-    cb4c:	0e 6e       	rlc	r14		
-    cb4e:	0f 6f       	rlc	r15		
-    cb50:	0f 9b       	cmp	r11,	r15	
-    cb52:	05 28       	jnc	$+12     	;abs 0xcb5e
-    cb54:	02 20       	jnz	$+6      	;abs 0xcb5a
-    cb56:	0e 9a       	cmp	r10,	r14	
-    cb58:	02 28       	jnc	$+6      	;abs 0xcb5e
-    cb5a:	0e 8a       	sub	r10,	r14	
-    cb5c:	0f 7b       	subc	r11,	r15	
-    cb5e:	0c 6c       	rlc	r12		
-    cb60:	0d 6d       	rlc	r13		
-    cb62:	08 68       	rlc	r8		
-    cb64:	19 83       	dec	r9		
-    cb66:	f1 23       	jnz	$-28     	;abs 0xcb4a
-    cb68:	30 41       	ret			
+0000cca4 <_fpadd_parts>:
+    cca4:	0b 12       	push	r11		
+    cca6:	0a 12       	push	r10		
+    cca8:	09 12       	push	r9		
+    ccaa:	08 12       	push	r8		
+    ccac:	07 12       	push	r7		
+    ccae:	06 12       	push	r6		
+    ccb0:	05 12       	push	r5		
+    ccb2:	04 12       	push	r4		
+    ccb4:	31 82       	sub	#8,	r1	;r2 As==11
+    ccb6:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    ccba:	06 4d       	mov	r13,	r6	
+    ccbc:	6b 4f       	mov.b	@r15,	r11	
+    ccbe:	59 43       	mov.b	#1,	r9	;r3 As==01
+    ccc0:	49 9b       	cmp.b	r11,	r9	
+    ccc2:	aa 2c       	jc	$+342    	;abs 0xce18
+    ccc4:	6c 4e       	mov.b	@r14,	r12	
+    ccc6:	49 9c       	cmp.b	r12,	r9	
+    ccc8:	02 28       	jnc	$+6      	;abs 0xccce
+    ccca:	30 40 de ce 	br	#0xcede	
+    ccce:	6b 92       	cmp.b	#4,	r11	;r2 As==10
+    ccd0:	02 20       	jnz	$+6      	;abs 0xccd6
+    ccd2:	30 40 40 cf 	br	#0xcf40	
+    ccd6:	6c 92       	cmp.b	#4,	r12	;r2 As==10
+    ccd8:	02 20       	jnz	$+6      	;abs 0xccde
+    ccda:	30 40 de ce 	br	#0xcede	
+    ccde:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    cce0:	c4 24       	jz	$+394    	;abs 0xce6a
+    cce2:	6b 93       	cmp.b	#2,	r11	;r3 As==10
+    cce4:	02 20       	jnz	$+6      	;abs 0xccea
+    cce6:	30 40 de ce 	br	#0xcede	
+    ccea:	91 4f 02 00 	mov	2(r15),	2(r1)	;0x0002(r15), 0x0002(r1)
+    ccee:	02 00 
+    ccf0:	2c 41       	mov	@r1,	r12	
+    ccf2:	1b 4c 02 00 	mov	2(r12),	r11	;0x0002(r12)
+    ccf6:	14 4f 04 00 	mov	4(r15),	r4	;0x0004(r15)
+    ccfa:	15 4f 06 00 	mov	6(r15),	r5	;0x0006(r15)
+    ccfe:	17 4c 04 00 	mov	4(r12),	r7	;0x0004(r12)
+    cd02:	18 4c 06 00 	mov	6(r12),	r8	;0x0006(r12)
+    cd06:	1c 41 02 00 	mov	2(r1),	r12	;0x0002(r1)
+    cd0a:	0c 8b       	sub	r11,	r12	
+    cd0c:	09 4c       	mov	r12,	r9	
+    cd0e:	d9 30       	jn	$+436    	;abs 0xcec2
+    cd10:	39 90 20 00 	cmp	#32,	r9	;#0x0020
+    cd14:	8b 34       	jge	$+280    	;abs 0xce2c
+    cd16:	1c 93       	cmp	#1,	r12	;r3 As==01
+    cd18:	02 34       	jge	$+6      	;abs 0xcd1e
+    cd1a:	30 40 e2 ce 	br	#0xcee2	
+    cd1e:	0e 49       	mov	r9,	r14	
+    cd20:	0a 47       	mov	r7,	r10	
+    cd22:	0b 48       	mov	r8,	r11	
+    cd24:	0e 93       	tst	r14		
+    cd26:	05 24       	jz	$+12     	;abs 0xcd32
+    cd28:	12 c3       	clrc			
+    cd2a:	0b 10       	rrc	r11		
+    cd2c:	0a 10       	rrc	r10		
+    cd2e:	1e 83       	dec	r14		
+    cd30:	fb 23       	jnz	$-8      	;abs 0xcd28
+    cd32:	81 4a 04 00 	mov	r10,	4(r1)	;0x0004(r1)
+    cd36:	81 4b 06 00 	mov	r11,	6(r1)	;0x0006(r1)
+    cd3a:	1c 43       	mov	#1,	r12	;r3 As==01
+    cd3c:	0d 43       	clr	r13		
+    cd3e:	0e 49       	mov	r9,	r14	
+    cd40:	09 4c       	mov	r12,	r9	
+    cd42:	0a 4d       	mov	r13,	r10	
+    cd44:	0e 93       	tst	r14		
+    cd46:	04 24       	jz	$+10     	;abs 0xcd50
+    cd48:	09 59       	rla	r9		
+    cd4a:	0a 6a       	rlc	r10		
+    cd4c:	1e 83       	dec	r14		
+    cd4e:	fc 23       	jnz	$-6      	;abs 0xcd48
+    cd50:	39 53       	add	#-1,	r9	;r3 As==11
+    cd52:	3a 63       	addc	#-1,	r10	;r3 As==11
+    cd54:	09 f7       	and	r7,	r9	
+    cd56:	0a f8       	and	r8,	r10	
+    cd58:	09 93       	tst	r9		
+    cd5a:	b9 24       	jz	$+372    	;abs 0xcece
+    cd5c:	17 41 04 00 	mov	4(r1),	r7	;0x0004(r1)
+    cd60:	18 41 06 00 	mov	6(r1),	r8	;0x0006(r1)
+    cd64:	07 dc       	bis	r12,	r7	
+    cd66:	08 dd       	bis	r13,	r8	
+    cd68:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    cd6c:	2c 41       	mov	@r1,	r12	
+    cd6e:	5f 9c 01 00 	cmp.b	1(r12),	r15	;0x0001(r12)
+    cd72:	67 24       	jz	$+208    	;abs 0xce42
+    cd74:	4f 93       	tst.b	r15		
+    cd76:	9b 24       	jz	$+312    	;abs 0xceae
+    cd78:	0c 47       	mov	r7,	r12	
+    cd7a:	0d 48       	mov	r8,	r13	
+    cd7c:	0c 84       	sub	r4,	r12	
+    cd7e:	0d 75       	subc	r5,	r13	
+    cd80:	0d 93       	tst	r13		
+    cd82:	89 34       	jge	$+276    	;abs 0xce96
+    cd84:	d6 43 01 00 	mov.b	#1,	1(r6)	;r3 As==01, 0x0001(r6)
+    cd88:	96 41 02 00 	mov	2(r1),	2(r6)	;0x0002(r1), 0x0002(r6)
+    cd8c:	02 00 
+    cd8e:	0e 4c       	mov	r12,	r14	
+    cd90:	0f 4d       	mov	r13,	r15	
+    cd92:	3e e3       	inv	r14		
+    cd94:	3f e3       	inv	r15		
+    cd96:	1e 53       	inc	r14		
+    cd98:	0f 63       	adc	r15		
+    cd9a:	86 4e 04 00 	mov	r14,	4(r6)	;0x0004(r6)
+    cd9e:	86 4f 06 00 	mov	r15,	6(r6)	;0x0006(r6)
+    cda2:	0c 4e       	mov	r14,	r12	
+    cda4:	0d 4f       	mov	r15,	r13	
+    cda6:	3c 53       	add	#-1,	r12	;r3 As==11
+    cda8:	3d 63       	addc	#-1,	r13	;r3 As==11
+    cdaa:	39 40 fe ff 	mov	#-2,	r9	;#0xfffe
+    cdae:	3a 40 ff 3f 	mov	#16383,	r10	;#0x3fff
+    cdb2:	0a 9d       	cmp	r13,	r10	
+    cdb4:	1a 28       	jnc	$+54     	;abs 0xcdea
+    cdb6:	3d 90 ff 3f 	cmp	#16383,	r13	;#0x3fff
+    cdba:	8e 24       	jz	$+286    	;abs 0xced8
+    cdbc:	1b 46 02 00 	mov	2(r6),	r11	;0x0002(r6)
+    cdc0:	3b 53       	add	#-1,	r11	;r3 As==11
+    cdc2:	39 40 fe ff 	mov	#-2,	r9	;#0xfffe
+    cdc6:	3a 40 ff 3f 	mov	#16383,	r10	;#0x3fff
+    cdca:	0e 5e       	rla	r14		
+    cdcc:	0f 6f       	rlc	r15		
+    cdce:	08 4b       	mov	r11,	r8	
+    cdd0:	3b 53       	add	#-1,	r11	;r3 As==11
+    cdd2:	0c 4e       	mov	r14,	r12	
+    cdd4:	0d 4f       	mov	r15,	r13	
+    cdd6:	3c 53       	add	#-1,	r12	;r3 As==11
+    cdd8:	3d 63       	addc	#-1,	r13	;r3 As==11
+    cdda:	0a 9d       	cmp	r13,	r10	
+    cddc:	40 2c       	jc	$+130    	;abs 0xce5e
+    cdde:	86 4e 04 00 	mov	r14,	4(r6)	;0x0004(r6)
+    cde2:	86 4f 06 00 	mov	r15,	6(r6)	;0x0006(r6)
+    cde6:	86 48 02 00 	mov	r8,	2(r6)	;0x0002(r6)
+    cdea:	f6 40 03 00 	mov.b	#3,	0(r6)	;#0x0003, 0x0000(r6)
+    cdee:	00 00 
+    cdf0:	0f 93       	tst	r15		
+    cdf2:	11 34       	jge	$+36     	;abs 0xce16
+    cdf4:	0c 4e       	mov	r14,	r12	
+    cdf6:	0d 4f       	mov	r15,	r13	
+    cdf8:	1c f3       	and	#1,	r12	;r3 As==01
+    cdfa:	0d f3       	and	#0,	r13	;r3 As==00
+    cdfc:	12 c3       	clrc			
+    cdfe:	0f 10       	rrc	r15		
+    ce00:	0e 10       	rrc	r14		
+    ce02:	0a 4c       	mov	r12,	r10	
+    ce04:	0b 4d       	mov	r13,	r11	
+    ce06:	0a de       	bis	r14,	r10	
+    ce08:	0b df       	bis	r15,	r11	
+    ce0a:	86 4a 04 00 	mov	r10,	4(r6)	;0x0004(r6)
+    ce0e:	86 4b 06 00 	mov	r11,	6(r6)	;0x0006(r6)
+    ce12:	96 53 02 00 	inc	2(r6)		;0x0002(r6)
+    ce16:	0f 46       	mov	r6,	r15	
+    ce18:	31 52       	add	#8,	r1	;r2 As==11
+    ce1a:	34 41       	pop	r4		
+    ce1c:	35 41       	pop	r5		
+    ce1e:	36 41       	pop	r6		
+    ce20:	37 41       	pop	r7		
+    ce22:	38 41       	pop	r8		
+    ce24:	39 41       	pop	r9		
+    ce26:	3a 41       	pop	r10		
+    ce28:	3b 41       	pop	r11		
+    ce2a:	30 41       	ret			
+    ce2c:	1b 91 02 00 	cmp	2(r1),	r11	;0x0002(r1)
+    ce30:	43 34       	jge	$+136    	;abs 0xceb8
+    ce32:	07 43       	clr	r7		
+    ce34:	08 43       	clr	r8		
+    ce36:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    ce3a:	2c 41       	mov	@r1,	r12	
+    ce3c:	5f 9c 01 00 	cmp.b	1(r12),	r15	;0x0001(r12)
+    ce40:	99 23       	jnz	$-204    	;abs 0xcd74
+    ce42:	c6 4f 01 00 	mov.b	r15,	1(r6)	;0x0001(r6)
+    ce46:	96 41 02 00 	mov	2(r1),	2(r6)	;0x0002(r1), 0x0002(r6)
+    ce4a:	02 00 
+    ce4c:	0e 47       	mov	r7,	r14	
+    ce4e:	0f 48       	mov	r8,	r15	
+    ce50:	0e 54       	add	r4,	r14	
+    ce52:	0f 65       	addc	r5,	r15	
+    ce54:	86 4e 04 00 	mov	r14,	4(r6)	;0x0004(r6)
+    ce58:	86 4f 06 00 	mov	r15,	6(r6)	;0x0006(r6)
+    ce5c:	c6 3f       	jmp	$-114    	;abs 0xcdea
+    ce5e:	3d 90 ff 3f 	cmp	#16383,	r13	;#0x3fff
+    ce62:	b3 2b       	jnc	$-152    	;abs 0xcdca
+    ce64:	09 9c       	cmp	r12,	r9	
+    ce66:	b1 2f       	jc	$-156    	;abs 0xcdca
+    ce68:	ba 3f       	jmp	$-138    	;abs 0xcdde
+    ce6a:	4b 9c       	cmp.b	r12,	r11	
+    ce6c:	d5 23       	jnz	$-84     	;abs 0xce18
+    ce6e:	ad 4f 00 00 	mov	@r15,	0(r13)	;0x0000(r13)
+    ce72:	9d 4f 02 00 	mov	2(r15),	2(r13)	;0x0002(r15), 0x0002(r13)
+    ce76:	02 00 
+    ce78:	9d 4f 04 00 	mov	4(r15),	4(r13)	;0x0004(r15), 0x0004(r13)
+    ce7c:	04 00 
+    ce7e:	9d 4f 06 00 	mov	6(r15),	6(r13)	;0x0006(r15), 0x0006(r13)
+    ce82:	06 00 
+    ce84:	2b 41       	mov	@r1,	r11	
+    ce86:	5a 4b 01 00 	mov.b	1(r11),	r10	;0x0001(r11)
+    ce8a:	5a ff 01 00 	and.b	1(r15),	r10	;0x0001(r15)
+    ce8e:	cd 4a 01 00 	mov.b	r10,	1(r13)	;0x0001(r13)
+    ce92:	0f 4d       	mov	r13,	r15	
+    ce94:	c1 3f       	jmp	$-124    	;abs 0xce18
+    ce96:	c6 43 01 00 	mov.b	#0,	1(r6)	;r3 As==00, 0x0001(r6)
+    ce9a:	96 41 02 00 	mov	2(r1),	2(r6)	;0x0002(r1), 0x0002(r6)
+    ce9e:	02 00 
+    cea0:	0e 4c       	mov	r12,	r14	
+    cea2:	0f 4d       	mov	r13,	r15	
+    cea4:	86 4c 04 00 	mov	r12,	4(r6)	;0x0004(r6)
+    cea8:	86 4d 06 00 	mov	r13,	6(r6)	;0x0006(r6)
+    ceac:	7a 3f       	jmp	$-266    	;abs 0xcda2
+    ceae:	0c 44       	mov	r4,	r12	
+    ceb0:	0d 45       	mov	r5,	r13	
+    ceb2:	0c 87       	sub	r7,	r12	
+    ceb4:	0d 78       	subc	r8,	r13	
+    ceb6:	64 3f       	jmp	$-310    	;abs 0xcd80
+    ceb8:	81 4b 02 00 	mov	r11,	2(r1)	;0x0002(r1)
+    cebc:	04 43       	clr	r4		
+    cebe:	05 43       	clr	r5		
+    cec0:	53 3f       	jmp	$-344    	;abs 0xcd68
+    cec2:	39 e3       	inv	r9		
+    cec4:	19 53       	inc	r9		
+    cec6:	39 90 20 00 	cmp	#32,	r9	;#0x0020
+    ceca:	b0 37       	jge	$-158    	;abs 0xce2c
+    cecc:	24 3f       	jmp	$-438    	;abs 0xcd16
+    cece:	0a 93       	tst	r10		
+    ced0:	45 23       	jnz	$-372    	;abs 0xcd5c
+    ced2:	0c 43       	clr	r12		
+    ced4:	0d 43       	clr	r13		
+    ced6:	42 3f       	jmp	$-378    	;abs 0xcd5c
+    ced8:	09 9c       	cmp	r12,	r9	
+    ceda:	87 2b       	jnc	$-240    	;abs 0xcdea
+    cedc:	6f 3f       	jmp	$-288    	;abs 0xcdbc
+    cede:	2f 41       	mov	@r1,	r15	
+    cee0:	9b 3f       	jmp	$-200    	;abs 0xce18
+    cee2:	0c 93       	tst	r12		
+    cee4:	41 27       	jz	$-380    	;abs 0xcd68
+    cee6:	81 59 02 00 	add	r9,	2(r1)	;0x0002(r1)
+    ceea:	0e 49       	mov	r9,	r14	
+    ceec:	0b 44       	mov	r4,	r11	
+    ceee:	0c 45       	mov	r5,	r12	
+    cef0:	0e 93       	tst	r14		
+    cef2:	05 24       	jz	$+12     	;abs 0xcefe
+    cef4:	12 c3       	clrc			
+    cef6:	0c 10       	rrc	r12		
+    cef8:	0b 10       	rrc	r11		
+    cefa:	1e 83       	dec	r14		
+    cefc:	fb 23       	jnz	$-8      	;abs 0xcef4
+    cefe:	81 4b 04 00 	mov	r11,	4(r1)	;0x0004(r1)
+    cf02:	81 4c 06 00 	mov	r12,	6(r1)	;0x0006(r1)
+    cf06:	1d 43       	mov	#1,	r13	;r3 As==01
+    cf08:	0e 43       	clr	r14		
+    cf0a:	0b 4d       	mov	r13,	r11	
+    cf0c:	0c 4e       	mov	r14,	r12	
+    cf0e:	09 93       	tst	r9		
+    cf10:	04 24       	jz	$+10     	;abs 0xcf1a
+    cf12:	0b 5b       	rla	r11		
+    cf14:	0c 6c       	rlc	r12		
+    cf16:	19 83       	dec	r9		
+    cf18:	fc 23       	jnz	$-6      	;abs 0xcf12
+    cf1a:	3b 53       	add	#-1,	r11	;r3 As==11
+    cf1c:	3c 63       	addc	#-1,	r12	;r3 As==11
+    cf1e:	0b f4       	and	r4,	r11	
+    cf20:	0c f5       	and	r5,	r12	
+    cf22:	0b 93       	tst	r11		
+    cf24:	08 24       	jz	$+18     	;abs 0xcf36
+    cf26:	14 41 04 00 	mov	4(r1),	r4	;0x0004(r1)
+    cf2a:	15 41 06 00 	mov	6(r1),	r5	;0x0006(r1)
+    cf2e:	04 dd       	bis	r13,	r4	
+    cf30:	05 de       	bis	r14,	r5	
+    cf32:	30 40 68 cd 	br	#0xcd68	
+    cf36:	0c 93       	tst	r12		
+    cf38:	f6 23       	jnz	$-18     	;abs 0xcf26
+    cf3a:	0d 43       	clr	r13		
+    cf3c:	0e 43       	clr	r14		
+    cf3e:	f3 3f       	jmp	$-24     	;abs 0xcf26
+    cf40:	4c 9b       	cmp.b	r11,	r12	
+    cf42:	6a 23       	jnz	$-298    	;abs 0xce18
+    cf44:	df 9e 01 00 	cmp.b	1(r14),	1(r15)	;0x0001(r14), 0x0001(r15)
+    cf48:	01 00 
+    cf4a:	66 27       	jz	$-306    	;abs 0xce18
+    cf4c:	3f 40 d0 d4 	mov	#-11056,r15	;#0xd4d0
+    cf50:	63 3f       	jmp	$-312    	;abs 0xce18
 
-0000cb6a <_unexpected_>:
-    cb6a:	00 13       	reti			
+0000cf52 <__addsf3>:
+    cf52:	0b 12       	push	r11		
+    cf54:	0a 12       	push	r10		
+    cf56:	31 50 e0 ff 	add	#-32,	r1	;#0xffe0
+    cf5a:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    cf5e:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    cf62:	81 4c 04 00 	mov	r12,	4(r1)	;0x0004(r1)
+    cf66:	81 4d 06 00 	mov	r13,	6(r1)	;0x0006(r1)
+    cf6a:	0b 41       	mov	r1,	r11	
+    cf6c:	3b 52       	add	#8,	r11	;r2 As==11
+    cf6e:	0e 4b       	mov	r11,	r14	
+    cf70:	0f 41       	mov	r1,	r15	
+    cf72:	b0 12 de d7 	call	#0xd7de	
+    cf76:	0a 41       	mov	r1,	r10	
+    cf78:	3a 50 10 00 	add	#16,	r10	;#0x0010
+    cf7c:	0e 4a       	mov	r10,	r14	
+    cf7e:	0f 41       	mov	r1,	r15	
+    cf80:	2f 52       	add	#4,	r15	;r2 As==10
+    cf82:	b0 12 de d7 	call	#0xd7de	
+    cf86:	0d 41       	mov	r1,	r13	
+    cf88:	3d 50 18 00 	add	#24,	r13	;#0x0018
+    cf8c:	0e 4a       	mov	r10,	r14	
+    cf8e:	0f 4b       	mov	r11,	r15	
+    cf90:	b0 12 a4 cc 	call	#0xcca4	
+    cf94:	b0 12 08 d6 	call	#0xd608	
+    cf98:	31 50 20 00 	add	#32,	r1	;#0x0020
+    cf9c:	3a 41       	pop	r10		
+    cf9e:	3b 41       	pop	r11		
+    cfa0:	30 41       	ret			
+
+0000cfa2 <__subsf3>:
+    cfa2:	0b 12       	push	r11		
+    cfa4:	0a 12       	push	r10		
+    cfa6:	31 50 e0 ff 	add	#-32,	r1	;#0xffe0
+    cfaa:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    cfae:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    cfb2:	81 4c 04 00 	mov	r12,	4(r1)	;0x0004(r1)
+    cfb6:	81 4d 06 00 	mov	r13,	6(r1)	;0x0006(r1)
+    cfba:	0b 41       	mov	r1,	r11	
+    cfbc:	3b 52       	add	#8,	r11	;r2 As==11
+    cfbe:	0e 4b       	mov	r11,	r14	
+    cfc0:	0f 41       	mov	r1,	r15	
+    cfc2:	b0 12 de d7 	call	#0xd7de	
+    cfc6:	0a 41       	mov	r1,	r10	
+    cfc8:	3a 50 10 00 	add	#16,	r10	;#0x0010
+    cfcc:	0e 4a       	mov	r10,	r14	
+    cfce:	0f 41       	mov	r1,	r15	
+    cfd0:	2f 52       	add	#4,	r15	;r2 As==10
+    cfd2:	b0 12 de d7 	call	#0xd7de	
+    cfd6:	d1 e3 11 00 	xor.b	#1,	17(r1)	;r3 As==01, 0x0011(r1)
+    cfda:	0d 41       	mov	r1,	r13	
+    cfdc:	3d 50 18 00 	add	#24,	r13	;#0x0018
+    cfe0:	0e 4a       	mov	r10,	r14	
+    cfe2:	0f 4b       	mov	r11,	r15	
+    cfe4:	b0 12 a4 cc 	call	#0xcca4	
+    cfe8:	b0 12 08 d6 	call	#0xd608	
+    cfec:	31 50 20 00 	add	#32,	r1	;#0x0020
+    cff0:	3a 41       	pop	r10		
+    cff2:	3b 41       	pop	r11		
+    cff4:	30 41       	ret			
+
+0000cff6 <__mulsf3>:
+    cff6:	0b 12       	push	r11		
+    cff8:	0a 12       	push	r10		
+    cffa:	09 12       	push	r9		
+    cffc:	08 12       	push	r8		
+    cffe:	07 12       	push	r7		
+    d000:	06 12       	push	r6		
+    d002:	05 12       	push	r5		
+    d004:	04 12       	push	r4		
+    d006:	31 50 de ff 	add	#-34,	r1	;#0xffde
+    d00a:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    d00e:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d012:	81 4c 04 00 	mov	r12,	4(r1)	;0x0004(r1)
+    d016:	81 4d 06 00 	mov	r13,	6(r1)	;0x0006(r1)
+    d01a:	08 41       	mov	r1,	r8	
+    d01c:	38 52       	add	#8,	r8	;r2 As==11
+    d01e:	0e 48       	mov	r8,	r14	
+    d020:	0f 41       	mov	r1,	r15	
+    d022:	b0 12 de d7 	call	#0xd7de	
+    d026:	06 41       	mov	r1,	r6	
+    d028:	36 50 10 00 	add	#16,	r6	;#0x0010
+    d02c:	0e 46       	mov	r6,	r14	
+    d02e:	0f 41       	mov	r1,	r15	
+    d030:	2f 52       	add	#4,	r15	;r2 As==10
+    d032:	b0 12 de d7 	call	#0xd7de	
+    d036:	5c 41 08 00 	mov.b	8(r1),	r12	;0x0008(r1)
+    d03a:	5d 43       	mov.b	#1,	r13	;r3 As==01
+    d03c:	4d 9c       	cmp.b	r12,	r13	
+    d03e:	a4 2c       	jc	$+330    	;abs 0xd188
+    d040:	5a 41 10 00 	mov.b	16(r1),	r10	;0x0010(r1)
+    d044:	4d 9a       	cmp.b	r10,	r13	
+    d046:	c4 2c       	jc	$+394    	;abs 0xd1d0
+    d048:	6c 92       	cmp.b	#4,	r12	;r2 As==10
+    d04a:	9c 24       	jz	$+314    	;abs 0xd184
+    d04c:	6a 92       	cmp.b	#4,	r10	;r2 As==10
+    d04e:	02 20       	jnz	$+6      	;abs 0xd054
+    d050:	30 40 ea d1 	br	#0xd1ea	
+    d054:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d056:	98 24       	jz	$+306    	;abs 0xd188
+    d058:	6a 93       	cmp.b	#2,	r10	;r3 As==10
+    d05a:	ba 24       	jz	$+374    	;abs 0xd1d0
+    d05c:	14 41 0c 00 	mov	12(r1),	r4	;0x000c(r1)
+    d060:	91 41 0e 00 	mov	14(r1),	32(r1)	;0x000e(r1), 0x0020(r1)
+    d064:	20 00 
+    d066:	1a 41 14 00 	mov	20(r1),	r10	;0x0014(r1)
+    d06a:	1b 41 16 00 	mov	22(r1),	r11	;0x0016(r1)
+    d06e:	05 43       	clr	r5		
+    d070:	0c 43       	clr	r12		
+    d072:	0d 43       	clr	r13		
+    d074:	06 4c       	mov	r12,	r6	
+    d076:	07 4d       	mov	r13,	r7	
+    d078:	08 4c       	mov	r12,	r8	
+    d07a:	09 4d       	mov	r13,	r9	
+    d07c:	19 3c       	jmp	$+52     	;abs 0xd0b0
+    d07e:	0e 43       	clr	r14		
+    d080:	0f 43       	clr	r15		
+    d082:	0c 5e       	add	r14,	r12	
+    d084:	0d 6f       	addc	r15,	r13	
+    d086:	06 56       	rla	r6		
+    d088:	07 67       	rlc	r7		
+    d08a:	0b 93       	tst	r11		
+    d08c:	02 34       	jge	$+6      	;abs 0xd092
+    d08e:	16 d3       	bis	#1,	r6	;r3 As==01
+    d090:	07 d3       	bis	#0,	r7	;r3 As==00
+    d092:	15 53       	inc	r5		
+    d094:	35 90 20 00 	cmp	#32,	r5	;#0x0020
+    d098:	1a 24       	jz	$+54     	;abs 0xd0ce
+    d09a:	0a 5a       	rla	r10		
+    d09c:	0b 6b       	rlc	r11		
+    d09e:	0e 44       	mov	r4,	r14	
+    d0a0:	1f 41 20 00 	mov	32(r1),	r15	;0x0020(r1)
+    d0a4:	12 c3       	clrc			
+    d0a6:	0f 10       	rrc	r15		
+    d0a8:	0e 10       	rrc	r14		
+    d0aa:	04 4e       	mov	r14,	r4	
+    d0ac:	81 4f 20 00 	mov	r15,	32(r1)	;0x0020(r1)
+    d0b0:	14 b3       	bit	#1,	r4	;r3 As==01
+    d0b2:	e9 27       	jz	$-44     	;abs 0xd086
+    d0b4:	08 5a       	add	r10,	r8	
+    d0b6:	09 6b       	addc	r11,	r9	
+    d0b8:	0c 56       	add	r6,	r12	
+    d0ba:	0d 67       	addc	r7,	r13	
+    d0bc:	1e 43       	mov	#1,	r14	;r3 As==01
+    d0be:	0f 43       	clr	r15		
+    d0c0:	09 9b       	cmp	r11,	r9	
+    d0c2:	df 2b       	jnc	$-64     	;abs 0xd082
+    d0c4:	09 9b       	cmp	r11,	r9	
+    d0c6:	db 23       	jnz	$-72     	;abs 0xd07e
+    d0c8:	08 9a       	cmp	r10,	r8	
+    d0ca:	db 2b       	jnc	$-72     	;abs 0xd082
+    d0cc:	d8 3f       	jmp	$-78     	;abs 0xd07e
+    d0ce:	0a 4d       	mov	r13,	r10	
+    d0d0:	1f 41 12 00 	mov	18(r1),	r15	;0x0012(r1)
+    d0d4:	1f 51 0a 00 	add	10(r1),	r15	;0x000a(r1)
+    d0d8:	0e 4f       	mov	r15,	r14	
+    d0da:	2e 53       	incd	r14		
+    d0dc:	81 4e 1a 00 	mov	r14,	26(r1)	;0x001a(r1)
+    d0e0:	5e 43       	mov.b	#1,	r14	;r3 As==01
+    d0e2:	d1 91 11 00 	cmp.b	17(r1),	9(r1)	;0x0011(r1), 0x0009(r1)
+    d0e6:	09 00 
+    d0e8:	57 24       	jz	$+176    	;abs 0xd198
+    d0ea:	c1 4e 19 00 	mov.b	r14,	25(r1)	;0x0019(r1)
+    d0ee:	0a 93       	tst	r10		
+    d0f0:	13 34       	jge	$+40     	;abs 0xd118
+    d0f2:	3f 50 03 00 	add	#3,	r15	;#0x0003
+    d0f6:	0a 4f       	mov	r15,	r10	
+    d0f8:	1c b3       	bit	#1,	r12	;r3 As==01
+    d0fa:	06 24       	jz	$+14     	;abs 0xd108
+    d0fc:	12 c3       	clrc			
+    d0fe:	09 10       	rrc	r9		
+    d100:	08 10       	rrc	r8		
+    d102:	08 d3       	bis	#0,	r8	;r3 As==00
+    d104:	39 d0 00 80 	bis	#-32768,r9	;#0x8000
+    d108:	12 c3       	clrc			
+    d10a:	0d 10       	rrc	r13		
+    d10c:	0c 10       	rrc	r12		
+    d10e:	1f 53       	inc	r15		
+    d110:	0d 93       	tst	r13		
+    d112:	f1 3b       	jl	$-28     	;abs 0xd0f6
+    d114:	81 4a 1a 00 	mov	r10,	26(r1)	;0x001a(r1)
+    d118:	3a 43       	mov	#-1,	r10	;r3 As==11
+    d11a:	3b 40 ff 3f 	mov	#16383,	r11	;#0x3fff
+    d11e:	0b 9d       	cmp	r13,	r11	
+    d120:	12 28       	jnc	$+38     	;abs 0xd146
+    d122:	1f 41 1a 00 	mov	26(r1),	r15	;0x001a(r1)
+    d126:	3f 53       	add	#-1,	r15	;r3 As==11
+    d128:	0a 4b       	mov	r11,	r10	
+    d12a:	0e 4f       	mov	r15,	r14	
+    d12c:	0c 5c       	rla	r12		
+    d12e:	0d 6d       	rlc	r13		
+    d130:	09 93       	tst	r9		
+    d132:	02 34       	jge	$+6      	;abs 0xd138
+    d134:	1c d3       	bis	#1,	r12	;r3 As==01
+    d136:	0d d3       	bis	#0,	r13	;r3 As==00
+    d138:	08 58       	rla	r8		
+    d13a:	09 69       	rlc	r9		
+    d13c:	3f 53       	add	#-1,	r15	;r3 As==11
+    d13e:	0a 9d       	cmp	r13,	r10	
+    d140:	f4 2f       	jc	$-22     	;abs 0xd12a
+    d142:	81 4e 1a 00 	mov	r14,	26(r1)	;0x001a(r1)
+    d146:	0e 4c       	mov	r12,	r14	
+    d148:	0f 4d       	mov	r13,	r15	
+    d14a:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d14e:	0f f3       	and	#0,	r15	;r3 As==00
+    d150:	3e 90 40 00 	cmp	#64,	r14	;#0x0040
+    d154:	27 24       	jz	$+80     	;abs 0xd1a4
+    d156:	81 4c 1c 00 	mov	r12,	28(r1)	;0x001c(r1)
+    d15a:	81 4d 1e 00 	mov	r13,	30(r1)	;0x001e(r1)
+    d15e:	f1 40 03 00 	mov.b	#3,	24(r1)	;#0x0003, 0x0018(r1)
+    d162:	18 00 
+    d164:	0f 41       	mov	r1,	r15	
+    d166:	3f 50 18 00 	add	#24,	r15	;#0x0018
+    d16a:	b0 12 08 d6 	call	#0xd608	
+    d16e:	31 50 22 00 	add	#34,	r1	;#0x0022
+    d172:	34 41       	pop	r4		
+    d174:	35 41       	pop	r5		
+    d176:	36 41       	pop	r6		
+    d178:	37 41       	pop	r7		
+    d17a:	38 41       	pop	r8		
+    d17c:	39 41       	pop	r9		
+    d17e:	3a 41       	pop	r10		
+    d180:	3b 41       	pop	r11		
+    d182:	30 41       	ret			
+    d184:	6a 93       	cmp.b	#2,	r10	;r3 As==10
+    d186:	33 24       	jz	$+104    	;abs 0xd1ee
+    d188:	d1 91 11 00 	cmp.b	17(r1),	9(r1)	;0x0011(r1), 0x0009(r1)
+    d18c:	09 00 
+    d18e:	1e 24       	jz	$+62     	;abs 0xd1cc
+    d190:	c1 4d 09 00 	mov.b	r13,	9(r1)	;0x0009(r1)
+    d194:	0f 48       	mov	r8,	r15	
+    d196:	e9 3f       	jmp	$-44     	;abs 0xd16a
+    d198:	4e 43       	clr.b	r14		
+    d19a:	c1 4e 19 00 	mov.b	r14,	25(r1)	;0x0019(r1)
+    d19e:	0a 93       	tst	r10		
+    d1a0:	bb 37       	jge	$-136    	;abs 0xd118
+    d1a2:	a7 3f       	jmp	$-176    	;abs 0xd0f2
+    d1a4:	0f 93       	tst	r15		
+    d1a6:	d7 23       	jnz	$-80     	;abs 0xd156
+    d1a8:	0e 4c       	mov	r12,	r14	
+    d1aa:	0f 4d       	mov	r13,	r15	
+    d1ac:	3e f0 80 00 	and	#128,	r14	;#0x0080
+    d1b0:	0f f3       	and	#0,	r15	;r3 As==00
+    d1b2:	0e 93       	tst	r14		
+    d1b4:	d0 23       	jnz	$-94     	;abs 0xd156
+    d1b6:	0f 93       	tst	r15		
+    d1b8:	ce 23       	jnz	$-98     	;abs 0xd156
+    d1ba:	08 93       	tst	r8		
+    d1bc:	13 24       	jz	$+40     	;abs 0xd1e4
+    d1be:	3c 50 40 00 	add	#64,	r12	;#0x0040
+    d1c2:	0d 63       	adc	r13		
+    d1c4:	3c f0 80 ff 	and	#-128,	r12	;#0xff80
+    d1c8:	3d f3       	and	#-1,	r13	;r3 As==11
+    d1ca:	c5 3f       	jmp	$-116    	;abs 0xd156
+    d1cc:	4d 43       	clr.b	r13		
+    d1ce:	e0 3f       	jmp	$-62     	;abs 0xd190
+    d1d0:	d1 91 11 00 	cmp.b	17(r1),	9(r1)	;0x0011(r1), 0x0009(r1)
+    d1d4:	09 00 
+    d1d6:	04 24       	jz	$+10     	;abs 0xd1e0
+    d1d8:	c1 4d 11 00 	mov.b	r13,	17(r1)	;0x0011(r1)
+    d1dc:	0f 46       	mov	r6,	r15	
+    d1de:	c5 3f       	jmp	$-116    	;abs 0xd16a
+    d1e0:	4d 43       	clr.b	r13		
+    d1e2:	fa 3f       	jmp	$-10     	;abs 0xd1d8
+    d1e4:	09 93       	tst	r9		
+    d1e6:	eb 23       	jnz	$-40     	;abs 0xd1be
+    d1e8:	b6 3f       	jmp	$-146    	;abs 0xd156
+    d1ea:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d1ec:	f1 23       	jnz	$-28     	;abs 0xd1d0
+    d1ee:	3f 40 d0 d4 	mov	#-11056,r15	;#0xd4d0
+    d1f2:	bb 3f       	jmp	$-136    	;abs 0xd16a
+
+0000d1f4 <__divsf3>:
+    d1f4:	0b 12       	push	r11		
+    d1f6:	0a 12       	push	r10		
+    d1f8:	09 12       	push	r9		
+    d1fa:	08 12       	push	r8		
+    d1fc:	07 12       	push	r7		
+    d1fe:	06 12       	push	r6		
+    d200:	05 12       	push	r5		
+    d202:	31 50 e8 ff 	add	#-24,	r1	;#0xffe8
+    d206:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    d20a:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d20e:	81 4c 04 00 	mov	r12,	4(r1)	;0x0004(r1)
+    d212:	81 4d 06 00 	mov	r13,	6(r1)	;0x0006(r1)
+    d216:	05 41       	mov	r1,	r5	
+    d218:	35 52       	add	#8,	r5	;r2 As==11
+    d21a:	0e 45       	mov	r5,	r14	
+    d21c:	0f 41       	mov	r1,	r15	
+    d21e:	b0 12 de d7 	call	#0xd7de	
+    d222:	09 41       	mov	r1,	r9	
+    d224:	39 50 10 00 	add	#16,	r9	;#0x0010
+    d228:	0e 49       	mov	r9,	r14	
+    d22a:	0f 41       	mov	r1,	r15	
+    d22c:	2f 52       	add	#4,	r15	;r2 As==10
+    d22e:	b0 12 de d7 	call	#0xd7de	
+    d232:	5d 41 08 00 	mov.b	8(r1),	r13	;0x0008(r1)
+    d236:	5b 43       	mov.b	#1,	r11	;r3 As==01
+    d238:	4b 9d       	cmp.b	r13,	r11	
+    d23a:	64 2c       	jc	$+202    	;abs 0xd304
+    d23c:	5c 41 10 00 	mov.b	16(r1),	r12	;0x0010(r1)
+    d240:	4b 9c       	cmp.b	r12,	r11	
+    d242:	86 2c       	jc	$+270    	;abs 0xd350
+    d244:	d1 e1 11 00 	xor.b	17(r1),	9(r1)	;0x0011(r1), 0x0009(r1)
+    d248:	09 00 
+    d24a:	6d 92       	cmp.b	#4,	r13	;r2 As==10
+    d24c:	5d 24       	jz	$+188    	;abs 0xd308
+    d24e:	6d 93       	cmp.b	#2,	r13	;r3 As==10
+    d250:	5b 24       	jz	$+184    	;abs 0xd308
+    d252:	6c 92       	cmp.b	#4,	r12	;r2 As==10
+    d254:	75 24       	jz	$+236    	;abs 0xd340
+    d256:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d258:	53 24       	jz	$+168    	;abs 0xd300
+    d25a:	1f 41 0a 00 	mov	10(r1),	r15	;0x000a(r1)
+    d25e:	1f 81 12 00 	sub	18(r1),	r15	;0x0012(r1)
+    d262:	81 4f 0a 00 	mov	r15,	10(r1)	;0x000a(r1)
+    d266:	1d 41 0c 00 	mov	12(r1),	r13	;0x000c(r1)
+    d26a:	1e 41 0e 00 	mov	14(r1),	r14	;0x000e(r1)
+    d26e:	17 41 14 00 	mov	20(r1),	r7	;0x0014(r1)
+    d272:	18 41 16 00 	mov	22(r1),	r8	;0x0016(r1)
+    d276:	0e 98       	cmp	r8,	r14	
+    d278:	3e 2c       	jc	$+126    	;abs 0xd2f6
+    d27a:	0d 5d       	rla	r13		
+    d27c:	0e 6e       	rlc	r14		
+    d27e:	3f 53       	add	#-1,	r15	;r3 As==11
+    d280:	81 4f 0a 00 	mov	r15,	10(r1)	;0x000a(r1)
+    d284:	36 40 1f 00 	mov	#31,	r6	;#0x001f
+    d288:	0b 43       	clr	r11		
+    d28a:	3c 40 00 40 	mov	#16384,	r12	;#0x4000
+    d28e:	09 43       	clr	r9		
+    d290:	0a 43       	clr	r10		
+    d292:	0b 3c       	jmp	$+24     	;abs 0xd2aa
+    d294:	09 db       	bis	r11,	r9	
+    d296:	0a dc       	bis	r12,	r10	
+    d298:	0d 87       	sub	r7,	r13	
+    d29a:	0e 78       	subc	r8,	r14	
+    d29c:	12 c3       	clrc			
+    d29e:	0c 10       	rrc	r12		
+    d2a0:	0b 10       	rrc	r11		
+    d2a2:	0d 5d       	rla	r13		
+    d2a4:	0e 6e       	rlc	r14		
+    d2a6:	36 53       	add	#-1,	r6	;r3 As==11
+    d2a8:	0d 24       	jz	$+28     	;abs 0xd2c4
+    d2aa:	0e 98       	cmp	r8,	r14	
+    d2ac:	f7 2b       	jnc	$-16     	;abs 0xd29c
+    d2ae:	0e 98       	cmp	r8,	r14	
+    d2b0:	f1 23       	jnz	$-28     	;abs 0xd294
+    d2b2:	0d 97       	cmp	r7,	r13	
+    d2b4:	ef 2f       	jc	$-32     	;abs 0xd294
+    d2b6:	12 c3       	clrc			
+    d2b8:	0c 10       	rrc	r12		
+    d2ba:	0b 10       	rrc	r11		
+    d2bc:	0d 5d       	rla	r13		
+    d2be:	0e 6e       	rlc	r14		
+    d2c0:	36 53       	add	#-1,	r6	;r3 As==11
+    d2c2:	f3 23       	jnz	$-24     	;abs 0xd2aa
+    d2c4:	0b 49       	mov	r9,	r11	
+    d2c6:	0c 4a       	mov	r10,	r12	
+    d2c8:	3b f0 7f 00 	and	#127,	r11	;#0x007f
+    d2cc:	0c f3       	and	#0,	r12	;r3 As==00
+    d2ce:	3b 90 40 00 	cmp	#64,	r11	;#0x0040
+    d2d2:	1f 24       	jz	$+64     	;abs 0xd312
+    d2d4:	81 49 0c 00 	mov	r9,	12(r1)	;0x000c(r1)
+    d2d8:	81 4a 0e 00 	mov	r10,	14(r1)	;0x000e(r1)
+    d2dc:	0f 45       	mov	r5,	r15	
+    d2de:	b0 12 08 d6 	call	#0xd608	
+    d2e2:	31 50 18 00 	add	#24,	r1	;#0x0018
+    d2e6:	35 41       	pop	r5		
+    d2e8:	36 41       	pop	r6		
+    d2ea:	37 41       	pop	r7		
+    d2ec:	38 41       	pop	r8		
+    d2ee:	39 41       	pop	r9		
+    d2f0:	3a 41       	pop	r10		
+    d2f2:	3b 41       	pop	r11		
+    d2f4:	30 41       	ret			
+    d2f6:	08 9e       	cmp	r14,	r8	
+    d2f8:	c5 2b       	jnc	$-116    	;abs 0xd284
+    d2fa:	0d 97       	cmp	r7,	r13	
+    d2fc:	c3 2f       	jc	$-120    	;abs 0xd284
+    d2fe:	bd 3f       	jmp	$-132    	;abs 0xd27a
+    d300:	e1 42 08 00 	mov.b	#4,	8(r1)	;r2 As==10, 0x0008(r1)
+    d304:	0f 45       	mov	r5,	r15	
+    d306:	eb 3f       	jmp	$-40     	;abs 0xd2de
+    d308:	4d 9c       	cmp.b	r12,	r13	
+    d30a:	fc 23       	jnz	$-6      	;abs 0xd304
+    d30c:	3f 40 d0 d4 	mov	#-11056,r15	;#0xd4d0
+    d310:	e6 3f       	jmp	$-50     	;abs 0xd2de
+    d312:	0c 93       	tst	r12		
+    d314:	df 23       	jnz	$-64     	;abs 0xd2d4
+    d316:	0b 49       	mov	r9,	r11	
+    d318:	0c 4a       	mov	r10,	r12	
+    d31a:	3b f0 80 00 	and	#128,	r11	;#0x0080
+    d31e:	0c f3       	and	#0,	r12	;r3 As==00
+    d320:	0b 93       	tst	r11		
+    d322:	d8 23       	jnz	$-78     	;abs 0xd2d4
+    d324:	0c 93       	tst	r12		
+    d326:	d6 23       	jnz	$-82     	;abs 0xd2d4
+    d328:	0d 93       	tst	r13		
+    d32a:	07 24       	jz	$+16     	;abs 0xd33a
+    d32c:	39 50 40 00 	add	#64,	r9	;#0x0040
+    d330:	0a 63       	adc	r10		
+    d332:	39 f0 80 ff 	and	#-128,	r9	;#0xff80
+    d336:	3a f3       	and	#-1,	r10	;r3 As==11
+    d338:	cd 3f       	jmp	$-100    	;abs 0xd2d4
+    d33a:	0e 93       	tst	r14		
+    d33c:	f7 23       	jnz	$-16     	;abs 0xd32c
+    d33e:	ca 3f       	jmp	$-106    	;abs 0xd2d4
+    d340:	81 43 0c 00 	mov	#0,	12(r1)	;r3 As==00, 0x000c(r1)
+    d344:	81 43 0e 00 	mov	#0,	14(r1)	;r3 As==00, 0x000e(r1)
+    d348:	81 43 0a 00 	mov	#0,	10(r1)	;r3 As==00, 0x000a(r1)
+    d34c:	0f 45       	mov	r5,	r15	
+    d34e:	c7 3f       	jmp	$-112    	;abs 0xd2de
+    d350:	0f 49       	mov	r9,	r15	
+    d352:	c5 3f       	jmp	$-116    	;abs 0xd2de
+
+0000d354 <__gesf2>:
+    d354:	0b 12       	push	r11		
+    d356:	0a 12       	push	r10		
+    d358:	31 50 e8 ff 	add	#-24,	r1	;#0xffe8
+    d35c:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    d360:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d364:	81 4c 04 00 	mov	r12,	4(r1)	;0x0004(r1)
+    d368:	81 4d 06 00 	mov	r13,	6(r1)	;0x0006(r1)
+    d36c:	0b 41       	mov	r1,	r11	
+    d36e:	3b 52       	add	#8,	r11	;r2 As==11
+    d370:	0e 4b       	mov	r11,	r14	
+    d372:	0f 41       	mov	r1,	r15	
+    d374:	b0 12 de d7 	call	#0xd7de	
+    d378:	0a 41       	mov	r1,	r10	
+    d37a:	3a 50 10 00 	add	#16,	r10	;#0x0010
+    d37e:	0e 4a       	mov	r10,	r14	
+    d380:	0f 41       	mov	r1,	r15	
+    d382:	2f 52       	add	#4,	r15	;r2 As==10
+    d384:	b0 12 de d7 	call	#0xd7de	
+    d388:	5d 43       	mov.b	#1,	r13	;r3 As==01
+    d38a:	5d 91 08 00 	cmp.b	8(r1),	r13	;0x0008(r1)
+    d38e:	0c 2c       	jc	$+26     	;abs 0xd3a8
+    d390:	5d 91 10 00 	cmp.b	16(r1),	r13	;0x0010(r1)
+    d394:	09 2c       	jc	$+20     	;abs 0xd3a8
+    d396:	0e 4a       	mov	r10,	r14	
+    d398:	0f 4b       	mov	r11,	r15	
+    d39a:	b0 12 10 d9 	call	#0xd910	
+    d39e:	31 50 18 00 	add	#24,	r1	;#0x0018
+    d3a2:	3a 41       	pop	r10		
+    d3a4:	3b 41       	pop	r11		
+    d3a6:	30 41       	ret			
+    d3a8:	3f 43       	mov	#-1,	r15	;r3 As==11
+    d3aa:	f9 3f       	jmp	$-12     	;abs 0xd39e
+
+0000d3ac <__floatsisf>:
+    d3ac:	0b 12       	push	r11		
+    d3ae:	0a 12       	push	r10		
+    d3b0:	31 82       	sub	#8,	r1	;r2 As==11
+    d3b2:	f1 40 03 00 	mov.b	#3,	0(r1)	;#0x0003, 0x0000(r1)
+    d3b6:	00 00 
+    d3b8:	0d 4f       	mov	r15,	r13	
+    d3ba:	0d 5d       	rla	r13		
+    d3bc:	0d 43       	clr	r13		
+    d3be:	0d 6d       	rlc	r13		
+    d3c0:	4c 4d       	mov.b	r13,	r12	
+    d3c2:	c1 4d 01 00 	mov.b	r13,	1(r1)	;0x0001(r1)
+    d3c6:	0e 93       	tst	r14		
+    d3c8:	32 24       	jz	$+102    	;abs 0xd42e
+    d3ca:	b1 40 1e 00 	mov	#30,	2(r1)	;#0x001e, 0x0002(r1)
+    d3ce:	02 00 
+    d3d0:	4c 93       	tst.b	r12		
+    d3d2:	24 20       	jnz	$+74     	;abs 0xd41c
+    d3d4:	0a 4e       	mov	r14,	r10	
+    d3d6:	0b 4f       	mov	r15,	r11	
+    d3d8:	81 4a 04 00 	mov	r10,	4(r1)	;0x0004(r1)
+    d3dc:	81 4b 06 00 	mov	r11,	6(r1)	;0x0006(r1)
+    d3e0:	0e 4a       	mov	r10,	r14	
+    d3e2:	0f 4b       	mov	r11,	r15	
+    d3e4:	b0 12 b0 d5 	call	#0xd5b0	
+    d3e8:	3f 53       	add	#-1,	r15	;r3 As==11
+    d3ea:	1f 93       	cmp	#1,	r15	;r3 As==01
+    d3ec:	10 38       	jl	$+34     	;abs 0xd40e
+    d3ee:	0e 4f       	mov	r15,	r14	
+    d3f0:	0e 93       	tst	r14		
+    d3f2:	04 24       	jz	$+10     	;abs 0xd3fc
+    d3f4:	0a 5a       	rla	r10		
+    d3f6:	0b 6b       	rlc	r11		
+    d3f8:	1e 83       	dec	r14		
+    d3fa:	fc 23       	jnz	$-6      	;abs 0xd3f4
+    d3fc:	81 4a 04 00 	mov	r10,	4(r1)	;0x0004(r1)
+    d400:	81 4b 06 00 	mov	r11,	6(r1)	;0x0006(r1)
+    d404:	3e 40 1e 00 	mov	#30,	r14	;#0x001e
+    d408:	0e 8f       	sub	r15,	r14	
+    d40a:	81 4e 02 00 	mov	r14,	2(r1)	;0x0002(r1)
+    d40e:	0f 41       	mov	r1,	r15	
+    d410:	b0 12 08 d6 	call	#0xd608	
+    d414:	31 52       	add	#8,	r1	;r2 As==11
+    d416:	3a 41       	pop	r10		
+    d418:	3b 41       	pop	r11		
+    d41a:	30 41       	ret			
+    d41c:	0e 93       	tst	r14		
+    d41e:	0c 24       	jz	$+26     	;abs 0xd438
+    d420:	0a 4e       	mov	r14,	r10	
+    d422:	0b 4f       	mov	r15,	r11	
+    d424:	3a e3       	inv	r10		
+    d426:	3b e3       	inv	r11		
+    d428:	1a 53       	inc	r10		
+    d42a:	0b 63       	adc	r11		
+    d42c:	d5 3f       	jmp	$-84     	;abs 0xd3d8
+    d42e:	0f 93       	tst	r15		
+    d430:	cc 23       	jnz	$-102    	;abs 0xd3ca
+    d432:	e1 43 00 00 	mov.b	#2,	0(r1)	;r3 As==10, 0x0000(r1)
+    d436:	eb 3f       	jmp	$-40     	;abs 0xd40e
+    d438:	3f 90 00 80 	cmp	#-32768,r15	;#0x8000
+    d43c:	f1 23       	jnz	$-28     	;abs 0xd420
+    d43e:	0e 43       	clr	r14		
+    d440:	3f 40 00 cf 	mov	#-12544,r15	;#0xcf00
+    d444:	e7 3f       	jmp	$-48     	;abs 0xd414
+
+0000d446 <__fixsfsi>:
+    d446:	31 50 f4 ff 	add	#-12,	r1	;#0xfff4
+    d44a:	81 4e 00 00 	mov	r14,	0(r1)	;0x0000(r1)
+    d44e:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d452:	0e 41       	mov	r1,	r14	
+    d454:	2e 52       	add	#4,	r14	;r2 As==10
+    d456:	0f 41       	mov	r1,	r15	
+    d458:	b0 12 de d7 	call	#0xd7de	
+    d45c:	5f 41 04 00 	mov.b	4(r1),	r15	;0x0004(r1)
+    d460:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    d462:	2b 24       	jz	$+88     	;abs 0xd4ba
+    d464:	6f 93       	cmp.b	#2,	r15	;r3 As==10
+    d466:	29 28       	jnc	$+84     	;abs 0xd4ba
+    d468:	6f 92       	cmp.b	#4,	r15	;r2 As==10
+    d46a:	08 24       	jz	$+18     	;abs 0xd47c
+    d46c:	1d 41 06 00 	mov	6(r1),	r13	;0x0006(r1)
+    d470:	0d 93       	tst	r13		
+    d472:	23 38       	jl	$+72     	;abs 0xd4ba
+    d474:	3c 40 1e 00 	mov	#30,	r12	;#0x001e
+    d478:	0c 9d       	cmp	r13,	r12	
+    d47a:	09 34       	jge	$+20     	;abs 0xd48e
+    d47c:	c1 93 05 00 	tst.b	5(r1)		;0x0005(r1)
+    d480:	21 20       	jnz	$+68     	;abs 0xd4c4
+    d482:	3e 43       	mov	#-1,	r14	;r3 As==11
+    d484:	3f 40 ff 7f 	mov	#32767,	r15	;#0x7fff
+    d488:	31 50 0c 00 	add	#12,	r1	;#0x000c
+    d48c:	30 41       	ret			
+    d48e:	1e 41 08 00 	mov	8(r1),	r14	;0x0008(r1)
+    d492:	1f 41 0a 00 	mov	10(r1),	r15	;0x000a(r1)
+    d496:	0c 8d       	sub	r13,	r12	
+    d498:	0c 93       	tst	r12		
+    d49a:	05 24       	jz	$+12     	;abs 0xd4a6
+    d49c:	12 c3       	clrc			
+    d49e:	0f 10       	rrc	r15		
+    d4a0:	0e 10       	rrc	r14		
+    d4a2:	1c 83       	dec	r12		
+    d4a4:	fb 23       	jnz	$-8      	;abs 0xd49c
+    d4a6:	c1 93 05 00 	tst.b	5(r1)		;0x0005(r1)
+    d4aa:	ee 27       	jz	$-34     	;abs 0xd488
+    d4ac:	3e e3       	inv	r14		
+    d4ae:	3f e3       	inv	r15		
+    d4b0:	1e 53       	inc	r14		
+    d4b2:	0f 63       	adc	r15		
+    d4b4:	31 50 0c 00 	add	#12,	r1	;#0x000c
+    d4b8:	30 41       	ret			
+    d4ba:	0e 43       	clr	r14		
+    d4bc:	0f 43       	clr	r15		
+    d4be:	31 50 0c 00 	add	#12,	r1	;#0x000c
+    d4c2:	30 41       	ret			
+    d4c4:	0e 43       	clr	r14		
+    d4c6:	3f 40 00 80 	mov	#-32768,r15	;#0x8000
+    d4ca:	31 50 0c 00 	add	#12,	r1	;#0x000c
+    d4ce:	30 41       	ret			
+
+0000d4d0 <__thenan_sf>:
+	...
+
+0000d4d8 <__floatunsisf>:
+    d4d8:	0b 12       	push	r11		
+    d4da:	0a 12       	push	r10		
+    d4dc:	09 12       	push	r9		
+    d4de:	08 12       	push	r8		
+    d4e0:	07 12       	push	r7		
+    d4e2:	31 82       	sub	#8,	r1	;r2 As==11
+    d4e4:	0a 4e       	mov	r14,	r10	
+    d4e6:	0b 4f       	mov	r15,	r11	
+    d4e8:	c1 43 01 00 	mov.b	#0,	1(r1)	;r3 As==00, 0x0001(r1)
+    d4ec:	0e 93       	tst	r14		
+    d4ee:	2d 24       	jz	$+92     	;abs 0xd54a
+    d4f0:	f1 40 03 00 	mov.b	#3,	0(r1)	;#0x0003, 0x0000(r1)
+    d4f4:	00 00 
+    d4f6:	b1 40 1e 00 	mov	#30,	2(r1)	;#0x001e, 0x0002(r1)
+    d4fa:	02 00 
+    d4fc:	81 4a 04 00 	mov	r10,	4(r1)	;0x0004(r1)
+    d500:	81 4b 06 00 	mov	r11,	6(r1)	;0x0006(r1)
+    d504:	0e 4a       	mov	r10,	r14	
+    d506:	0f 4b       	mov	r11,	r15	
+    d508:	b0 12 b0 d5 	call	#0xd5b0	
+    d50c:	0d 4f       	mov	r15,	r13	
+    d50e:	3d 53       	add	#-1,	r13	;r3 As==11
+    d510:	21 30       	jn	$+68     	;abs 0xd554
+    d512:	0d 93       	tst	r13		
+    d514:	10 24       	jz	$+34     	;abs 0xd536
+    d516:	0f 4d       	mov	r13,	r15	
+    d518:	0f 93       	tst	r15		
+    d51a:	04 24       	jz	$+10     	;abs 0xd524
+    d51c:	0a 5a       	rla	r10		
+    d51e:	0b 6b       	rlc	r11		
+    d520:	1f 83       	dec	r15		
+    d522:	fc 23       	jnz	$-6      	;abs 0xd51c
+    d524:	81 4a 04 00 	mov	r10,	4(r1)	;0x0004(r1)
+    d528:	81 4b 06 00 	mov	r11,	6(r1)	;0x0006(r1)
+    d52c:	3f 40 1e 00 	mov	#30,	r15	;#0x001e
+    d530:	0f 8d       	sub	r13,	r15	
+    d532:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d536:	0f 41       	mov	r1,	r15	
+    d538:	b0 12 08 d6 	call	#0xd608	
+    d53c:	31 52       	add	#8,	r1	;r2 As==11
+    d53e:	37 41       	pop	r7		
+    d540:	38 41       	pop	r8		
+    d542:	39 41       	pop	r9		
+    d544:	3a 41       	pop	r10		
+    d546:	3b 41       	pop	r11		
+    d548:	30 41       	ret			
+    d54a:	0b 93       	tst	r11		
+    d54c:	d1 23       	jnz	$-92     	;abs 0xd4f0
+    d54e:	e1 43 00 00 	mov.b	#2,	0(r1)	;r3 As==10, 0x0000(r1)
+    d552:	f1 3f       	jmp	$-28     	;abs 0xd536
+    d554:	0c 4d       	mov	r13,	r12	
+    d556:	3c e3       	inv	r12		
+    d558:	1c 53       	inc	r12		
+    d55a:	18 43       	mov	#1,	r8	;r3 As==01
+    d55c:	09 43       	clr	r9		
+    d55e:	07 4c       	mov	r12,	r7	
+    d560:	0e 48       	mov	r8,	r14	
+    d562:	0f 49       	mov	r9,	r15	
+    d564:	07 93       	tst	r7		
+    d566:	04 24       	jz	$+10     	;abs 0xd570
+    d568:	0e 5e       	rla	r14		
+    d56a:	0f 6f       	rlc	r15		
+    d56c:	17 83       	dec	r7		
+    d56e:	fc 23       	jnz	$-6      	;abs 0xd568
+    d570:	3e 53       	add	#-1,	r14	;r3 As==11
+    d572:	3f 63       	addc	#-1,	r15	;r3 As==11
+    d574:	0e fa       	and	r10,	r14	
+    d576:	0f fb       	and	r11,	r15	
+    d578:	0e 93       	tst	r14		
+    d57a:	15 24       	jz	$+44     	;abs 0xd5a6
+    d57c:	0c 93       	tst	r12		
+    d57e:	05 24       	jz	$+12     	;abs 0xd58a
+    d580:	12 c3       	clrc			
+    d582:	0b 10       	rrc	r11		
+    d584:	0a 10       	rrc	r10		
+    d586:	1c 83       	dec	r12		
+    d588:	fb 23       	jnz	$-8      	;abs 0xd580
+    d58a:	0e 48       	mov	r8,	r14	
+    d58c:	0f 49       	mov	r9,	r15	
+    d58e:	0e da       	bis	r10,	r14	
+    d590:	0f db       	bis	r11,	r15	
+    d592:	81 4e 04 00 	mov	r14,	4(r1)	;0x0004(r1)
+    d596:	81 4f 06 00 	mov	r15,	6(r1)	;0x0006(r1)
+    d59a:	3f 40 1e 00 	mov	#30,	r15	;#0x001e
+    d59e:	0f 8d       	sub	r13,	r15	
+    d5a0:	81 4f 02 00 	mov	r15,	2(r1)	;0x0002(r1)
+    d5a4:	c8 3f       	jmp	$-110    	;abs 0xd536
+    d5a6:	0f 93       	tst	r15		
+    d5a8:	e9 23       	jnz	$-44     	;abs 0xd57c
+    d5aa:	08 43       	clr	r8		
+    d5ac:	09 43       	clr	r9		
+    d5ae:	e6 3f       	jmp	$-50     	;abs 0xd57c
+
+0000d5b0 <__clzsi2>:
+    d5b0:	0b 12       	push	r11		
+    d5b2:	0f 93       	tst	r15		
+    d5b4:	16 20       	jnz	$+46     	;abs 0xd5e2
+    d5b6:	3e 90 00 01 	cmp	#256,	r14	;#0x0100
+    d5ba:	21 28       	jnc	$+68     	;abs 0xd5fe
+    d5bc:	3b 40 18 00 	mov	#24,	r11	;#0x0018
+    d5c0:	0c 43       	clr	r12		
+    d5c2:	3d 42       	mov	#8,	r13	;r2 As==11
+    d5c4:	0d 93       	tst	r13		
+    d5c6:	05 24       	jz	$+12     	;abs 0xd5d2
+    d5c8:	12 c3       	clrc			
+    d5ca:	0f 10       	rrc	r15		
+    d5cc:	0e 10       	rrc	r14		
+    d5ce:	1d 83       	dec	r13		
+    d5d0:	fb 23       	jnz	$-8      	;abs 0xd5c8
+    d5d2:	0f 4e       	mov	r14,	r15	
+    d5d4:	3f 50 b2 d9 	add	#-9806,	r15	;#0xd9b2
+    d5d8:	6d 4f       	mov.b	@r15,	r13	
+    d5da:	0f 4b       	mov	r11,	r15	
+    d5dc:	0f 8d       	sub	r13,	r15	
+    d5de:	3b 41       	pop	r11		
+    d5e0:	30 41       	ret			
+    d5e2:	3f 90 00 01 	cmp	#256,	r15	;#0x0100
+    d5e6:	05 28       	jnc	$+12     	;abs 0xd5f2
+    d5e8:	3b 42       	mov	#8,	r11	;r2 As==11
+    d5ea:	0c 43       	clr	r12		
+    d5ec:	3d 40 18 00 	mov	#24,	r13	;#0x0018
+    d5f0:	e9 3f       	jmp	$-44     	;abs 0xd5c4
+    d5f2:	3b 40 10 00 	mov	#16,	r11	;#0x0010
+    d5f6:	0c 43       	clr	r12		
+    d5f8:	3d 40 10 00 	mov	#16,	r13	;#0x0010
+    d5fc:	e3 3f       	jmp	$-56     	;abs 0xd5c4
+    d5fe:	3b 40 20 00 	mov	#32,	r11	;#0x0020
+    d602:	0c 43       	clr	r12		
+    d604:	0d 43       	clr	r13		
+    d606:	de 3f       	jmp	$-66     	;abs 0xd5c4
+
+0000d608 <__pack_f>:
+    d608:	0b 12       	push	r11		
+    d60a:	0a 12       	push	r10		
+    d60c:	09 12       	push	r9		
+    d60e:	08 12       	push	r8		
+    d610:	07 12       	push	r7		
+    d612:	06 12       	push	r6		
+    d614:	1d 4f 04 00 	mov	4(r15),	r13	;0x0004(r15)
+    d618:	1e 4f 06 00 	mov	6(r15),	r14	;0x0006(r15)
+    d61c:	5a 4f 01 00 	mov.b	1(r15),	r10	;0x0001(r15)
+    d620:	6c 4f       	mov.b	@r15,	r12	
+    d622:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d624:	bc 28       	jnc	$+378    	;abs 0xd79e
+    d626:	6c 92       	cmp.b	#4,	r12	;r2 As==10
+    d628:	b6 24       	jz	$+366    	;abs 0xd796
+    d62a:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d62c:	32 24       	jz	$+102    	;abs 0xd692
+    d62e:	0d 93       	tst	r13		
+    d630:	2e 24       	jz	$+94     	;abs 0xd68e
+    d632:	1f 4f 02 00 	mov	2(r15),	r15	;0x0002(r15)
+    d636:	3f 90 82 ff 	cmp	#-126,	r15	;#0xff82
+    d63a:	61 38       	jl	$+196    	;abs 0xd6fe
+    d63c:	3f 90 80 00 	cmp	#128,	r15	;#0x0080
+    d640:	aa 34       	jge	$+342    	;abs 0xd796
+    d642:	3f 50 7f 00 	add	#127,	r15	;#0x007f
+    d646:	0b 4d       	mov	r13,	r11	
+    d648:	0c 4e       	mov	r14,	r12	
+    d64a:	3b f0 7f 00 	and	#127,	r11	;#0x007f
+    d64e:	0c f3       	and	#0,	r12	;r3 As==00
+    d650:	3b 90 40 00 	cmp	#64,	r11	;#0x0040
+    d654:	47 24       	jz	$+144    	;abs 0xd6e4
+    d656:	3d 50 3f 00 	add	#63,	r13	;#0x003f
+    d65a:	0e 63       	adc	r14		
+    d65c:	0e 93       	tst	r14		
+    d65e:	04 34       	jge	$+10     	;abs 0xd668
+    d660:	12 c3       	clrc			
+    d662:	0e 10       	rrc	r14		
+    d664:	0d 10       	rrc	r13		
+    d666:	1f 53       	inc	r15		
+    d668:	12 c3       	clrc			
+    d66a:	0e 10       	rrc	r14		
+    d66c:	0d 10       	rrc	r13		
+    d66e:	0e 11       	rra	r14		
+    d670:	0d 10       	rrc	r13		
+    d672:	0e 11       	rra	r14		
+    d674:	0d 10       	rrc	r13		
+    d676:	0e 11       	rra	r14		
+    d678:	0d 10       	rrc	r13		
+    d67a:	0e 11       	rra	r14		
+    d67c:	0d 10       	rrc	r13		
+    d67e:	0e 11       	rra	r14		
+    d680:	0d 10       	rrc	r13		
+    d682:	0e 11       	rra	r14		
+    d684:	0d 10       	rrc	r13		
+    d686:	3d f3       	and	#-1,	r13	;r3 As==11
+    d688:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d68c:	05 3c       	jmp	$+12     	;abs 0xd698
+    d68e:	0e 93       	tst	r14		
+    d690:	d0 23       	jnz	$-94     	;abs 0xd632
+    d692:	4f 43       	clr.b	r15		
+    d694:	0d 43       	clr	r13		
+    d696:	0e 43       	clr	r14		
+    d698:	0b 43       	clr	r11		
+    d69a:	0c 43       	clr	r12		
+    d69c:	0b 4d       	mov	r13,	r11	
+    d69e:	0d 4e       	mov	r14,	r13	
+    d6a0:	3d f0 7f 00 	and	#127,	r13	;#0x007f
+    d6a4:	0e 4c       	mov	r12,	r14	
+    d6a6:	3e f0 80 ff 	and	#-128,	r14	;#0xff80
+    d6aa:	0e dd       	bis	r13,	r14	
+    d6ac:	4f 4f       	mov.b	r15,	r15	
+    d6ae:	0f 5f       	rla	r15		
+    d6b0:	0f 5f       	rla	r15		
+    d6b2:	0f 5f       	rla	r15		
+    d6b4:	0f 5f       	rla	r15		
+    d6b6:	0f 5f       	rla	r15		
+    d6b8:	0f 5f       	rla	r15		
+    d6ba:	0f 5f       	rla	r15		
+    d6bc:	3e f0 7f 80 	and	#-32641,r14	;#0x807f
+    d6c0:	0e df       	bis	r15,	r14	
+    d6c2:	0f 4a       	mov	r10,	r15	
+    d6c4:	0f 11       	rra	r15		
+    d6c6:	0f 43       	clr	r15		
+    d6c8:	0f 10       	rrc	r15		
+    d6ca:	3e f0 ff 7f 	and	#32767,	r14	;#0x7fff
+    d6ce:	0c 4e       	mov	r14,	r12	
+    d6d0:	0c df       	bis	r15,	r12	
+    d6d2:	0e 4b       	mov	r11,	r14	
+    d6d4:	0f 4c       	mov	r12,	r15	
+    d6d6:	36 41       	pop	r6		
+    d6d8:	37 41       	pop	r7		
+    d6da:	38 41       	pop	r8		
+    d6dc:	39 41       	pop	r9		
+    d6de:	3a 41       	pop	r10		
+    d6e0:	3b 41       	pop	r11		
+    d6e2:	30 41       	ret			
+    d6e4:	0c 93       	tst	r12		
+    d6e6:	b7 23       	jnz	$-144    	;abs 0xd656
+    d6e8:	0b 4d       	mov	r13,	r11	
+    d6ea:	0c 4e       	mov	r14,	r12	
+    d6ec:	3b f0 80 00 	and	#128,	r11	;#0x0080
+    d6f0:	0c f3       	and	#0,	r12	;r3 As==00
+    d6f2:	0b 93       	tst	r11		
+    d6f4:	4d 24       	jz	$+156    	;abs 0xd790
+    d6f6:	3d 50 40 00 	add	#64,	r13	;#0x0040
+    d6fa:	0e 63       	adc	r14		
+    d6fc:	af 3f       	jmp	$-160    	;abs 0xd65c
+    d6fe:	3c 40 82 ff 	mov	#-126,	r12	;#0xff82
+    d702:	0c 8f       	sub	r15,	r12	
+    d704:	0f 4c       	mov	r12,	r15	
+    d706:	3c 90 1a 00 	cmp	#26,	r12	;#0x001a
+    d70a:	51 34       	jge	$+164    	;abs 0xd7ae
+    d70c:	06 4d       	mov	r13,	r6	
+    d70e:	07 4e       	mov	r14,	r7	
+    d710:	0c 93       	tst	r12		
+    d712:	05 24       	jz	$+12     	;abs 0xd71e
+    d714:	12 c3       	clrc			
+    d716:	07 10       	rrc	r7		
+    d718:	06 10       	rrc	r6		
+    d71a:	1c 83       	dec	r12		
+    d71c:	fb 23       	jnz	$-8      	;abs 0xd714
+    d71e:	18 43       	mov	#1,	r8	;r3 As==01
+    d720:	09 43       	clr	r9		
+    d722:	0b 48       	mov	r8,	r11	
+    d724:	0c 49       	mov	r9,	r12	
+    d726:	0f 93       	tst	r15		
+    d728:	04 24       	jz	$+10     	;abs 0xd732
+    d72a:	0b 5b       	rla	r11		
+    d72c:	0c 6c       	rlc	r12		
+    d72e:	1f 83       	dec	r15		
+    d730:	fc 23       	jnz	$-6      	;abs 0xd72a
+    d732:	3b 53       	add	#-1,	r11	;r3 As==11
+    d734:	3c 63       	addc	#-1,	r12	;r3 As==11
+    d736:	0b fd       	and	r13,	r11	
+    d738:	0c fe       	and	r14,	r12	
+    d73a:	0b 93       	tst	r11		
+    d73c:	48 24       	jz	$+146    	;abs 0xd7ce
+    d73e:	0b 46       	mov	r6,	r11	
+    d740:	0c 47       	mov	r7,	r12	
+    d742:	0b d8       	bis	r8,	r11	
+    d744:	0c d9       	bis	r9,	r12	
+    d746:	0e 4b       	mov	r11,	r14	
+    d748:	0f 4c       	mov	r12,	r15	
+    d74a:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d74e:	0f f3       	and	#0,	r15	;r3 As==00
+    d750:	3e 90 40 00 	cmp	#64,	r14	;#0x0040
+    d754:	2f 24       	jz	$+96     	;abs 0xd7b4
+    d756:	3b 50 3f 00 	add	#63,	r11	;#0x003f
+    d75a:	0c 63       	adc	r12		
+    d75c:	0d 4b       	mov	r11,	r13	
+    d75e:	0e 4c       	mov	r12,	r14	
+    d760:	12 c3       	clrc			
+    d762:	0e 10       	rrc	r14		
+    d764:	0d 10       	rrc	r13		
+    d766:	0e 11       	rra	r14		
+    d768:	0d 10       	rrc	r13		
+    d76a:	0e 11       	rra	r14		
+    d76c:	0d 10       	rrc	r13		
+    d76e:	0e 11       	rra	r14		
+    d770:	0d 10       	rrc	r13		
+    d772:	0e 11       	rra	r14		
+    d774:	0d 10       	rrc	r13		
+    d776:	0e 11       	rra	r14		
+    d778:	0d 10       	rrc	r13		
+    d77a:	0e 11       	rra	r14		
+    d77c:	0d 10       	rrc	r13		
+    d77e:	3d f3       	and	#-1,	r13	;r3 As==11
+    d780:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d784:	5f 43       	mov.b	#1,	r15	;r3 As==01
+    d786:	3c 90 00 40 	cmp	#16384,	r12	;#0x4000
+    d78a:	86 2f       	jc	$-242    	;abs 0xd698
+    d78c:	4f 43       	clr.b	r15		
+    d78e:	84 3f       	jmp	$-246    	;abs 0xd698
+    d790:	0c 93       	tst	r12		
+    d792:	b1 23       	jnz	$-156    	;abs 0xd6f6
+    d794:	63 3f       	jmp	$-312    	;abs 0xd65c
+    d796:	7f 43       	mov.b	#-1,	r15	;r3 As==11
+    d798:	0d 43       	clr	r13		
+    d79a:	0e 43       	clr	r14		
+    d79c:	7d 3f       	jmp	$-260    	;abs 0xd698
+    d79e:	0d d3       	bis	#0,	r13	;r3 As==00
+    d7a0:	3e d0 10 00 	bis	#16,	r14	;#0x0010
+    d7a4:	3d f3       	and	#-1,	r13	;r3 As==11
+    d7a6:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d7aa:	7f 43       	mov.b	#-1,	r15	;r3 As==11
+    d7ac:	75 3f       	jmp	$-276    	;abs 0xd698
+    d7ae:	0b 43       	clr	r11		
+    d7b0:	0c 43       	clr	r12		
+    d7b2:	d1 3f       	jmp	$-92     	;abs 0xd756
+    d7b4:	0f 93       	tst	r15		
+    d7b6:	cf 23       	jnz	$-96     	;abs 0xd756
+    d7b8:	0e 4b       	mov	r11,	r14	
+    d7ba:	0f 4c       	mov	r12,	r15	
+    d7bc:	3e f0 80 00 	and	#128,	r14	;#0x0080
+    d7c0:	0f f3       	and	#0,	r15	;r3 As==00
+    d7c2:	0e 93       	tst	r14		
+    d7c4:	09 24       	jz	$+20     	;abs 0xd7d8
+    d7c6:	3b 50 40 00 	add	#64,	r11	;#0x0040
+    d7ca:	0c 63       	adc	r12		
+    d7cc:	c7 3f       	jmp	$-112    	;abs 0xd75c
+    d7ce:	0c 93       	tst	r12		
+    d7d0:	b6 23       	jnz	$-146    	;abs 0xd73e
+    d7d2:	08 43       	clr	r8		
+    d7d4:	09 43       	clr	r9		
+    d7d6:	b3 3f       	jmp	$-152    	;abs 0xd73e
+    d7d8:	0f 93       	tst	r15		
+    d7da:	f5 23       	jnz	$-20     	;abs 0xd7c6
+    d7dc:	bf 3f       	jmp	$-128    	;abs 0xd75c
+
+0000d7de <__unpack_f>:
+    d7de:	0b 12       	push	r11		
+    d7e0:	0a 12       	push	r10		
+    d7e2:	09 12       	push	r9		
+    d7e4:	0b 4e       	mov	r14,	r11	
+    d7e6:	2d 4f       	mov	@r15,	r13	
+    d7e8:	5e 4f 02 00 	mov.b	2(r15),	r14	;0x0002(r15)
+    d7ec:	3e f0 7f 00 	and	#127,	r14	;#0x007f
+    d7f0:	1c 4f 02 00 	mov	2(r15),	r12	;0x0002(r15)
+    d7f4:	12 c3       	clrc			
+    d7f6:	0c 10       	rrc	r12		
+    d7f8:	0c 11       	rra	r12		
+    d7fa:	0c 11       	rra	r12		
+    d7fc:	0c 11       	rra	r12		
+    d7fe:	0c 11       	rra	r12		
+    d800:	0c 11       	rra	r12		
+    d802:	12 c3       	clrc			
+    d804:	0c 10       	rrc	r12		
+    d806:	4c 4c       	mov.b	r12,	r12	
+    d808:	5f 4f 03 00 	mov.b	3(r15),	r15	;0x0003(r15)
+    d80c:	4f 5f       	rla.b	r15		
+    d80e:	4f 43       	clr.b	r15		
+    d810:	4f 6f       	rlc.b	r15		
+    d812:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
+    d816:	0c 93       	tst	r12		
+    d818:	34 20       	jnz	$+106    	;abs 0xd882
+    d81a:	0d 93       	tst	r13		
+    d81c:	57 24       	jz	$+176    	;abs 0xd8cc
+    d81e:	bb 40 82 ff 	mov	#-126,	2(r11)	;#0xff82, 0x0002(r11)
+    d822:	02 00 
+    d824:	0d 5d       	rla	r13		
+    d826:	0e 6e       	rlc	r14		
+    d828:	0d 5d       	rla	r13		
+    d82a:	0e 6e       	rlc	r14		
+    d82c:	0d 5d       	rla	r13		
+    d82e:	0e 6e       	rlc	r14		
+    d830:	0d 5d       	rla	r13		
+    d832:	0e 6e       	rlc	r14		
+    d834:	0d 5d       	rla	r13		
+    d836:	0e 6e       	rlc	r14		
+    d838:	0d 5d       	rla	r13		
+    d83a:	0e 6e       	rlc	r14		
+    d83c:	0d 5d       	rla	r13		
+    d83e:	0e 6e       	rlc	r14		
+    d840:	0a 4d       	mov	r13,	r10	
+    d842:	0f 4e       	mov	r14,	r15	
+    d844:	fb 40 03 00 	mov.b	#3,	0(r11)	;#0x0003, 0x0000(r11)
+    d848:	00 00 
+    d84a:	3d 43       	mov	#-1,	r13	;r3 As==11
+    d84c:	3e 40 ff 3f 	mov	#16383,	r14	;#0x3fff
+    d850:	0e 9f       	cmp	r15,	r14	
+    d852:	0f 28       	jnc	$+32     	;abs 0xd872
+    d854:	3c 40 81 ff 	mov	#-127,	r12	;#0xff81
+    d858:	09 4e       	mov	r14,	r9	
+    d85a:	0d 4a       	mov	r10,	r13	
+    d85c:	0e 4f       	mov	r15,	r14	
+    d85e:	0d 5d       	rla	r13		
+    d860:	0e 6e       	rlc	r14		
+    d862:	0a 4d       	mov	r13,	r10	
+    d864:	0f 4e       	mov	r14,	r15	
+    d866:	0e 4c       	mov	r12,	r14	
+    d868:	3c 53       	add	#-1,	r12	;r3 As==11
+    d86a:	09 9f       	cmp	r15,	r9	
+    d86c:	f6 2f       	jc	$-18     	;abs 0xd85a
+    d86e:	8b 4e 02 00 	mov	r14,	2(r11)	;0x0002(r11)
+    d872:	8b 4a 04 00 	mov	r10,	4(r11)	;0x0004(r11)
+    d876:	8b 4f 06 00 	mov	r15,	6(r11)	;0x0006(r11)
+    d87a:	39 41       	pop	r9		
+    d87c:	3a 41       	pop	r10		
+    d87e:	3b 41       	pop	r11		
+    d880:	30 41       	ret			
+    d882:	3c 90 ff 00 	cmp	#255,	r12	;#0x00ff
+    d886:	2a 24       	jz	$+86     	;abs 0xd8dc
+    d888:	3c 50 81 ff 	add	#-127,	r12	;#0xff81
+    d88c:	8b 4c 02 00 	mov	r12,	2(r11)	;0x0002(r11)
+    d890:	fb 40 03 00 	mov.b	#3,	0(r11)	;#0x0003, 0x0000(r11)
+    d894:	00 00 
+    d896:	0d 5d       	rla	r13		
+    d898:	0e 6e       	rlc	r14		
+    d89a:	0d 5d       	rla	r13		
+    d89c:	0e 6e       	rlc	r14		
+    d89e:	0d 5d       	rla	r13		
+    d8a0:	0e 6e       	rlc	r14		
+    d8a2:	0d 5d       	rla	r13		
+    d8a4:	0e 6e       	rlc	r14		
+    d8a6:	0d 5d       	rla	r13		
+    d8a8:	0e 6e       	rlc	r14		
+    d8aa:	0d 5d       	rla	r13		
+    d8ac:	0e 6e       	rlc	r14		
+    d8ae:	0d 5d       	rla	r13		
+    d8b0:	0e 6e       	rlc	r14		
+    d8b2:	09 4d       	mov	r13,	r9	
+    d8b4:	0a 4e       	mov	r14,	r10	
+    d8b6:	09 d3       	bis	#0,	r9	;r3 As==00
+    d8b8:	3a d0 00 40 	bis	#16384,	r10	;#0x4000
+    d8bc:	8b 49 04 00 	mov	r9,	4(r11)	;0x0004(r11)
+    d8c0:	8b 4a 06 00 	mov	r10,	6(r11)	;0x0006(r11)
+    d8c4:	39 41       	pop	r9		
+    d8c6:	3a 41       	pop	r10		
+    d8c8:	3b 41       	pop	r11		
+    d8ca:	30 41       	ret			
+    d8cc:	0e 93       	tst	r14		
+    d8ce:	a7 23       	jnz	$-176    	;abs 0xd81e
+    d8d0:	eb 43 00 00 	mov.b	#2,	0(r11)	;r3 As==10, 0x0000(r11)
+    d8d4:	39 41       	pop	r9		
+    d8d6:	3a 41       	pop	r10		
+    d8d8:	3b 41       	pop	r11		
+    d8da:	30 41       	ret			
+    d8dc:	0d 93       	tst	r13		
+    d8de:	0e 24       	jz	$+30     	;abs 0xd8fc
+    d8e0:	09 4d       	mov	r13,	r9	
+    d8e2:	0a 4e       	mov	r14,	r10	
+    d8e4:	09 f3       	and	#0,	r9	;r3 As==00
+    d8e6:	3a f0 10 00 	and	#16,	r10	;#0x0010
+    d8ea:	09 93       	tst	r9		
+    d8ec:	0c 24       	jz	$+26     	;abs 0xd906
+    d8ee:	db 43 00 00 	mov.b	#1,	0(r11)	;r3 As==01, 0x0000(r11)
+    d8f2:	8b 4d 04 00 	mov	r13,	4(r11)	;0x0004(r11)
+    d8f6:	8b 4e 06 00 	mov	r14,	6(r11)	;0x0006(r11)
+    d8fa:	e4 3f       	jmp	$-54     	;abs 0xd8c4
+    d8fc:	0e 93       	tst	r14		
+    d8fe:	f0 23       	jnz	$-30     	;abs 0xd8e0
+    d900:	eb 42 00 00 	mov.b	#4,	0(r11)	;r2 As==10, 0x0000(r11)
+    d904:	df 3f       	jmp	$-64     	;abs 0xd8c4
+    d906:	0a 93       	tst	r10		
+    d908:	f2 23       	jnz	$-26     	;abs 0xd8ee
+    d90a:	cb 43 00 00 	mov.b	#0,	0(r11)	;r3 As==00, 0x0000(r11)
+    d90e:	f1 3f       	jmp	$-28     	;abs 0xd8f2
+
+0000d910 <__fpcmp_parts_f>:
+    d910:	0b 12       	push	r11		
+    d912:	6d 4f       	mov.b	@r15,	r13	
+    d914:	5b 43       	mov.b	#1,	r11	;r3 As==01
+    d916:	4b 9d       	cmp.b	r13,	r11	
+    d918:	12 2c       	jc	$+38     	;abs 0xd93e
+    d91a:	6c 4e       	mov.b	@r14,	r12	
+    d91c:	4b 9c       	cmp.b	r12,	r11	
+    d91e:	0f 2c       	jc	$+32     	;abs 0xd93e
+    d920:	6d 92       	cmp.b	#4,	r13	;r2 As==10
+    d922:	3f 24       	jz	$+128    	;abs 0xd9a2
+    d924:	6c 92       	cmp.b	#4,	r12	;r2 As==10
+    d926:	11 24       	jz	$+36     	;abs 0xd94a
+    d928:	6d 93       	cmp.b	#2,	r13	;r3 As==10
+    d92a:	0d 24       	jz	$+28     	;abs 0xd946
+    d92c:	6c 93       	cmp.b	#2,	r12	;r3 As==10
+    d92e:	14 24       	jz	$+42     	;abs 0xd958
+    d930:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
+    d934:	5d 9e 01 00 	cmp.b	1(r14),	r13	;0x0001(r14)
+    d938:	14 24       	jz	$+42     	;abs 0xd962
+    d93a:	4d 93       	tst.b	r13		
+    d93c:	09 20       	jnz	$+20     	;abs 0xd950
+    d93e:	1e 43       	mov	#1,	r14	;r3 As==01
+    d940:	0f 4e       	mov	r14,	r15	
+    d942:	3b 41       	pop	r11		
+    d944:	30 41       	ret			
+    d946:	4c 9d       	cmp.b	r13,	r12	
+    d948:	26 24       	jz	$+78     	;abs 0xd996
+    d94a:	ce 93 01 00 	tst.b	1(r14)		;0x0001(r14)
+    d94e:	f7 23       	jnz	$-16     	;abs 0xd93e
+    d950:	3e 43       	mov	#-1,	r14	;r3 As==11
+    d952:	0f 4e       	mov	r14,	r15	
+    d954:	3b 41       	pop	r11		
+    d956:	30 41       	ret			
+    d958:	cf 93 01 00 	tst.b	1(r15)		;0x0001(r15)
+    d95c:	f0 27       	jz	$-30     	;abs 0xd93e
+    d95e:	3e 43       	mov	#-1,	r14	;r3 As==11
+    d960:	f8 3f       	jmp	$-14     	;abs 0xd952
+    d962:	1b 4f 02 00 	mov	2(r15),	r11	;0x0002(r15)
+    d966:	1c 4e 02 00 	mov	2(r14),	r12	;0x0002(r14)
+    d96a:	0c 9b       	cmp	r11,	r12	
+    d96c:	e6 3b       	jl	$-50     	;abs 0xd93a
+    d96e:	0b 9c       	cmp	r12,	r11	
+    d970:	14 38       	jl	$+42     	;abs 0xd99a
+    d972:	1b 4f 04 00 	mov	4(r15),	r11	;0x0004(r15)
+    d976:	1f 4f 06 00 	mov	6(r15),	r15	;0x0006(r15)
+    d97a:	1c 4e 04 00 	mov	4(r14),	r12	;0x0004(r14)
+    d97e:	1e 4e 06 00 	mov	6(r14),	r14	;0x0006(r14)
+    d982:	0e 9f       	cmp	r15,	r14	
+    d984:	da 2b       	jnc	$-74     	;abs 0xd93a
+    d986:	0f 9e       	cmp	r14,	r15	
+    d988:	08 28       	jnc	$+18     	;abs 0xd99a
+    d98a:	0c 9b       	cmp	r11,	r12	
+    d98c:	d6 2b       	jnc	$-82     	;abs 0xd93a
+    d98e:	0e 9f       	cmp	r15,	r14	
+    d990:	02 28       	jnc	$+6      	;abs 0xd996
+    d992:	0b 9c       	cmp	r12,	r11	
+    d994:	02 28       	jnc	$+6      	;abs 0xd99a
+    d996:	0e 43       	clr	r14		
+    d998:	d3 3f       	jmp	$-88     	;abs 0xd940
+    d99a:	4d 93       	tst.b	r13		
+    d99c:	d0 23       	jnz	$-94     	;abs 0xd93e
+    d99e:	3e 43       	mov	#-1,	r14	;r3 As==11
+    d9a0:	d8 3f       	jmp	$-78     	;abs 0xd952
+    d9a2:	4c 9d       	cmp.b	r13,	r12	
+    d9a4:	d9 23       	jnz	$-76     	;abs 0xd958
+    d9a6:	5e 4e 01 00 	mov.b	1(r14),	r14	;0x0001(r14)
+    d9aa:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    d9ae:	0e 8f       	sub	r15,	r14	
+    d9b0:	c7 3f       	jmp	$-112    	;abs 0xd940
+
+0000d9b2 <__clz_tab>:
+    d9b2:	00 01 02 02 03 03 03 03 04 04 04 04 04 04 04 04     ................
+    d9c2:	05 05 05 05 05 05 05 05 05 05 05 05 05 05 05 05     ................
+    d9d2:	06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06     ................
+    d9e2:	06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06     ................
+    d9f2:	07 07 07 07 07 07 07 07 07 07 07 07 07 07 07 07     ................
+    da02:	07 07 07 07 07 07 07 07 07 07 07 07 07 07 07 07     ................
+    da12:	07 07 07 07 07 07 07 07 07 07 07 07 07 07 07 07     ................
+    da22:	07 07 07 07 07 07 07 07 07 07 07 07 07 07 07 07     ................
+    da32:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da42:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da52:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da62:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da72:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da82:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    da92:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+    daa2:	08 08 08 08 08 08 08 08 08 08 08 08 08 08 08 08     ................
+
+0000dab2 <__udivmodhi4>:
+    dab2:	0e ee       	xor	r14,	r14	
+    dab4:	3b 40 11 00 	mov	#17,	r11	;#0x0011
+    dab8:	05 3c       	jmp	$+12     	;abs 0xdac4
+    daba:	0d 10       	rrc	r13		
+    dabc:	0e 6e       	rlc	r14		
+    dabe:	0e 9a       	cmp	r10,	r14	
+    dac0:	01 28       	jnc	$+4      	;abs 0xdac4
+    dac2:	0e 8a       	sub	r10,	r14	
+    dac4:	0c 6c       	rlc	r12		
+    dac6:	0d 6d       	rlc	r13		
+    dac8:	1b 83       	dec	r11		
+    daca:	f7 23       	jnz	$-16     	;abs 0xdaba
+    dacc:	30 41       	ret			
+
+0000dace <__divmodsi4>:
+    dace:	08 43       	clr	r8		
+    dad0:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
+    dad4:	05 24       	jz	$+12     	;abs 0xdae0
+    dad6:	3d e3       	inv	r13		
+    dad8:	3c e3       	inv	r12		
+    dada:	1c 53       	inc	r12		
+    dadc:	0d 63       	adc	r13		
+    dade:	28 d2       	bis	#4,	r8	;r2 As==10
+    dae0:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
+    dae4:	05 24       	jz	$+12     	;abs 0xdaf0
+    dae6:	3b e3       	inv	r11		
+    dae8:	3a e3       	inv	r10		
+    daea:	1a 53       	inc	r10		
+    daec:	0b 63       	adc	r11		
+    daee:	38 d2       	bis	#8,	r8	;r2 As==11
+    daf0:	b0 12 18 db 	call	#0xdb18	
+    daf4:	08 10       	rrc	r8		
+    daf6:	28 b2       	bit	#4,	r8	;r2 As==10
+    daf8:	08 24       	jz	$+18     	;abs 0xdb0a
+    dafa:	3e e3       	inv	r14		
+    dafc:	3f e3       	inv	r15		
+    dafe:	1e 53       	inc	r14		
+    db00:	0f 63       	adc	r15		
+    db02:	3c e3       	inv	r12		
+    db04:	3d e3       	inv	r13		
+    db06:	1c 53       	inc	r12		
+    db08:	0d 63       	adc	r13		
+    db0a:	38 b2       	bit	#8,	r8	;r2 As==11
+    db0c:	04 24       	jz	$+10     	;abs 0xdb16
+    db0e:	3c e3       	inv	r12		
+    db10:	3d e3       	inv	r13		
+    db12:	1c 53       	inc	r12		
+    db14:	0d 63       	adc	r13		
+    db16:	30 41       	ret			
+
+0000db18 <__udivmodsi4>:
+    db18:	0f ef       	xor	r15,	r15	
+    db1a:	0e ee       	xor	r14,	r14	
+    db1c:	39 40 21 00 	mov	#33,	r9	;#0x0021
+    db20:	0a 3c       	jmp	$+22     	;abs 0xdb36
+    db22:	08 10       	rrc	r8		
+    db24:	0e 6e       	rlc	r14		
+    db26:	0f 6f       	rlc	r15		
+    db28:	0f 9b       	cmp	r11,	r15	
+    db2a:	05 28       	jnc	$+12     	;abs 0xdb36
+    db2c:	02 20       	jnz	$+6      	;abs 0xdb32
+    db2e:	0e 9a       	cmp	r10,	r14	
+    db30:	02 28       	jnc	$+6      	;abs 0xdb36
+    db32:	0e 8a       	sub	r10,	r14	
+    db34:	0f 7b       	subc	r11,	r15	
+    db36:	0c 6c       	rlc	r12		
+    db38:	0d 6d       	rlc	r13		
+    db3a:	08 68       	rlc	r8		
+    db3c:	19 83       	dec	r9		
+    db3e:	f1 23       	jnz	$-28     	;abs 0xdb22
+    db40:	30 41       	ret			
+
+0000db42 <_unexpected_>:
+    db42:	00 13       	reti			
 
 Disassembly of section .vectors:
 

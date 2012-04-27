@@ -18,12 +18,12 @@ Disassembly of section .text:
     c014:	07 24       	jz	$+16     	;abs 0xc024
     c016:	82 45 20 01 	mov	r5,	&0x0120	
     c01a:	2f 83       	decd	r15		
-    c01c:	9f 4f dc c4 	mov	-15140(r15),512(r15);0xc4dc(r15), 0x0200(r15)
+    c01c:	9f 4f de c4 	mov	-15138(r15),512(r15);0xc4de(r15), 0x0200(r15)
     c020:	00 02 
     c022:	f9 23       	jnz	$-12     	;abs 0xc016
 
 0000c024 <__do_clear_bss>:
-    c024:	3f 40 bc 00 	mov	#188,	r15	;#0x00bc
+    c024:	3f 40 1c 01 	mov	#284,	r15	;#0x011c
     c028:	0f 93       	tst	r15		
     c02a:	06 24       	jz	$+14     	;abs 0xc038
     c02c:	82 45 20 01 	mov	r5,	&0x0120	
@@ -49,32 +49,32 @@ int main(void)
     c048:	f2 40 24 00 	mov.b	#36,	&0x0226	;#0x0024
     c04c:	26 02 
 	outp.start	= 0x2B;
-    c04e:	f2 40 2b 00 	mov.b	#43,	&0x023a	;#0x002b
-    c052:	3a 02 
+    c04e:	f2 40 2b 00 	mov.b	#43,	&0x026a	;#0x002b
+    c052:	6a 02 
 
 	while (1) {
 		// process packages endless ...
 		if(packet_receive(&inp, 0x24) == PACKET_STAT_OK) {
     c054:	7e 40 24 00 	mov.b	#36,	r14	;#0x0024
     c058:	3f 40 26 02 	mov	#550,	r15	;#0x0226
-    c05c:	b0 12 b8 c3 	call	#0xc3b8	
+    c05c:	b0 12 ba c3 	call	#0xc3ba	
     c060:	0f 93       	tst	r15		
     c062:	12 20       	jnz	$+38     	;abs 0xc088
 			if(packet_process_received(&rcvh, &inp) == PACKET_STAT_ERR_UNKPACK) {
     c064:	3e 40 26 02 	mov	#550,	r14	;#0x0226
     c068:	3f 40 00 02 	mov	#512,	r15	;#0x0200
-    c06c:	b0 12 26 c4 	call	#0xc426	
+    c06c:	b0 12 28 c4 	call	#0xc428	
     c070:	3f 90 fd ff 	cmp	#-3,	r15	;#0xfffd
     c074:	ef 23       	jnz	$-32     	;abs 0xc054
 				// send ERROR packet (invalid packet type)
 				outp.length 	= 0x05;
-    c076:	f2 40 05 00 	mov.b	#5,	&0x023b	;#0x0005
-    c07a:	3b 02 
+    c076:	f2 40 05 00 	mov.b	#5,	&0x026b	;#0x0005
+    c07a:	6b 02 
 				outp.type 		= 0x01;
-    c07c:	d2 43 3c 02 	mov.b	#1,	&0x023c	;r3 As==01
+    c07c:	d2 43 6c 02 	mov.b	#1,	&0x026c	;r3 As==01
 				outp.data[0]	= 0x03;
-    c080:	f2 40 03 00 	mov.b	#3,	&0x023d	;#0x0003
-    c084:	3d 02 
+    c080:	f2 40 03 00 	mov.b	#3,	&0x026d	;#0x0003
+    c084:	6d 02 
     c086:	07 3c       	jmp	$+16     	;abs 0xc096
 				packet_send(&outp);
 			}
@@ -82,20 +82,20 @@ int main(void)
 		else {
 			// send ERROR packet (invalid CRC/maleformed packet)
 			outp.length 	= 0x05;
-    c088:	f2 40 05 00 	mov.b	#5,	&0x023b	;#0x0005
-    c08c:	3b 02 
+    c088:	f2 40 05 00 	mov.b	#5,	&0x026b	;#0x0005
+    c08c:	6b 02 
 			outp.type 		= 0x01;
-    c08e:	d2 43 3c 02 	mov.b	#1,	&0x023c	;r3 As==01
+    c08e:	d2 43 6c 02 	mov.b	#1,	&0x026c	;r3 As==01
 			outp.data[0]	= 0x02;
-    c092:	e2 43 3d 02 	mov.b	#2,	&0x023d	;r3 As==10
+    c092:	e2 43 6d 02 	mov.b	#2,	&0x026d	;r3 As==10
 			outp.crc		= packet_calc_crc(&outp);
-    c096:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c096:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
     c09a:	b0 12 24 c3 	call	#0xc324	
-    c09e:	c2 4f 4d 02 	mov.b	r15,	&0x024d	
+    c09e:	c2 4f ad 02 	mov.b	r15,	&0x02ad	
 
 			packet_send(&outp);
-    c0a2:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
-    c0a6:	b0 12 62 c3 	call	#0xc362	
+    c0a2:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c0a6:	b0 12 64 c3 	call	#0xc364	
     c0aa:	d4 3f       	jmp	$-86     	;abs 0xc054
 
 0000c0ac <__stop_progExec__>:
@@ -103,7 +103,7 @@ int main(void)
     c0b0:	fd 3f       	jmp	$-4      	;abs 0xc0ac
 
 0000c0b2 <__ctors_end>:
-    c0b2:	30 40 da c4 	br	#0xc4da	
+    c0b2:	30 40 dc c4 	br	#0xc4dc	
 
 0000c0b6 <ph_null>:
 
@@ -114,18 +114,18 @@ int ph_null(unsigned char length, unsigned char *data)
 {
     c0b6:	0b 12       	push	r11		
 	outp.length 	= 0x04;
-    c0b8:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c0b8:	3b 40 6b 02 	mov	#619,	r11	;#0x026b
     c0bc:	eb 42 00 00 	mov.b	#4,	0(r11)	;r2 As==10, 0x0000(r11)
 	outp.type 		= 0x00;
     c0c0:	cb 43 01 00 	mov.b	#0,	1(r11)	;r3 As==00, 0x0001(r11)
 	outp.crc		= packet_calc_crc(&outp);
-    c0c4:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c0c4:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
     c0c8:	b0 12 24 c3 	call	#0xc324	
-    c0cc:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+    c0cc:	cb 4f 42 00 	mov.b	r15,	66(r11)	;0x0042(r11)
 
 	packet_send(&outp);
-    c0d0:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
-    c0d4:	b0 12 62 c3 	call	#0xc362	
+    c0d0:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c0d4:	b0 12 64 c3 	call	#0xc364	
 
 	return 0;
 }
@@ -142,7 +142,7 @@ int ph_system_info(unsigned char length, unsigned char *data)
 {
     c0de:	0b 12       	push	r11		
 	outp.length 	= 0x07;
-    c0e0:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c0e0:	3b 40 6b 02 	mov	#619,	r11	;#0x026b
     c0e4:	fb 40 07 00 	mov.b	#7,	0(r11)	;#0x0007, 0x0000(r11)
     c0e8:	00 00 
 	outp.type 		= 0x02;
@@ -157,13 +157,13 @@ int ph_system_info(unsigned char length, unsigned char *data)
     c0fa:	fb 40 cc ff 	mov.b	#-52,	4(r11)	;#0xffcc, 0x0004(r11)
     c0fe:	04 00 
 	outp.crc		= packet_calc_crc(&outp);
-    c100:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c100:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
     c104:	b0 12 24 c3 	call	#0xc324	
-    c108:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+    c108:	cb 4f 42 00 	mov.b	r15,	66(r11)	;0x0042(r11)
 
 	packet_send(&outp);
-    c10c:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
-    c110:	b0 12 62 c3 	call	#0xc362	
+    c10c:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c110:	b0 12 64 c3 	call	#0xc364	
 
 	return 0;
 }
@@ -180,7 +180,7 @@ int ph_dummy_ack(unsigned char length, unsigned char *data)
 {
     c11a:	0b 12       	push	r11		
 	outp.length 	= 0x05;
-    c11c:	3b 40 3b 02 	mov	#571,	r11	;#0x023b
+    c11c:	3b 40 6b 02 	mov	#619,	r11	;#0x026b
     c120:	fb 40 05 00 	mov.b	#5,	0(r11)	;#0x0005, 0x0000(r11)
     c124:	00 00 
 	outp.type 		= 0x01;
@@ -188,13 +188,13 @@ int ph_dummy_ack(unsigned char length, unsigned char *data)
 	outp.data[0]	= 0x01;
     c12a:	db 43 02 00 	mov.b	#1,	2(r11)	;r3 As==01, 0x0002(r11)
 	outp.crc		= packet_calc_crc(&outp);
-    c12e:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
+    c12e:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
     c132:	b0 12 24 c3 	call	#0xc324	
-    c136:	cb 4f 12 00 	mov.b	r15,	18(r11)	;0x0012(r11)
+    c136:	cb 4f 42 00 	mov.b	r15,	66(r11)	;0x0042(r11)
 
 	packet_send(&outp);
-    c13a:	3f 40 3a 02 	mov	#570,	r15	;#0x023a
-    c13e:	b0 12 62 c3 	call	#0xc362	
+    c13a:	3f 40 6a 02 	mov	#618,	r15	;#0x026a
+    c13e:	b0 12 64 c3 	call	#0xc364	
 
 	return 0;
 }
@@ -228,13 +228,13 @@ void serirq_init(void)
     serial_rb_init(&srx, &(srx_buf[0]), RB_SIZE);
     c15e:	3b 40 40 00 	mov	#64,	r11	;#0x0040
     c162:	0d 4b       	mov	r11,	r13	
-    c164:	3e 40 62 02 	mov	#610,	r14	;#0x0262
-    c168:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c164:	3e 40 c2 02 	mov	#706,	r14	;#0x02c2
+    c168:	3f 40 b8 02 	mov	#696,	r15	;#0x02b8
     c16c:	b0 12 4e c2 	call	#0xc24e	
     serial_rb_init(&stx, &(stx_buf[0]), RB_SIZE);
     c170:	0d 4b       	mov	r11,	r13	
-    c172:	3e 40 a2 02 	mov	#674,	r14	;#0x02a2
-    c176:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c172:	3e 40 02 03 	mov	#770,	r14	;#0x0302
+    c176:	3f 40 ae 02 	mov	#686,	r15	;#0x02ae
     c17a:	b0 12 4e c2 	call	#0xc24e	
 
     IE2 |= UCA0RXIE; 
@@ -262,7 +262,7 @@ void packet_byte_to_sendq(unsigned char pkt_byte)
 {
 	// wait until buffer empties 
 	while(serial_rb_full(&stx)) {
-    c190:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c190:	3f 40 ae 02 	mov	#686,	r15	;#0x02ae
     c194:	b0 12 30 c2 	call	#0xc230	
     c198:	0f 93       	tst	r15		
     c19a:	f9 23       	jnz	$-12     	;abs 0xc18e
@@ -271,7 +271,7 @@ void packet_byte_to_sendq(unsigned char pkt_byte)
 
 	serial_rb_write(&stx, pkt_byte);
     c19c:	4e 4b       	mov.b	r11,	r14	
-    c19e:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c19e:	3f 40 ae 02 	mov	#686,	r15	;#0x02ae
     c1a2:	b0 12 64 c2 	call	#0xc264	
 	IE2 |= UCA0TXIE;
     c1a6:	e2 d3 01 00 	bis.b	#2,	&0x0001	;r3 As==10
@@ -294,7 +294,7 @@ unsigned char packet_byte_from_rcvq()
 {
 	// wait until data arrived in buffer
 	while(serial_rb_empty(&srx)) {
-    c1b2:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1b2:	3f 40 b8 02 	mov	#696,	r15	;#0x02b8
     c1b6:	b0 12 40 c2 	call	#0xc240	
     c1ba:	0f 93       	tst	r15		
     c1bc:	f9 23       	jnz	$-12     	;abs 0xc1b0
@@ -302,7 +302,7 @@ unsigned char packet_byte_from_rcvq()
 	}
 
 	return serial_rb_read(&srx);
-    c1be:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1be:	3f 40 b8 02 	mov	#696,	r15	;#0x02b8
     c1c2:	b0 12 8a c2 	call	#0xc28a	
 }
     c1c6:	30 41       	ret			
@@ -316,13 +316,13 @@ interrupt(USCIAB0RX_VECTOR) USCI0RX_ISR(void)
     c1cc:	0d 12       	push	r13		
     c1ce:	0c 12       	push	r12		
 	if (!serial_rb_full(&srx)) {
-    c1d0:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1d0:	3f 40 b8 02 	mov	#696,	r15	;#0x02b8
     c1d4:	b0 12 30 c2 	call	#0xc230	
     c1d8:	0f 93       	tst	r15		
     c1da:	06 20       	jnz	$+14     	;abs 0xc1e8
         serial_rb_write(&srx, UCA0RXBUF);
     c1dc:	5e 42 66 00 	mov.b	&0x0066,r14	
-    c1e0:	3f 40 58 02 	mov	#600,	r15	;#0x0258
+    c1e0:	3f 40 b8 02 	mov	#696,	r15	;#0x02b8
     c1e4:	b0 12 64 c2 	call	#0xc264	
 	}
 }
@@ -341,12 +341,12 @@ interrupt(USCIAB0TX_VECTOR) USCI0TX_ISR(void)
     c1f6:	0d 12       	push	r13		
     c1f8:	0c 12       	push	r12		
 	if(!serial_rb_empty(&stx)) {
-    c1fa:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c1fa:	3f 40 ae 02 	mov	#686,	r15	;#0x02ae
     c1fe:	b0 12 40 c2 	call	#0xc240	
     c202:	0f 93       	tst	r15		
     c204:	07 20       	jnz	$+16     	;abs 0xc214
     	serial_send(serial_rb_read(&stx));
-    c206:	3f 40 4e 02 	mov	#590,	r15	;#0x024e
+    c206:	3f 40 ae 02 	mov	#686,	r15	;#0x02ae
     c20a:	b0 12 8a c2 	call	#0xc28a	
     c20e:	b0 12 fc c2 	call	#0xc2fc	
     c212:	03 3c       	jmp	$+8      	;abs 0xc21a
@@ -499,7 +499,7 @@ void serial_init(unsigned int baudrate)
     c2d2:	3d 40 0f 00 	mov	#15,	r13	;#0x000f
     c2d6:	0a 4f       	mov	r15,	r10	
     c2d8:	0b 47       	mov	r7,	r11	
-    c2da:	b0 12 66 c4 	call	#0xc466	
+    c2da:	b0 12 68 c4 	call	#0xc468	
 
   	UCA0BR0  = br;                          // 1MHz / baudrate 
     c2de:	c2 4c 62 00 	mov.b	r12,	&0x0062	
@@ -574,357 +574,359 @@ unsigned char packet_calc_crc(packet *pkt) {
 	unsigned char i;
 	unsigned char crc = 0;
 
+	crc += pkt->start;
 	crc += pkt->length;
     c326:	5d 4f 01 00 	mov.b	1(r15),	r13	;0x0001(r15)
+    c32a:	6e 4f       	mov.b	@r15,	r14	
+    c32c:	4e 5d       	add.b	r13,	r14	
 	crc += pkt->type;
-    c32a:	5e 4f 02 00 	mov.b	2(r15),	r14	;0x0002(r15)
-    c32e:	4e 5d       	add.b	r13,	r14	
+    c32e:	5e 5f 02 00 	add.b	2(r15),	r14	;0x0002(r15)
 
 	for(i = 0; i < pkt->length - 4; i++) {
-    c330:	4c 43       	clr.b	r12		
-    c332:	2d 82       	sub	#4,	r13	;r2 As==10
-    c334:	04 3c       	jmp	$+10     	;abs 0xc33e
+    c332:	4c 43       	clr.b	r12		
+    c334:	2d 82       	sub	#4,	r13	;r2 As==10
+    c336:	04 3c       	jmp	$+10     	;abs 0xc340
 		crc += pkt->data[i];
-    c336:	0b 5f       	add	r15,	r11	
-    c338:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
-	unsigned char crc = 0;
+    c338:	0b 5f       	add	r15,	r11	
+    c33a:	5e 5b 03 00 	add.b	3(r11),	r14	;0x0003(r11)
 
+	crc += pkt->start;
 	crc += pkt->length;
 	crc += pkt->type;
 
 	for(i = 0; i < pkt->length - 4; i++) {
-    c33c:	5c 53       	inc.b	r12		
-    c33e:	4b 4c       	mov.b	r12,	r11	
-    c340:	0b 9d       	cmp	r13,	r11	
-    c342:	f9 3b       	jl	$-12     	;abs 0xc336
+    c33e:	5c 53       	inc.b	r12		
+    c340:	4b 4c       	mov.b	r12,	r11	
+    c342:	0b 9d       	cmp	r13,	r11	
+    c344:	f9 3b       	jl	$-12     	;abs 0xc338
 		crc += pkt->data[i];
 	} 
 
 	return crc;
 }
-    c344:	4f 4e       	mov.b	r14,	r15	
-    c346:	3b 41       	pop	r11		
-    c348:	30 41       	ret			
+    c346:	4f 4e       	mov.b	r14,	r15	
+    c348:	3b 41       	pop	r11		
+    c34a:	30 41       	ret			
 
-0000c34a <packet_check_crc>:
+0000c34c <packet_check_crc>:
 
 int	packet_check_crc(packet *pkt) {
-    c34a:	0b 12       	push	r11		
-    c34c:	0b 4f       	mov	r15,	r11	
+    c34c:	0b 12       	push	r11		
+    c34e:	0b 4f       	mov	r15,	r11	
 
 	if(packet_calc_crc(pkt) == pkt->crc) {
-    c34e:	b0 12 24 c3 	call	#0xc324	
+    c350:	b0 12 24 c3 	call	#0xc324	
 		return 1;
-    c352:	1e 43       	mov	#1,	r14	;r3 As==01
-    c354:	5f 9b 13 00 	cmp.b	19(r11),r15	;0x0013(r11)
-    c358:	01 24       	jz	$+4      	;abs 0xc35c
-    c35a:	0e 43       	clr	r14		
+    c354:	1e 43       	mov	#1,	r14	;r3 As==01
+    c356:	5f 9b 43 00 	cmp.b	67(r11),r15	;0x0043(r11)
+    c35a:	01 24       	jz	$+4      	;abs 0xc35e
+    c35c:	0e 43       	clr	r14		
 	}
 
 	return 0;
 }
-    c35c:	0f 4e       	mov	r14,	r15	
-    c35e:	3b 41       	pop	r11		
-    c360:	30 41       	ret			
+    c35e:	0f 4e       	mov	r14,	r15	
+    c360:	3b 41       	pop	r11		
+    c362:	30 41       	ret			
 
-0000c362 <packet_send>:
+0000c364 <packet_send>:
 
 int packet_send(packet *pkt) {
-    c362:	0b 12       	push	r11		
-    c364:	0a 12       	push	r10		
-    c366:	0b 4f       	mov	r15,	r11	
+    c364:	0b 12       	push	r11		
+    c366:	0a 12       	push	r10		
+    c368:	0b 4f       	mov	r15,	r11	
 
 	unsigned char  i;
 
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
-    c368:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
-    c36c:	3f 90 15 00 	cmp	#21,	r15	;#0x0015
-    c370:	1f 34       	jge	$+64     	;abs 0xc3b0
+    c36a:	5f 4f 01 00 	mov.b	1(r15),	r15	;0x0001(r15)
+    c36e:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
+    c372:	1f 34       	jge	$+64     	;abs 0xc3b2
 		return PACKET_STAT_ERR_LENGTH;
 	}
  
 	// write start byte
 	packet_byte_to_sendq(pkt->start);
-    c372:	6f 4b       	mov.b	@r11,	r15	
-    c374:	b0 12 88 c1 	call	#0xc188	
+    c374:	6f 4b       	mov.b	@r11,	r15	
+    c376:	b0 12 88 c1 	call	#0xc188	
 
 	// write length
 	packet_byte_to_sendq(pkt->length);
-    c378:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    c37c:	b0 12 88 c1 	call	#0xc188	
+    c37a:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c37e:	b0 12 88 c1 	call	#0xc188	
 
 	// write type
 	packet_byte_to_sendq(pkt->type);
-    c380:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
-    c384:	b0 12 88 c1 	call	#0xc188	
+    c382:	5f 4b 02 00 	mov.b	2(r11),	r15	;0x0002(r11)
+    c386:	b0 12 88 c1 	call	#0xc188	
 
 	// write data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    c388:	4a 43       	clr.b	r10		
-    c38a:	06 3c       	jmp	$+14     	;abs 0xc398
+    c38a:	4a 43       	clr.b	r10		
+    c38c:	06 3c       	jmp	$+14     	;abs 0xc39a
 		packet_byte_to_sendq(pkt->data[i]); 
-    c38c:	0e 5b       	add	r11,	r14	
-    c38e:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
-    c392:	b0 12 88 c1 	call	#0xc188	
+    c38e:	0e 5b       	add	r11,	r14	
+    c390:	5f 4e 03 00 	mov.b	3(r14),	r15	;0x0003(r14)
+    c394:	b0 12 88 c1 	call	#0xc188	
 
 	// write type
 	packet_byte_to_sendq(pkt->type);
 
 	// write data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    c396:	5a 53       	inc.b	r10		
-    c398:	4e 4a       	mov.b	r10,	r14	
-    c39a:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    c39e:	2f 82       	sub	#4,	r15	;r2 As==10
-    c3a0:	0e 9f       	cmp	r15,	r14	
-    c3a2:	f4 3b       	jl	$-22     	;abs 0xc38c
+    c398:	5a 53       	inc.b	r10		
+    c39a:	4e 4a       	mov.b	r10,	r14	
+    c39c:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c3a0:	2f 82       	sub	#4,	r15	;r2 As==10
+    c3a2:	0e 9f       	cmp	r15,	r14	
+    c3a4:	f4 3b       	jl	$-22     	;abs 0xc38e
 		packet_byte_to_sendq(pkt->data[i]); 
 	}
 
 	// write crc 
 	packet_byte_to_sendq(pkt->crc);
-    c3a4:	5f 4b 13 00 	mov.b	19(r11),r15	;0x0013(r11)
-    c3a8:	b0 12 88 c1 	call	#0xc188	
+    c3a6:	5f 4b 43 00 	mov.b	67(r11),r15	;0x0043(r11)
+    c3aa:	b0 12 88 c1 	call	#0xc188	
 	
 	return PACKET_STAT_OK;
-    c3ac:	0f 43       	clr	r15		
-    c3ae:	01 3c       	jmp	$+4      	;abs 0xc3b2
+    c3ae:	0f 43       	clr	r15		
+    c3b0:	01 3c       	jmp	$+4      	;abs 0xc3b4
 
 	unsigned char  i;
 
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
 		return PACKET_STAT_ERR_LENGTH;
-    c3b0:	3f 43       	mov	#-1,	r15	;r3 As==11
+    c3b2:	3f 43       	mov	#-1,	r15	;r3 As==11
 
 	// write crc 
 	packet_byte_to_sendq(pkt->crc);
 	
 	return PACKET_STAT_OK;
 }
-    c3b2:	3a 41       	pop	r10		
-    c3b4:	3b 41       	pop	r11		
-    c3b6:	30 41       	ret			
+    c3b4:	3a 41       	pop	r10		
+    c3b6:	3b 41       	pop	r11		
+    c3b8:	30 41       	ret			
 
-0000c3b8 <packet_receive>:
+0000c3ba <packet_receive>:
 
 int packet_receive(packet *pkt, unsigned char start) {
-    c3b8:	0b 12       	push	r11		
-    c3ba:	0a 12       	push	r10		
-    c3bc:	09 12       	push	r9		
-    c3be:	0b 4f       	mov	r15,	r11	
-    c3c0:	4a 4e       	mov.b	r14,	r10	
+    c3ba:	0b 12       	push	r11		
+    c3bc:	0a 12       	push	r10		
+    c3be:	09 12       	push	r9		
+    c3c0:	0b 4f       	mov	r15,	r11	
+    c3c2:	4a 4e       	mov.b	r14,	r10	
 
 	unsigned char  i;
 
 	// discard everything until start byte found in buffer
 	while(packet_byte_from_rcvq() != start);
-    c3c2:	b0 12 ae c1 	call	#0xc1ae	
-    c3c6:	4f 9a       	cmp.b	r10,	r15	
-    c3c8:	fc 23       	jnz	$-6      	;abs 0xc3c2
+    c3c4:	b0 12 ae c1 	call	#0xc1ae	
+    c3c8:	4f 9a       	cmp.b	r10,	r15	
+    c3ca:	fc 23       	jnz	$-6      	;abs 0xc3c4
 
 	pkt->start = start;
-    c3ca:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
+    c3cc:	cb 4a 00 00 	mov.b	r10,	0(r11)	;0x0000(r11)
 
 	// read length
 	pkt->length = packet_byte_from_rcvq();
-    c3ce:	b0 12 ae c1 	call	#0xc1ae	
-    c3d2:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
+    c3d0:	b0 12 ae c1 	call	#0xc1ae	
+    c3d4:	cb 4f 01 00 	mov.b	r15,	1(r11)	;0x0001(r11)
 	
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
-    c3d6:	4f 4f       	mov.b	r15,	r15	
-    c3d8:	3f 90 15 00 	cmp	#21,	r15	;#0x0015
-    c3dc:	1d 34       	jge	$+60     	;abs 0xc418
+    c3d8:	4f 4f       	mov.b	r15,	r15	
+    c3da:	3f 90 45 00 	cmp	#69,	r15	;#0x0045
+    c3de:	1d 34       	jge	$+60     	;abs 0xc41a
 		return PACKET_STAT_ERR_LENGTH;
 	}
  
 	// read type
 	pkt->type = packet_byte_from_rcvq();
-    c3de:	b0 12 ae c1 	call	#0xc1ae	
-    c3e2:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
+    c3e0:	b0 12 ae c1 	call	#0xc1ae	
+    c3e4:	cb 4f 02 00 	mov.b	r15,	2(r11)	;0x0002(r11)
  	
 	// read data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    c3e6:	4a 43       	clr.b	r10		
-    c3e8:	06 3c       	jmp	$+14     	;abs 0xc3f6
+    c3e8:	4a 43       	clr.b	r10		
+    c3ea:	06 3c       	jmp	$+14     	;abs 0xc3f8
 		pkt->data[i] = packet_byte_from_rcvq();
-    c3ea:	b0 12 ae c1 	call	#0xc1ae	
-    c3ee:	09 5b       	add	r11,	r9	
-    c3f0:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
+    c3ec:	b0 12 ae c1 	call	#0xc1ae	
+    c3f0:	09 5b       	add	r11,	r9	
+    c3f2:	c9 4f 03 00 	mov.b	r15,	3(r9)	;0x0003(r9)
  
 	// read type
 	pkt->type = packet_byte_from_rcvq();
  	
 	// read data
 	for(i = 0; i < pkt->length - 4; i++) {	
-    c3f4:	5a 53       	inc.b	r10		
-    c3f6:	49 4a       	mov.b	r10,	r9	
-    c3f8:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
-    c3fc:	2f 82       	sub	#4,	r15	;r2 As==10
-    c3fe:	09 9f       	cmp	r15,	r9	
-    c400:	f4 3b       	jl	$-22     	;abs 0xc3ea
+    c3f6:	5a 53       	inc.b	r10		
+    c3f8:	49 4a       	mov.b	r10,	r9	
+    c3fa:	5f 4b 01 00 	mov.b	1(r11),	r15	;0x0001(r11)
+    c3fe:	2f 82       	sub	#4,	r15	;r2 As==10
+    c400:	09 9f       	cmp	r15,	r9	
+    c402:	f4 3b       	jl	$-22     	;abs 0xc3ec
 		pkt->data[i] = packet_byte_from_rcvq();
 	}
 	
 	// read crc 
 	pkt->crc = packet_byte_from_rcvq();
-    c402:	b0 12 ae c1 	call	#0xc1ae	
-    c406:	cb 4f 13 00 	mov.b	r15,	19(r11)	;0x0013(r11)
+    c404:	b0 12 ae c1 	call	#0xc1ae	
+    c408:	cb 4f 43 00 	mov.b	r15,	67(r11)	;0x0043(r11)
 	
 	// check crc
 	if(!packet_check_crc(pkt)) {
-    c40a:	0f 4b       	mov	r11,	r15	
-    c40c:	b0 12 4a c3 	call	#0xc34a	
-    c410:	0f 93       	tst	r15		
-    c412:	04 20       	jnz	$+10     	;abs 0xc41c
+    c40c:	0f 4b       	mov	r11,	r15	
+    c40e:	b0 12 4c c3 	call	#0xc34c	
+    c412:	0f 93       	tst	r15		
+    c414:	04 20       	jnz	$+10     	;abs 0xc41e
 		return PACKET_STAT_ERR_CRC;
-    c414:	2f 83       	decd	r15		
-    c416:	03 3c       	jmp	$+8      	;abs 0xc41e
+    c416:	2f 83       	decd	r15		
+    c418:	03 3c       	jmp	$+8      	;abs 0xc420
 	// read length
 	pkt->length = packet_byte_from_rcvq();
 	
 	// check length
 	if(pkt->length - 4 > PACKET_MAX_DATA) {
 		return PACKET_STAT_ERR_LENGTH;
-    c418:	3f 43       	mov	#-1,	r15	;r3 As==11
-    c41a:	01 3c       	jmp	$+4      	;abs 0xc41e
+    c41a:	3f 43       	mov	#-1,	r15	;r3 As==11
+    c41c:	01 3c       	jmp	$+4      	;abs 0xc420
 	// check crc
 	if(!packet_check_crc(pkt)) {
 		return PACKET_STAT_ERR_CRC;
 	}
 
 	return PACKET_STAT_OK;
-    c41c:	0f 43       	clr	r15		
+    c41e:	0f 43       	clr	r15		
 }
-    c41e:	39 41       	pop	r9		
-    c420:	3a 41       	pop	r10		
-    c422:	3b 41       	pop	r11		
-    c424:	30 41       	ret			
+    c420:	39 41       	pop	r9		
+    c422:	3a 41       	pop	r10		
+    c424:	3b 41       	pop	r11		
+    c426:	30 41       	ret			
 
-0000c426 <packet_process_received>:
+0000c428 <packet_process_received>:
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
-    c426:	0b 12       	push	r11		
-    c428:	0a 12       	push	r10		
-    c42a:	0c 4e       	mov	r14,	r12	
+    c428:	0b 12       	push	r11		
+    c42a:	0a 12       	push	r10		
+    c42c:	0c 4e       	mov	r14,	r12	
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    c42c:	6b 4f       	mov.b	@r15,	r11	
+    c42e:	6b 4f       	mov.b	@r15,	r11	
 	}
 
 	return PACKET_STAT_OK;
 }
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
-    c42e:	0e 4f       	mov	r15,	r14	
-    c430:	2e 53       	incd	r14		
+    c430:	0e 4f       	mov	r15,	r14	
+    c432:	2e 53       	incd	r14		
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    c432:	0d 43       	clr	r13		
-    c434:	11 3c       	jmp	$+36     	;abs 0xc458
+    c434:	0d 43       	clr	r13		
+    c436:	11 3c       	jmp	$+36     	;abs 0xc45a
 		if(rh->handlers[i].type == pkt->type) {
-    c436:	6a 4e       	mov.b	@r14,	r10	
-    c438:	2e 52       	add	#4,	r14	;r2 As==10
-    c43a:	1d 53       	inc	r13		
-    c43c:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
-    c440:	0b 20       	jnz	$+24     	;abs 0xc458
+    c438:	6a 4e       	mov.b	@r14,	r10	
+    c43a:	2e 52       	add	#4,	r14	;r2 As==10
+    c43c:	1d 53       	inc	r13		
+    c43e:	5a 9c 02 00 	cmp.b	2(r12),	r10	;0x0002(r12)
+    c442:	0b 20       	jnz	$+24     	;abs 0xc45a
 			// call handler function
     		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
-    c442:	0d 5d       	rla	r13		
     c444:	0d 5d       	rla	r13		
-    c446:	0d 5f       	add	r15,	r13	
-    c448:	0e 4c       	mov	r12,	r14	
-    c44a:	3e 50 03 00 	add	#3,	r14	;#0x0003
-    c44e:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
-    c452:	6f 82       	sub.b	#4,	r15	;r2 As==10
-    c454:	ad 12       	call	@r13		
-    c456:	04 3c       	jmp	$+10     	;abs 0xc460
+    c446:	0d 5d       	rla	r13		
+    c448:	0d 5f       	add	r15,	r13	
+    c44a:	0e 4c       	mov	r12,	r14	
+    c44c:	3e 50 03 00 	add	#3,	r14	;#0x0003
+    c450:	5f 4c 01 00 	mov.b	1(r12),	r15	;0x0001(r12)
+    c454:	6f 82       	sub.b	#4,	r15	;r2 As==10
+    c456:	ad 12       	call	@r13		
+    c458:	04 3c       	jmp	$+10     	;abs 0xc462
 
 int packet_process_received(packet_rcv_handlers *rh, packet *pkt) {
 
 	int i;
 
     for(i = 0; i < rh->count; i++) {
-    c458:	0d 9b       	cmp	r11,	r13	
-    c45a:	ed 3b       	jl	$-36     	;abs 0xc436
+    c45a:	0d 9b       	cmp	r11,	r13	
+    c45c:	ed 3b       	jl	$-36     	;abs 0xc438
 			// call handler function
     		return (rh->handlers[i].func)(pkt->length - 4, pkt->data);
 		}
     }
 
 	return PACKET_STAT_ERR_UNKPACK;
-    c45c:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
+    c45e:	3f 40 fd ff 	mov	#-3,	r15	;#0xfffd
 }
-    c460:	3a 41       	pop	r10		
-    c462:	3b 41       	pop	r11		
-    c464:	30 41       	ret			
+    c462:	3a 41       	pop	r10		
+    c464:	3b 41       	pop	r11		
+    c466:	30 41       	ret			
 
-0000c466 <__divmodsi4>:
-    c466:	08 43       	clr	r8		
-    c468:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
-    c46c:	05 24       	jz	$+12     	;abs 0xc478
-    c46e:	3d e3       	inv	r13		
-    c470:	3c e3       	inv	r12		
-    c472:	1c 53       	inc	r12		
-    c474:	0d 63       	adc	r13		
-    c476:	28 d2       	bis	#4,	r8	;r2 As==10
-    c478:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
-    c47c:	05 24       	jz	$+12     	;abs 0xc488
-    c47e:	3b e3       	inv	r11		
-    c480:	3a e3       	inv	r10		
-    c482:	1a 53       	inc	r10		
-    c484:	0b 63       	adc	r11		
-    c486:	38 d2       	bis	#8,	r8	;r2 As==11
-    c488:	b0 12 b0 c4 	call	#0xc4b0	
-    c48c:	08 10       	rrc	r8		
-    c48e:	28 b2       	bit	#4,	r8	;r2 As==10
-    c490:	08 24       	jz	$+18     	;abs 0xc4a2
-    c492:	3e e3       	inv	r14		
-    c494:	3f e3       	inv	r15		
-    c496:	1e 53       	inc	r14		
-    c498:	0f 63       	adc	r15		
-    c49a:	3c e3       	inv	r12		
-    c49c:	3d e3       	inv	r13		
-    c49e:	1c 53       	inc	r12		
-    c4a0:	0d 63       	adc	r13		
-    c4a2:	38 b2       	bit	#8,	r8	;r2 As==11
-    c4a4:	04 24       	jz	$+10     	;abs 0xc4ae
-    c4a6:	3c e3       	inv	r12		
-    c4a8:	3d e3       	inv	r13		
-    c4aa:	1c 53       	inc	r12		
-    c4ac:	0d 63       	adc	r13		
-    c4ae:	30 41       	ret			
+0000c468 <__divmodsi4>:
+    c468:	08 43       	clr	r8		
+    c46a:	3d b0 00 80 	bit	#-32768,r13	;#0x8000
+    c46e:	05 24       	jz	$+12     	;abs 0xc47a
+    c470:	3d e3       	inv	r13		
+    c472:	3c e3       	inv	r12		
+    c474:	1c 53       	inc	r12		
+    c476:	0d 63       	adc	r13		
+    c478:	28 d2       	bis	#4,	r8	;r2 As==10
+    c47a:	3b b0 00 80 	bit	#-32768,r11	;#0x8000
+    c47e:	05 24       	jz	$+12     	;abs 0xc48a
+    c480:	3b e3       	inv	r11		
+    c482:	3a e3       	inv	r10		
+    c484:	1a 53       	inc	r10		
+    c486:	0b 63       	adc	r11		
+    c488:	38 d2       	bis	#8,	r8	;r2 As==11
+    c48a:	b0 12 b2 c4 	call	#0xc4b2	
+    c48e:	08 10       	rrc	r8		
+    c490:	28 b2       	bit	#4,	r8	;r2 As==10
+    c492:	08 24       	jz	$+18     	;abs 0xc4a4
+    c494:	3e e3       	inv	r14		
+    c496:	3f e3       	inv	r15		
+    c498:	1e 53       	inc	r14		
+    c49a:	0f 63       	adc	r15		
+    c49c:	3c e3       	inv	r12		
+    c49e:	3d e3       	inv	r13		
+    c4a0:	1c 53       	inc	r12		
+    c4a2:	0d 63       	adc	r13		
+    c4a4:	38 b2       	bit	#8,	r8	;r2 As==11
+    c4a6:	04 24       	jz	$+10     	;abs 0xc4b0
+    c4a8:	3c e3       	inv	r12		
+    c4aa:	3d e3       	inv	r13		
+    c4ac:	1c 53       	inc	r12		
+    c4ae:	0d 63       	adc	r13		
+    c4b0:	30 41       	ret			
 
-0000c4b0 <__udivmodsi4>:
-    c4b0:	0f ef       	xor	r15,	r15	
-    c4b2:	0e ee       	xor	r14,	r14	
-    c4b4:	39 40 21 00 	mov	#33,	r9	;#0x0021
-    c4b8:	0a 3c       	jmp	$+22     	;abs 0xc4ce
-    c4ba:	08 10       	rrc	r8		
-    c4bc:	0e 6e       	rlc	r14		
-    c4be:	0f 6f       	rlc	r15		
-    c4c0:	0f 9b       	cmp	r11,	r15	
-    c4c2:	05 28       	jnc	$+12     	;abs 0xc4ce
-    c4c4:	02 20       	jnz	$+6      	;abs 0xc4ca
-    c4c6:	0e 9a       	cmp	r10,	r14	
-    c4c8:	02 28       	jnc	$+6      	;abs 0xc4ce
-    c4ca:	0e 8a       	sub	r10,	r14	
-    c4cc:	0f 7b       	subc	r11,	r15	
-    c4ce:	0c 6c       	rlc	r12		
-    c4d0:	0d 6d       	rlc	r13		
-    c4d2:	08 68       	rlc	r8		
-    c4d4:	19 83       	dec	r9		
-    c4d6:	f1 23       	jnz	$-28     	;abs 0xc4ba
-    c4d8:	30 41       	ret			
+0000c4b2 <__udivmodsi4>:
+    c4b2:	0f ef       	xor	r15,	r15	
+    c4b4:	0e ee       	xor	r14,	r14	
+    c4b6:	39 40 21 00 	mov	#33,	r9	;#0x0021
+    c4ba:	0a 3c       	jmp	$+22     	;abs 0xc4d0
+    c4bc:	08 10       	rrc	r8		
+    c4be:	0e 6e       	rlc	r14		
+    c4c0:	0f 6f       	rlc	r15		
+    c4c2:	0f 9b       	cmp	r11,	r15	
+    c4c4:	05 28       	jnc	$+12     	;abs 0xc4d0
+    c4c6:	02 20       	jnz	$+6      	;abs 0xc4cc
+    c4c8:	0e 9a       	cmp	r10,	r14	
+    c4ca:	02 28       	jnc	$+6      	;abs 0xc4d0
+    c4cc:	0e 8a       	sub	r10,	r14	
+    c4ce:	0f 7b       	subc	r11,	r15	
+    c4d0:	0c 6c       	rlc	r12		
+    c4d2:	0d 6d       	rlc	r13		
+    c4d4:	08 68       	rlc	r8		
+    c4d6:	19 83       	dec	r9		
+    c4d8:	f1 23       	jnz	$-28     	;abs 0xc4bc
+    c4da:	30 41       	ret			
 
-0000c4da <_unexpected_>:
-    c4da:	00 13       	reti			
+0000c4dc <_unexpected_>:
+    c4dc:	00 13       	reti			
 
 Disassembly of section .vectors:
 

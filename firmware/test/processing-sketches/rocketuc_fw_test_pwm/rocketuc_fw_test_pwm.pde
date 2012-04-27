@@ -26,6 +26,24 @@ Serial port;      // The serial port
 int tCount = 0;
 int tFail  = 0;
 
+// ACK 
+int ack[]  = {0x2B, 0x05, 0x01, 0x01, 0x32};
+
+// PIN setup
+int pinf[] = {0x24, 0x06, 0x04, 0x22, 0x05, 0x55};
+
+// PWM setup
+int pwmf[] = {0x24, 0x07, 0x06, 0x22, 0x20, 0x4e, 0xc1};
+
+// PWM control: servo center position
+int pwmc_cen[] = {0x24, 0x06, 0x07, 0x22, 0x13, 0x66};
+
+// PWM control: servo minimum position
+int pwmc_min[] = {0x24, 0x06, 0x07, 0x22, 0x0e, 0x61};
+
+// PWM control: servo maximum position
+int pwmc_max[] = {0x24, 0x06, 0x07, 0x22, 0x18, 0x6b};
+
 int[] rocketXfer(int data[]) {
   
   int pl[] = {};
@@ -117,76 +135,23 @@ void setup() {
   String portName = "/dev/ttyUSB0";
   port = new Serial(this, portName, 9600);
 
-  int refAck[] = {0x2B, 0x05, 0x01, 0x01, 0x32};
-  
-  // NULL Packet
-  int pNull[] = {0x24, 0x04, 0x00, 0x28};
-  
-  testPacket("NULL packet", pNull, refAck);
-
-  // SYSTEM INFO Packet
-  int pSys[] = {0x24, 0x04, 0x02, 0x2A};
-  int refSys[] = {0x2B, 0x07, 0x02, 0xCA, 0xFF, 0xEE, 0xEB};
-  
-  testPacket("SYSTEM INFO packet", pSys, refSys);
-
-  // PIN FUNCTION digital p1.0 Packet
-  int pPf1[] = {0x24, 0x06, 0x04, 0x10, 0x03, 0x41};
-  
-  testPacket("PIN FUNCTION digital p1.0 packet", pPf1, refAck);
-
-  // PIN CONTROL digital p1.0 HIGH Packet
-  int pPc1[] = {0x24, 0x06, 0x05, 0x10, 0x01, 0x40};
-  
-  testPacket("PIN CONTROL digital p1.0 HIGH packet", pPc1, refAck);
-  
-  delay(1000);
-
-  // PIN CONTROL digital p1.0 LOW Packet
-  int pPc2[] = {0x24, 0x06, 0x05, 0x10, 0x00, 0x3F};
-  
-  testPacket("PIN CONTROL digital p1.0 LOW packet", pPc2, refAck);
-
-  // PIN FUNCTION digital IN p1.3 Packet
-  int pPf2[] = {0x24, 0x06, 0x04, 0x13, 0x00, 0x41};
-  
-  testPacket("PIN FUNCTION digital IN p1.3 packet", pPf2, refAck);
-
-  // PIN CONTROL digital p1.0 READ Packet
-  int pPc3[] = {0x24, 0x06, 0x05, 0x13, 0x03, 0x45};
-  // only if button not pressed
-  int refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x01, 0x48};
-  // if button  pressed
-  // int refDr1[] = {0x2B, 0x06, 0x03, 0x13, 0x00, 0x47};
-  
-  testPacket("PIN CONTROL digital p1.3 READ packet", pPc3, refDr1);
-
-  // PIN FUNCTION analog IN p1.5 Packet
-  int pPf3[] = {0x24, 0x06, 0x04, 0x15, 0x04, 0x47};
-  
-  testPacket("PIN FUNCTION analog IN p1.5 packet", pPf3, refAck);
-  
-  // PIN CONTROL analog p1.5 READ Packet
-  int pPc4[] = {0x24, 0x06, 0x05, 0x15, 0x04, 0x48};
-  // only if valu of poti is 0
-  int refAr1[] = {0x2B, 0x07, 0x04, 0x15, 0x00, 0x00, 0x4B};
-  
-  testPacket("PIN CONTROL digital p1.3 READ packet", pPc4, refAr1);
-
   // PIN FUNCTION PWM p2.2
-  int pPc5[] = {0x24, 0x06, 0x04, 0x22, 0x05, 0x55};
-  testPacket("PIN FUNCTION PWM p2.2 packet", pPc5, refAck);
+  testPacket("PIN FUNCTION PWM p2.2 packet", pinf, ack);
 
   // PWM FUNCTION p2.2 set period 20000us (20ms)
-  int pPf4[] = {0x24, 0x07, 0x06, 0x22, 0x20, 0x4e, 0xc1};
-  testPacket("PWM FUNCTION PWM p2.2 packet", pPf4, refAck);
+  testPacket("PWM FUNCTION PWM p2.2 packet", pwmf, ack);
 
   // PWM CONTROL p2.2 duty cycle 7.5% (1.5ms)
-  int pPc6[] = {0x24, 0x06, 0x07, 0x22, 0x13, 0x66};
-  testPacket("PWM CONTROL PWM p2.2 packet", pPc6, refAck);
-  
-  println("");
-  println("DONE: tests=" + tCount + ", fail=" + tFail + ", ok=" + (tCount - tFail));
+  testPacket("PWM CONTROL PWM p2.2 packet", pwmc_cen, ack);  
 }
 
-
+void draw() {
+  delay(1500);  
+  testPacket("PWM CONTROL PWM p2.2 packet", pwmc_min, ack);
+  delay(1500);  
+  testPacket("PWM CONTROL PWM p2.2 packet", pwmc_cen, ack);
+  delay(1500);  
+  testPacket("PWM CONTROL PWM p2.2 packet", pwmc_max, ack);
+  delay(1500);  
+  testPacket("PWM CONTROL PWM p2.2 packet", pwmc_cen, ack);  
+}

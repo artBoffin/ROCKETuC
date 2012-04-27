@@ -66,6 +66,16 @@
  */
 #define PIN_FUNCTION_UARTTX			0x07
 
+/**
+ * PIN function is reserved for internal use 
+ */
+#define PIN_FUNCTION_RESERVED		0xFE
+
+/**
+ * PIN function is reserved for internal use 
+ */
+#define PIN_FUNCTION_UNKNOWN		0xFF
+
 
 /**
  * PIN has no capability 
