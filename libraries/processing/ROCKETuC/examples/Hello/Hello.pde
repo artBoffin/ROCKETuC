@@ -9,10 +9,10 @@ void setup() {
   println(ROCKETuC.list());
   launchpad = new ROCKETuC(this, ROCKETuC.list()[0], 9600, "launchpad");
 
-  led = launchpad.getPin("P1.3");
+  led = launchpad.getPin("P1.0");
   button = launchpad.getPin("P1.4");
-  launchpad.pinMode(led, ROCKETuC.OUTPUT);
-  launchpad.pinMode(button, ROCKETuC.PULLUP);
+  launchpad.pinMode(led, launchpad.OUTPUT);
+  launchpad.pinMode(button, launchpad.PULLUP);
 }
 
 void draw() {
@@ -31,11 +31,11 @@ void draw() {
 
   if (mousePressed)
   {
-    launchpad.digitalWrite(led, ROCKETuC.HIGH);
+    launchpad.digitalWrite(led, launchpad.HIGH);
   }
   else
   {
-    launchpad.digitalWrite(led, ROCKETuC.LOW);
+    launchpad.digitalWrite(led, launchpad.LOW);
   }
 }
 

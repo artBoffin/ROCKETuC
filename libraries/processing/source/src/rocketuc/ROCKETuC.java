@@ -32,10 +32,8 @@ package rocketuc;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Properties;
 
 import processing.core.*;
@@ -275,7 +273,7 @@ public class ROCKETuC {
 	 */
 	
 	public char getPin(String pin) {
-	return (char)Integer.parseInt(getProperty(pin)); ///convert string to int then to char
+	return (char)Integer.parseInt(getProperty(pin)); //convert string to int then to char
 	}
 	
 
