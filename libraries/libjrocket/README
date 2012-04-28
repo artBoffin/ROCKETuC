@@ -1,0 +1,48 @@
+ROCKETuC Java Binding README
+27.04.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This is library provides a Java binding to a MCU running the ROCKETuC firmwarei.
+
+The README describes, how to compile the library by using ant.    
+
+
+
+Project Directory Layout
+------------------------
+
+TODO
+
+Prerequisites
+-------------
+
+To compile all the libraries, a JDK (>= 5), Ant and RXTXcomm.jar (http://rxtx.qbang.org/) is needed. Check the "build.xml" to refelct the path where your RXTXcomm.jar is located.
+
+Compilation
+------------
+
+To compile the sources go to the libraries top-level directory and issue:
+
+ant
+
+This will produce the binaries under "bin" 
+
+
+Examples
+--------
+
+Some examples are located under "src/rocketuc/jrocket/examples":
+
+PacketEventHandlerExample
+
+Asynchronous responses from the MCU are handled by a registered event handler. To run the example:
+
+java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.PacketEventHandlerExample
+
+
+PacketXferExample
+
+Synchronous responses. To run the example:
+
+java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.PacketXferExample
