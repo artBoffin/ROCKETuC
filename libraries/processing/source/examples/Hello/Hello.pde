@@ -3,7 +3,10 @@ import rocketuc.*;
 ROCKETuC launchpad;
 
 char led;
+char led2;
 char button;
+char on;
+char off;
 
 void setup() {
   println(ROCKETuC.list());
@@ -11,13 +14,22 @@ void setup() {
 
   led = launchpad.getPin("P1.0");
   button = launchpad.getPin("P1.4");
-  launchpad.pinMode(led, ROCKETuC.OUTPUT);
-  launchpad.pinMode(button, ROCKETuC.PULLUP);
+  led2 = launchpad.getPin("P1.6");
+  on = launchpad.HIGH;
+  off = launchpad.LOW;
+  
+  //launchpad.pinMode(led, launchpad.OUTPUT);
+    launchpad.pinMode(led2, launchpad.PWM);
+    launchpad.pwmPeriod(led2, 20000);
+ // launchpad.pinMode(button, launchpad.PULLUP);
 }
 
 void draw() {
-
-  if (launchpad.digitalRead(button) == 0)
+  for(char i = 0; i < 255; i++)
+  {
+         launchpad.pwmDuty(led2, i);
+  }
+/*  if (launchpad.digitalRead(button) == 0)
   {
     background(random(0, 255), random(0, 255), random(0, 255));
     fill(0, 255, 0);
@@ -31,11 +43,11 @@ void draw() {
 
   if (mousePressed)
   {
-    launchpad.digitalWrite(led, ROCKETuC.HIGH);
+    launchpad.digitalWrite(led, on);
   }
   else
   {
-    launchpad.digitalWrite(led, ROCKETuC.LOW);
-  }
+    launchpad.digitalWrite(led, off);
+  }*/
 }
 

@@ -32,8 +32,10 @@ package rocketuc;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Properties;
 
 import processing.core.*;
@@ -60,7 +62,7 @@ public class ROCKETuC {
 	private static String DEVICE = null;
 
 	private final static int CTRL_SERIAL_WAIT =						1000; //milliseconds to wait for initial connect
-	private final static int CTRL_PACKET_TIMEOUT =					40; //milliseconds to wait before re-sending un-ACKed packet
+	private final static int CTRL_PACKET_TIMEOUT =					50; //milliseconds to wait before re-sending un-ACKed packet
 	private final static int CTRL_PACKET_RESEND_LIMIT =				10; //number of times to try re-sending un-ACKed packet
 
 	private final static char POUT_START = 							0x24; 
@@ -79,13 +81,13 @@ public class ROCKETuC {
 	private final static char POUT_PIN_FUNC_LEN = 					0x06; //OUT-bound "pin function" length
 
 	private final static char POUT_PIN_CTRL = 						0x05; //OUT-bound packet type "pin control"
-	private final static char POUT_PIN_CTRL_LEN = 					0x02; //OUT-bound packet type "pin control" length
+	private final static char POUT_PIN_CTRL_LEN = 					0x06; //OUT-bound packet type "pin control" length
 
 	private final static char POUT_PWM_FUNC = 						0x06; //OUT-bound packet type "pwm function"
-	private final static char POUT_PWM_FUNC_LEN = 					0x03; //OUT-bound packet type "pwm function"
+	private final static char POUT_PWM_FUNC_LEN = 					0x07; //OUT-bound packet type "pwm function"
 
 	private final static char POUT_PWM_CTRL = 						0x07; //OUT-bound packet type "pwm control"
-	private final static char POUT_PWM_CTRL_LEN = 					0x03; //OUT-bound packet type "pwm control"
+	private final static char POUT_PWM_CTRL_LEN = 					0x06; //OUT-bound packet type "pwm control"
 
 	private final static char POUT_SERL_FUNC =						0x08; //OUT-bound packet type "serial function"
 
@@ -109,7 +111,7 @@ public class ROCKETuC {
 	private final static char CMD_PIN_TOGL =						0x02; //CMD function for pin control "toggle pin" 	
 	private final static char CMD_PIN_DIGI_READ =					0x03; //CMD function for pin control "digital read" 	
 	private final static char CMD_PIN_ANAG_READ =					0x04; //CMD function for pin control "analog read" 	
-	private final static char CMD_PIN_PWM_READ =					0x05; //CMD function for pin control "pwm read" 
+	private final static char CMD_PIN_PWM =							0x05; //CMD function for pin control "PWM" 
 
 
 	//in pakcet defns
@@ -152,6 +154,11 @@ public class ROCKETuC {
 	 * Constant to set a pin to input mode analog(in a call to pinMode()).
 	 */
 	public final static char ANALOG = CMD_PIN_ANAG_READ;
+	/**
+	 * Constant to set a pin to PWM (in a call to pinMode()).
+	 */
+	public final static char PWM = CMD_PIN_PWM;
+	
 
 
 	/**
@@ -238,15 +245,21 @@ public class ROCKETuC {
 
 		URL root = getClass().getProtectionDomain().getCodeSource().getLocation();
 		String path = null;
+		String decodedPath = null;
 		try {
 			path = (new File(root.toURI())).getParentFile().getPath();
 		} catch (URISyntaxException e1) {
 			// TODO Auto-generated catch block
 		}
 		try {
-		    properties.load(new FileInputStream(path + "\\devices\\" + DEVICE + ".properties"));
+			decodedPath = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+		}
+		try {			
+	     properties.load(new FileInputStream(decodedPath + "\\devices\\" + DEVICE + ".properties"));
 		} catch (Exception e) {
-			System.err.println("ROCKETuC > ERR: Properties file not found or unaccessable, check for " + path + "\\devices\\" + DEVICE + ".properties");
+			System.err.println("ROCKETuC > ERR: Properties file not found or unaccessable, check for " + decodedPath + "\\devices\\" + DEVICE + ".properties");
 		}
 
 		//do stuff on first connect
@@ -319,8 +332,8 @@ public class ROCKETuC {
 	 */
 	public void pwmPeriod(char pin, int period) {	
 		//split out int to chars
-		char lsb = (char)period; 
-		char msb = (char)(period >>> 8);
+		char lsb = (char) (period & 0xff); 
+		char msb = (char) ((period & 0xff00) >> 8);
 		char packet[] = {POUT_START, POUT_PWM_FUNC_LEN, POUT_PWM_FUNC, pin, lsb, msb};
 		try {
 			serialSendPacket(packet);
@@ -460,11 +473,14 @@ public class ROCKETuC {
 		int tries = 0;
 		char[] packetOut = new char[packetIn.length+1]; //packet to modify for crc add
 
+		System.out.println("Packet out:");
 		for(int i = 0; i < packetIn.length; i++)
 		{
 			packetOut[i] = packetIn[i]; //copy packet in over
+			System.out.println(Integer.toHexString(packetOut[i]));
 		}
 		packetOut[packetIn.length] = crc; //slip in crc
+		System.out.println(Integer.toHexString(crc));
 		String out = new String(packetOut); //convert char array to string
 		//System.out.print(out);
 		serial.write(out);
@@ -570,6 +586,8 @@ public class ROCKETuC {
 	}
 
 	//TEST STUFF
+	
+	
 
 
 }
