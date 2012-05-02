@@ -19,6 +19,11 @@
  * 02111-1307 USA.  
  */
 
+#ifdef __MSP430__
+#include <msp430.h>
+#endif
+
+
 #include "packet.h"
 #include "packet_handler.h"
 #include "core_proto.h"
@@ -250,8 +255,12 @@ int handle_packet_external_interrupt_function(unsigned char length, unsigned cha
 
 int handle_packet_reset(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
+	send_status_packet(PACKET_RETURN_ACK);
+	
+#ifdef __MSP430__
+	// make watchdog bite ...
+	WDTCTL = 0;
+#endif
 
 	return PACKET_STAT_OK;
 }
