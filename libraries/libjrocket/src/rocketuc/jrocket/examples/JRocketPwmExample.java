@@ -21,13 +21,10 @@
 
 package rocketuc.jrocket.examples;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import rocketuc.jrocket.JRocket;
 import rocketuc.jrocket.JRocketSerial;
 
-public class JRocketBasicExample {
+public class JRocketPwmExample {
 
 	/**
 	 * @param args
@@ -37,39 +34,19 @@ public class JRocketBasicExample {
 		try {		
 			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
 
-			System.out.print("Sending NULL: ");
-			jr.packetNull();
+ 			System.out.print("Set P2.2 to PWM: ");
+			jr.pinMode(JRocket.PIN_2_2, JRocket.PWM);
 			System.out.println("OK");
 
-			System.out.print("Sending SYSTEMINFO: ");
-			HashMap<String, Integer> inf = jr.systemInfo();
+ 			System.out.print("Set P2.2 period to 2000us: ");
+			jr.pwmPeriod(JRocket.PIN_2_2, 20000);
+			System.out.println("OK");
+
+ 			System.out.print("Set P2.2 duty cycle to 7.5%: ");
+			jr.pwmDuty(JRocket.PIN_2_2, 0x13);
 			System.out.println("OK");
 			
-			for(Entry<String, Integer> e : inf.entrySet()) {
-				System.out.println(" - " + e.getKey() + " : " + Integer.toHexString(e.getValue()));
-			}
-			
- 			System.out.print("Set P1.0 to OUTPUT: ");
-			jr.pinMode(JRocket.PIN_1_0, JRocket.OUTPUT);
-			System.out.println("OK");
-			
-  			System.out.print("Set P1.0 to HIGH: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.HIGH);
-			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-			
-			Thread.sleep(500);
+			Thread.sleep(2500);
 			
 			System.out.print("RESET: ");
 			jr.reset();

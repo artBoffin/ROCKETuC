@@ -60,45 +60,15 @@ public class SerialPacketStream extends PacketStream {
 	}
 	
 	public void disconnect() {
+		
+		try {
+			stop();
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		if(serialPort != null) {
 			serialPort.close();
 		}
-	}
-	
-	public static void main(String[] args) {
-		
-		SerialPacketStream sps = new SerialPacketStream();
-		
-		try {
-			sps.connect("/dev/ttyUSB0");
-			System.out.println("CONNECTED");
-			sps.start();
-			
-			Packet p1 = new Packet();
-			
-			// fill from bytes
-	  		byte pNull[] = {0x24, 0x04, 0x00, 0x28};
-
-			try {
-				p1.fromByteArray(pNull);
-				System.out.println("p1: " + p1);
-			}
-			catch(PacketException e) {
-				System.err.println(e.getMessage());
-			}
-			
-			sps.send(p1);
-			
-			Packet p2 = sps.receive();
-			
-			System.out.println("p2: " + p2);
-			
-			sps.stop();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}	
-		
-		// System.exit(0);
-	}
+	}	
 }

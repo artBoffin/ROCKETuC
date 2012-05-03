@@ -21,13 +21,10 @@
 
 package rocketuc.jrocket.examples;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import rocketuc.jrocket.JRocket;
 import rocketuc.jrocket.JRocketSerial;
 
-public class JRocketBasicExample {
+public class JRocketDigitalReadExample {
 
 	/**
 	 * @param args
@@ -37,39 +34,29 @@ public class JRocketBasicExample {
 		try {		
 			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
 
-			System.out.print("Sending NULL: ");
-			jr.packetNull();
+ 			System.out.print("Set P1.3 to INPUT FLOAT: ");
+			jr.pinMode(JRocket.PIN_1_3, JRocket.INPUT);
 			System.out.println("OK");
 
-			System.out.print("Sending SYSTEMINFO: ");
-			HashMap<String, Integer> inf = jr.systemInfo();
+ 			System.out.print("Set P2.3 to INPUT PULLDOWN: ");
+			jr.pinMode(JRocket.PIN_2_3, JRocket.PULLDOWN);
+			System.out.println("OK");
+
+			System.out.print("Set P2.4 to INPUT PULLUP: ");
+			jr.pinMode(JRocket.PIN_2_4, JRocket.PULLUP);
+			System.out.println("OK");
+
+ 			System.out.print("Read P1.3 DIGITAL (wait for button press): ");
+			while(jr.digitalRead(JRocket.PIN_1_3) != JRocket.LOW);
 			System.out.println("OK");
 			
-			for(Entry<String, Integer> e : inf.entrySet()) {
-				System.out.println(" - " + e.getKey() + " : " + Integer.toHexString(e.getValue()));
-			}
-			
- 			System.out.print("Set P1.0 to OUTPUT: ");
-			jr.pinMode(JRocket.PIN_1_0, JRocket.OUTPUT);
+ 			System.out.print("Read P2.3 DIGITAL (wait for button press): ");
+			while(jr.digitalRead(JRocket.PIN_2_3) != JRocket.HIGH);
 			System.out.println("OK");
 			
-  			System.out.print("Set P1.0 to HIGH: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.HIGH);
+ 			System.out.print("Read P2.4 DIGITAL (wait for button press): ");
+			while(jr.digitalRead(JRocket.PIN_2_4) != JRocket.LOW);
 			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-			
-			Thread.sleep(500);
 			
 			System.out.print("RESET: ");
 			jr.reset();

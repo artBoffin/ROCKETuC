@@ -21,19 +21,16 @@
 
 package rocketuc.jrocket;
 
-import rocketuc.jrocket.JRocketException;
+import java.util.HashMap;
+
 import rocketuc.jrocket.comm.Packet;
-import rocketuc.jrocket.comm.PacketException;
+import rocketuc.jrocket.comm.PacketEventHandler;
 import rocketuc.jrocket.comm.PacketStream;
 
 /**
- * Main JRocket class
- * 
- * @example Hello
- * 
- *       
+ * Main JRocket class providing access to MCU via ROCKETuC protocol.
  */
-public class JRocket {
+public class JRocket implements PacketEventHandler {
 
 	/**
  	 * OUT-bound packet of type NULL
@@ -53,7 +50,8 @@ public class JRocket {
 	/**
  	 * OUT-bound packet of type DEVICE CONTROL 
  	 */
-	private final static byte PACKET_OUT_DEVICE_CONTROL 				= (byte)0x03;
+	@SuppressWarnings("unused")
+	private final static byte PACKET_OUT_DEVICE_CONTROL 					= (byte)0x03;
 
 	/**
  	 * OUT-bound packet of type PIN FUNCTION 
@@ -96,11 +94,6 @@ public class JRocket {
 	private final static byte PACKET_OUT_RESET							= (byte)0xFF;
 
 	/**
- 	 * IN-bound packet of type NULL 
- 	 */
-	private final static byte PACKET_IN_NULL 							= (byte)0x00;
-
-	/**
  	 * IN-bound packet of type STATUS
  	 */
 	private final static byte PACKET_IN_STATUS 							= (byte)0x01;
@@ -126,11 +119,6 @@ public class JRocket {
 	private final static byte PACKET_IN_PULSE_LEGHT_READ 				= (byte)0x05;
 
 	/**
- 	 * Return status UNKNOWN for the STATUS OUT-bound packet
- 	 */
-	private final static byte PACKET_RETURN_UNKNOWN						= (byte)0x00;
-
-	/**
  	 * Return status ACK for the STATUS OUT-bound packet
  	 */
 	private final static byte PACKET_RETURN_ACK							= (byte)0x01;
@@ -148,7 +136,7 @@ public class JRocket {
 	/**
  	 * Return status INVLAID DATA for the STATUS OUT-bound packet
  	 */
-	private final static byte PACKET_RETURN_INAVLID_DATA				= (byte)0x04;
+	private final static byte PACKET_RETURN_INAVLID_DATA					= (byte)0x04;
 
 	/**
  	 * Return status INVALID PIN COMMAND for the STATUS OUT-bound packet
@@ -168,7 +156,7 @@ public class JRocket {
 	/**
  	 * Control command PIN TOGGLE for the PIN CONTROL packet
  	 */
-	private final static byte PIN_CONTROL_TOGGLE						= (byte)0x02;
+	private final static byte PIN_CONTROL_TOGGLE							= (byte)0x02;
 
 	/**
  	 * Control command DIGITAL READ for the PIN CONTROL packet
@@ -208,7 +196,7 @@ public class JRocket {
 	/**
  	 * PIN function analog input
  	 */
-	private final static byte PIN_FUNCTION_ANALOG_IN					= (byte)0x04;
+	private final static byte PIN_FUNCTION_ANALOG_IN						= (byte)0x04;
 
 	/**
  	 * PIN function PWM output
@@ -273,20 +261,136 @@ public class JRocket {
 	 */
 	public final static byte PWM = PIN_FUNCTION_PWM;
 
-
-	private static PacketStream packetStream;
+	/**
+	 * PIN P1.0 on MSP430/Launchpad
+	 */
+	public final static byte PIN_1_0		= 0x10;
 
 	/**
-	 * TODO
+	 * PIN P1.1 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_1		= 0x11;
+	
+	/**
+	 * PIN P1.2 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_2		= 0x12;
+	
+	/**
+	 * PIN P1.3 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_3		= 0x13;
+	
+	/**
+	 * PIN P1.4 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_4		= 0x14;
+	
+	/**
+	 * PIN P1.5 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_5		= 0x15;
+	
+	/**
+	 * PIN P1.6 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_6		= 0x16;
+	
+	/**
+	 * PIN P1.7 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_1_7		= 0x17;
+
+	/**
+	 * PIN P2.0 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_0		= 0x20;
+	
+	/**
+	 * PIN P2.1 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_1		= 0x21;
+	
+	/**
+	 * PIN P2.2 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_2		= 0x22;
+	
+	/**
+	 * PIN P2.3 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_3		= 0x23;
+	
+	/**
+	 * PIN P2.3 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_4		= 0x24;
+	
+	/**
+	 * PIN P2.5 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_5		= 0x25;
+	
+	/**
+	 * PIN P2.6 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_6		= 0x26;
+	
+	/**
+	 * PIN P2.7 on MSP430/Launchpad
+	 */	
+	public final static byte PIN_2_7		= 0x27;
+
+	/**
+	 * Packet stream used for MCU communication vai ROCKETuC protocol
 	 */
-	public JRocket(PacketStream packetStream) {
+	protected PacketStream packetStream;
+
+	/**
+	 * Default constructor used in derived classes
+	 */
+	protected JRocket() {
+		// noting here
+	}
+	
+	/**
+	 * Constructor which takes a packet stream as in input.
+	 *  
+	 * @param	packetStream	the packet stream to use for communication
+	 * @throws JRocketException	 
+	 * @throws Exception 
+	 */
+	public JRocket(PacketStream packetStream) throws JRocketException {
+		init(packetStream);
+	}
+	
+	/**
+	 * Initialize the packet stream.
+	 * 
+	 * @param 	packetStream		the packet stream to initialize
+	 * @throws 	JRocketException
+	 */
+	protected void init(PacketStream packetStream) throws JRocketException {
 		this.packetStream = packetStream;
+		this.packetStream.setEventHandler(this, false);
+				
+		try {
+			this.packetStream.start();
+		} catch (Exception e) {
+			throw new JRocketException(e.getMessage());
+		}
 	}
 
-	private char[] serialSendPacket(char packet[]) {
-		return null;
-	}
-
+	/**
+	 * Send a packet, receive result and check type of result packet against given type. If revieved 
+	 * and given type to not match, throw an exception.
+	 * 
+	 * @param 	type			type for packet to send 
+	 * @param 	data			data for packet to send
+	 * @param 	checkType		type to which the type of the returned packet is checked
+	 * @return					the returned packet
+	 * @throws 	JRocketException
+	 */
 	private Packet xferAndCheckType(byte type, byte[] data, byte checkType) throws JRocketException {
 		
 		Packet ret = null;
@@ -308,6 +412,14 @@ public class JRocket {
 		return ret;
 	}
 
+	/**
+	 * Send a packet, and check if the return packet was a ACK packet. If not, thrown an
+	 * exception.
+	 * 
+	 * @param 	type			type for packet to send 
+	 * @param 	data			data for packet to send
+	 * @throws 	JRocketException
+	 */
 	private void xferAndCheckAck(byte type, byte[] data) throws JRocketException {
 		
 		Packet ret = xferAndCheckType(type, data, PACKET_IN_STATUS);
@@ -316,9 +428,10 @@ public class JRocket {
 			String msg = "Wrong status. Expected ACK and received ";
 
  			switch(ret.getData()[0]) {
-				case PACKET_RETURN_BAD_PACKET		: msg += "BAD PACKET";	 	break;
-				case PACKET_RETURN_INVALID_PACKET	: msg += "INVALID PACKET"; 	break;
-				case PACKET_RETURN_INAVLID_DATA		: msg += "INVALID DATA"; 	break;
+				case PACKET_RETURN_BAD_PACKET			: msg += "BAD PACKET";	 		break;
+				case PACKET_RETURN_INVALID_PACKET		: msg += "INVALID PACKET"; 		break;
+				case PACKET_RETURN_INAVLID_DATA			: msg += "INVALID DATA"; 		break;
+				case PACKET_RETURN_INVALID_PIN_COMMAND	: msg += "INVALID PIN COMMAND"; break;
 				default:
 					msg += "UNKNOWN";
 			}
@@ -329,6 +442,7 @@ public class JRocket {
 
 	/**
 	 * Send NULL packet 
+ 	 * @throws 	JRocketException
 	 */
 	public void packetNull() throws JRocketException {
 
@@ -341,6 +455,7 @@ public class JRocket {
 	 *
 	 * @param pin the pin whose mode to set 
 	 * @param mode either input(with options) or output
+ 	 * @throws 	JRocketException 
 	 */
 	public void pinMode(byte pin, byte mode) throws JRocketException {
 
@@ -353,11 +468,12 @@ public class JRocket {
 	 *
 	 * @param pin the pin whose mode to set 
 	 * @param PWM period in milliseconds
+ 	 * @throws 	JRocketException 
 	 */
-	public void pwmPeriod(byte pin, short period) throws JRocketException {	
+	public void pwmPeriod(byte pin, int period) throws JRocketException {	
 
-		byte lsb = (byte)( 0x00FF & period); 
-		byte msb = (byte)((0xFF00 & period) >> 4);
+		byte lsb = (byte)( 0x000000FF & period); 
+		byte msb = (byte)((0x0000FF00 & period) >> 8);
 
 		xferAndCheckAck(PACKET_OUT_PWM_FUNCTION, new byte[] {pin, lsb, msb});
 	}
@@ -368,10 +484,11 @@ public class JRocket {
 	 *
 	 * @param pin the pin whose mode to set 
 	 * @param PWM duty cycle 0-255 is 0-100%
+ 	 * @throws 	JRocketException 
 	 */
-	public void pwmDuty(byte pin, byte duty) throws JRocketException {	
+	public void pwmDuty(byte pin, int duty) throws JRocketException {	
 
-		xferAndCheckAck(PACKET_OUT_PWM_CONTROL, new byte[] {pin, duty});
+		xferAndCheckAck(PACKET_OUT_PWM_CONTROL, new byte[] {pin, (byte)duty});
 	}
 
 	/**
@@ -379,7 +496,8 @@ public class JRocket {
 	 * pinMode()).
 	 *
 	 * @param pin the pin to write to 
-	 * @param value the value to write: JRocket.LOW  or JRocket.HIGH 
+	 * @param value the value to write: LOW  or HIGH or TOGGLE
+ 	 * @throws 	JRocketException  
 	 */
 	public void digitalWrite(byte pin, byte value) throws JRocketException {
 
@@ -392,6 +510,7 @@ public class JRocket {
 	 *
 	 * @param pin the pin to read from 
 	 * @return value of pin
+ 	 * @throws 	JRocketException 
 	 */
 	public byte digitalRead(byte pin) throws JRocketException {
 
@@ -407,23 +526,64 @@ public class JRocket {
 	 *
 	 * @param pin the pin to read from 
 	 * @return value of pin
+ 	 * @throws 	JRocketException 
 	 */
 	public short analogRead(byte pin) throws JRocketException {
 
 		Packet ret = xferAndCheckType(PACKET_OUT_PIN_CONTROL, 
 						new byte[] {pin, PIN_CONTROL_ANALOG_READ}, PACKET_IN_ANALOG_PIN_READ);
 
-		byte lsb = ret.getData()[1];
-		byte msb = ret.getData()[2];
-
-		return((short)(msb << 8 + lsb));
+		short lsb = (short) (0x00FF & ret.getData()[1]);
+		short msb = (short) (0x00FF & ret.getData()[2]);
+		short val = (short) (lsb | (msb << 8));
+		
+		return val;
 	}
 
 	/**
+	 * System info from MCU.
+	 *
+	 * @return 						System info as a HashMap
+ 	 * @throws 	JRocketException 
+	 */	
+	public HashMap<String, Integer> systemInfo() throws JRocketException {
+		
+		Packet ret = xferAndCheckType(PACKET_OUT_SYSTEM_INFO, null, PACKET_IN_SYSTEM_INFO);
+
+		HashMap<String, Integer> inf = new HashMap<String, Integer>();
+		
+		inf.put("board_type"	, (int) 0x000000FF & ret.getData()[0]);
+		inf.put("mcu_type"		, (int) 0x000000FF & ret.getData()[1]);
+		inf.put("firmware_rev"	, (int) 0x000000FF & ret.getData()[2]);
+		
+		return inf;
+	}
+	
+	/**
 	 * Reset MCU. 
+ 	 * @throws 	JRocketException 
 	 */
 	public void reset() throws JRocketException {
 
 		xferAndCheckAck(PACKET_OUT_RESET, null);
 	}
+
+	/**
+	 * The event handler called for MCU event packets. Override this method
+	 * in a subclass if you like to handle MCU events.
+	 * 
+	 * @param	pkt		the packet received as an event
+	 */
+	@Override
+	public void handleEvent(Packet pkt) {
+		System.out.println("HANDLER received packet: " + pkt);		
+	}	
+	
+	/**
+	 * The destructor. Call this if you like to terminate the MCU connection.
+	 */
+	@Override
+	public void finalize() throws Throwable{
+		packetStream.stop();
+	}	
 }

@@ -21,13 +21,10 @@
 
 package rocketuc.jrocket.examples;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import rocketuc.jrocket.JRocket;
 import rocketuc.jrocket.JRocketSerial;
 
-public class JRocketBasicExample {
+public class JRocketAnalogReadExample {
 
 	/**
 	 * @param args
@@ -36,40 +33,19 @@ public class JRocketBasicExample {
 		
 		try {		
 			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
-
-			System.out.print("Sending NULL: ");
-			jr.packetNull();
-			System.out.println("OK");
-
-			System.out.print("Sending SYSTEMINFO: ");
-			HashMap<String, Integer> inf = jr.systemInfo();
-			System.out.println("OK");
 			
-			for(Entry<String, Integer> e : inf.entrySet()) {
-				System.out.println(" - " + e.getKey() + " : " + Integer.toHexString(e.getValue()));
-			}
+ 			System.out.print("Set P1.5 to ANALOG: ");
+			jr.pinMode(JRocket.PIN_1_5, JRocket.ANALOG);
+			System.out.println("OK");
+
+ 			System.out.print("Read P1.5 ANALOG: ");
+ 			
+			short a = jr.analogRead(JRocket.PIN_1_5);
+			float v = (float) ((3.3 / 1025.0) * (float)a);
 			
- 			System.out.print("Set P1.0 to OUTPUT: ");
-			jr.pinMode(JRocket.PIN_1_0, JRocket.OUTPUT);
 			System.out.println("OK");
-			
-  			System.out.print("Set P1.0 to HIGH: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.HIGH);
-			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-
-			Thread.sleep(500);			
-
-  			System.out.print("Set P1.0 to TOGGLE: ");
-			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
-			System.out.println("OK");
-			
-			Thread.sleep(500);
+			System.out.println(" -  value : " + a + " (" + Integer.toHexString(a) + ")");
+			System.out.println(" - ~volts : " + v);
 			
 			System.out.print("RESET: ");
 			jr.reset();

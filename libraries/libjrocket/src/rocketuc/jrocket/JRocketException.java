@@ -21,18 +21,31 @@
 
 package rocketuc.jrocket;
 
+/**
+ * JRocket exception. 
+ */
 public class JRocketException extends Exception {
 
+	/**
+	 * Constructor which takes a message as input.
+	 * 
+	 * @param msg	message for this exception
+	 */
 	public JRocketException(String msg) {
 		super(msg);
 	}
-
+	
+	/**
+	 * Constructor which takes nested exception as input.
+	 * 
+	 * @param e		nested exception
+	 */
 	public JRocketException(Exception e) {
 		super(e);
 	}
 
 	/**
-	 * 
+	 * Serial
 	 */
 	private static final long serialVersionUID = 1L;
 }

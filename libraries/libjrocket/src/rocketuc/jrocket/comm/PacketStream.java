@@ -167,10 +167,14 @@ public class PacketStream {
 	}
 	
 	public void stop() throws Exception {
-		reader.interrupt();
-		writer.interrupt();
-		reader.join();
-		writer.join();
+		if(reader != null && reader.isAlive()) {
+			reader.interrupt();
+			reader.join();
+		}		
+		if(writer != null && writer.isAlive()) {
+			writer.interrupt();
+			writer.join();
+		}				
 	}	
 	
 	public void send(Packet pkt) throws InterruptedException {
