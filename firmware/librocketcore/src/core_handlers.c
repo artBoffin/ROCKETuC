@@ -257,7 +257,14 @@ int handle_packet_reset(unsigned char length, unsigned char *data)
 {
 	send_status_packet(PACKET_RETURN_ACK);
 	
+	
 #ifdef __MSP430__
+	// give send packet some time before we reset ...
+	volatile unsigned long i = 10000;
+
+	do (i--);
+	while (i != 0);
+	
 	// make watchdog bite ...
 	WDTCTL = 0;
 #endif
