@@ -29,7 +29,7 @@ public class Packet {
 
 	public static final byte PACKET_START_INB 		= 0x2b;
 	
-	public static final byte PACKET_START_INBEV		= '!';
+	public static final byte PACKET_START_INBEV		= 0x21;
 
 	private static final int PACKET_FILL_WAIT 		= 0;
 
@@ -154,7 +154,7 @@ public class Packet {
 		
 		switch(currFill) {
 		case PACKET_FILL_WAIT:
-			if(b == PACKET_START_OUTB || b == PACKET_START_INB) {
+			if(b == PACKET_START_OUTB || b == PACKET_START_INB || b == PACKET_START_INBEV) {
 				currFill++;
 			}
 			else {

@@ -78,6 +78,21 @@
 
 
 /**
+ * PIN function EXTERNAL INTERRUPT DISABLE 
+ */
+#define PIN_FUNCTION_EXTI_DISABLE	0x00
+
+/**
+ * PIN function EXTERNAL INTERRUPT HIGH-LOW 
+ */
+#define PIN_FUNCTION_EXTI_LOWHIGH	0x01
+
+/**
+ * PIN function EXTERNAL INTERRUPT HIGH-LOW 
+ */
+#define PIN_FUNCTION_EXTI_HIGHLOW	0x02
+
+/**
  * PIN has no capability 
  */
 #define PIN_CAP_NONE				0b00000000
@@ -270,5 +285,7 @@ int pin_pulselength_read(unsigned char pin);
 int pin_pwm_function(unsigned char pin, int period);
 
 int pin_pwm_control(unsigned char pin, unsigned char duty_cycle);
+
+int pin_exti_function(unsigned char pin, unsigned char function);
 
 #endif

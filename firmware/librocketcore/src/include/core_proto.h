@@ -272,7 +272,12 @@ typedef struct {
  	 * PIN for which to configure external interrupt function
  	 */
 	unsigned char	pin;
-	// TODO define/implement
+
+	/**
+	 * Function for external interrupt (disable, low-high, high-low)
+	 */
+	unsigned char	function;
+
 } packet_data_in_external_interrupt_function;
 
 /**

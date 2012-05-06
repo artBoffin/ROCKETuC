@@ -21,6 +21,7 @@
 
 #ifdef __MSP430__
 #include <msp430.h>
+#include <legacymsp430.h>
 #endif
 
 
@@ -247,8 +248,22 @@ int handle_packet_serial_data(unsigned char length, unsigned char *data)
 
 int handle_packet_external_interrupt_function(unsigned char length, unsigned char *data)
 {
-	// TODO define + implement
-	send_status_packet(PACKET_RETURN_UNKNOWN);
+	int s;
+
+	// check if length matches for packet-data
+	if(length != 2) {
+		send_status_packet(PACKET_RETURN_INAVLID_DATA);
+		return PACKET_STAT_ERR_DATA;
+	}
+
+	packet_data_in_external_interrupt_function *pd = (packet_data_in_external_interrupt_function *)&data[0];
+
+	if((s = pin_exti_function(pd->pin, pd->function)) != PACKET_STAT_OK) {
+		send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+	}
+	else {
+		send_status_packet(PACKET_RETURN_ACK);
+	}
 
 	return PACKET_STAT_OK;
 }
@@ -271,3 +286,62 @@ int handle_packet_reset(unsigned char length, unsigned char *data)
 
 	return PACKET_STAT_OK;
 }
+
+#ifdef __MSP430__
+interrupt(PORT1_VECTOR) PORT1_ISR(void)
+{
+	unsigned char i;
+	unsigned char bit;
+
+	packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
+
+	outp.start	= PACKET_OUTBOUND_START_IR;
+	outp.length	= 6;
+	outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
+	
+	for(i = 0; i < 8; i++) {
+	
+		bit = 0x01 << i;
+
+		if((P1IE & bit) == bit && (P1IFG & bit) == bit) {
+
+			P1IFG &= ~bit;			// reset IR flag
+
+			pdo->pin   = PIN_1_0 + i;
+			pdo->state = ((P1IES & bit) ? 0 : 1);
+
+			outp.crc = packet_calc_crc(&outp);
+
+			packet_send(&outp);
+		}
+	}
+}
+
+interrupt(PORT2_VECTOR) PORT2_ISR(void)
+{
+	unsigned char i;
+	unsigned char bit;
+
+	packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
+
+	outp.start	= PACKET_OUTBOUND_START_IR;
+	outp.length	= 6;
+	outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
+	
+	for(i = 0; i < 8; i++) {
+	
+		bit = 0x01 << i;
+
+		if((P2IE & bit) == bit && (P2IFG & bit) == bit) {
+			P2IFG &= ~bit;			// reset IR flag
+
+			pdo->pin   = PIN_2_0 + i;
+			pdo->state = ((P2IES & bit) ? 0 : 1);
+
+			outp.crc = packet_calc_crc(&outp);
+
+			packet_send(&outp);
+		}
+	}
+}
+#endif

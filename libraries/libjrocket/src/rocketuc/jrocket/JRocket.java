@@ -214,6 +214,21 @@ public class JRocket implements PacketEventHandler {
 	private final static byte PIN_FUNCTION_UARTTX						= (byte)0x07;
 
 	/**
+	 * PIN function EXTERNAL INTERRUPT DISABLE
+	 */
+	private final static byte PIN_FUNCTION_EXTI_DISABLE 					= (byte) 0x00;
+	
+	/**
+	 * PIN function EXTERNAL INTERRUPT HIGH-LOW
+	 */
+	private final static byte PIN_FUNCTION_EXTI_LOWHIGH 					= (byte) 0x01;
+	
+	/**
+	 * PIN function EXTERNAL INTERRUPT HIGH-LOW
+	 */
+	private final static byte PIN_FUNCTION_EXTI_HIGHLOW 					= (byte) 0x02;
+
+	/**
 	 * Constant to write a low value to a pin (in a call to
 	 * digitalWrite()).
 	 */
@@ -261,6 +276,12 @@ public class JRocket implements PacketEventHandler {
 	 */
 	public final static byte PWM = PIN_FUNCTION_PWM;
 
+	public final static byte EDGE_NONE	= PIN_FUNCTION_EXTI_DISABLE;
+	
+	public final static byte EDGE_LOWHIGH = PIN_FUNCTION_EXTI_LOWHIGH;
+	
+	public final static byte EDGE_HIGHLOW = PIN_FUNCTION_EXTI_HIGHLOW;	
+	
 	/**
 	 * PIN P1.0 on MSP430/Launchpad
 	 */
@@ -568,6 +589,18 @@ public class JRocket implements PacketEventHandler {
 		xferAndCheckAck(PACKET_OUT_RESET, null);
 	}
 
+	/**
+	 * TODO
+	 * 
+	 * @param pin the pin whose mode to set 
+	 * @param mode for extrnal interrupt
+ 	 * @throws 	JRocketException 
+	 */
+	public void externalInterrupt(byte pin, byte mode) throws JRocketException {	
+
+		xferAndCheckAck(PACKET_OUT_EXTERNAL_INTERRUPT_FUNCTION, new byte[] {pin, mode});
+	}
+	 
 	/**
 	 * The event handler called for MCU event packets. Override this method
 	 * in a subclass if you like to handle MCU events.

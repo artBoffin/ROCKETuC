@@ -27,12 +27,18 @@
 /**
  * Start byte indicating IN-bound packets
  */
-#define PACKET_INBOUND_START	0x24
+#define PACKET_INBOUND_START		0x24
 
 /**
  * Start byte indicating OUT-bound packets
  */
-#define PACKET_OUTBOUND_START	0x2B
+#define PACKET_OUTBOUND_START		0x2B
+
+/**
+ * Start byte indicating OUT-bound packets
+ */
+#define PACKET_OUTBOUND_START_IR	0x21
+
 
 /**
  * List of IN-bound packet receive handlers

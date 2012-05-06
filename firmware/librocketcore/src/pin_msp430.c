@@ -20,6 +20,7 @@
  */
 
 #include <msp430.h>
+
 #include "pin.h"
 
 // #define PIN_DBG	
@@ -497,3 +498,56 @@ int pin_pwm_control(unsigned char pin, unsigned char duty_cycle)
 
 	return PIN_STAT_OK;
 }
+
+int pin_exti_function(unsigned char pin, unsigned char function)
+{
+	unsigned char pf = pin_function(pin);
+ 
+	if(pf != PIN_FUNCTION_INPUT_FLOAT && pf != PIN_FUNCTION_INPUT_PULLUP && pf != PIN_FUNCTION_INPUT_PULLDOWN) { 
+		return PIN_STAT_ERR_UNSUPFUNC;
+	}
+
+	int port;
+	int bit;
+
+	if((port = pin2port(pin)) < 0) return port;
+	if((bit  = pin2bit(pin))  < 0) return bit;
+
+	if(port == 1) {
+		if(function == PIN_FUNCTION_EXTI_HIGHLOW) {
+    		P1IES |=  bit;		// set mode high-low 
+		} 
+		else {
+    		P1IES &= ~bit;		// set mode low-high 
+		}
+
+ 	    P1IFG &= ~bit;			// reset interrupt flag
+
+		if(function == PIN_FUNCTION_EXTI_DISABLE) {
+ 	    	P1IE  &= ~bit;		// disable interrupt
+		}
+		else {
+ 	    	P1IE  |=  bit;		// enable interrupt
+		}
+	}
+	else {
+		if(function == PIN_FUNCTION_EXTI_HIGHLOW) {
+    		P2IES |=  bit;		// set mode high-low 
+		} 
+		else {
+    		P2IES &= ~bit;		// set mode low-high 
+		}
+
+ 	    P2IFG &= ~bit;			// reset interrupt flag
+
+		if(function == PIN_FUNCTION_EXTI_DISABLE) {
+ 	    	P2IE  &= ~bit;		// disable interrupt
+		}
+		else {
+ 	    	P2IE  |=  bit;		// enable interrupt
+		}
+	}
+
+	return PIN_STAT_OK;
+}
+
