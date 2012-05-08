@@ -19,16 +19,6 @@
  * 02111-1307 USA.  
  */
 
-#ifdef __MSP430__
-#include <msp430.h>
-#include <legacymsp430.h>
-#endif
-
-
-#include "packet.h"
-#include "packet_handler.h"
-#include "core_proto.h"
-#include "core_handlers.h"
 #include "rocketcore.h"
 
 int handle_packet_null(unsigned char length, unsigned char *data)
@@ -268,80 +258,3 @@ int handle_packet_external_interrupt_function(unsigned char length, unsigned cha
 	return PACKET_STAT_OK;
 }
 
-int handle_packet_reset(unsigned char length, unsigned char *data)
-{
-	send_status_packet(PACKET_RETURN_ACK);
-	
-	
-#ifdef __MSP430__
-	// give send packet some time before we reset ...
-	volatile unsigned long i = 10000;
-
-	do (i--);
-	while (i != 0);
-	
-	// make watchdog bite ...
-	WDTCTL = 0;
-#endif
-
-	return PACKET_STAT_OK;
-}
-
-#ifdef __MSP430__
-interrupt(PORT1_VECTOR) PORT1_ISR(void)
-{
-	unsigned char i;
-	unsigned char bit;
-
-	packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
-
-	outp.start	= PACKET_OUTBOUND_START_IR;
-	outp.length	= 6;
-	outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
-	
-	for(i = 0; i < 8; i++) {
-	
-		bit = 0x01 << i;
-
-		if((P1IE & bit) == bit && (P1IFG & bit) == bit) {
-
-			P1IFG &= ~bit;			// reset IR flag
-
-			pdo->pin   = PIN_1_0 + i;
-			pdo->state = ((P1IES & bit) ? 0 : 1);
-
-			outp.crc = packet_calc_crc(&outp);
-
-			packet_send(&outp);
-		}
-	}
-}
-
-interrupt(PORT2_VECTOR) PORT2_ISR(void)
-{
-	unsigned char i;
-	unsigned char bit;
-
-	packet_data_out_digital_pin_read *pdo = (packet_data_out_digital_pin_read *)&outp.data[0];
-
-	outp.start	= PACKET_OUTBOUND_START_IR;
-	outp.length	= 6;
-	outp.type 	= PACKET_OUT_DIGITAL_PIN_READ;
-	
-	for(i = 0; i < 8; i++) {
-	
-		bit = 0x01 << i;
-
-		if((P2IE & bit) == bit && (P2IFG & bit) == bit) {
-			P2IFG &= ~bit;			// reset IR flag
-
-			pdo->pin   = PIN_2_0 + i;
-			pdo->state = ((P2IES & bit) ? 0 : 1);
-
-			outp.crc = packet_calc_crc(&outp);
-
-			packet_send(&outp);
-		}
-	}
-}
-#endif

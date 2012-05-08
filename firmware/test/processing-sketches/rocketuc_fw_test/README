@@ -1,0 +1,28 @@
+Simple processign PDE to thest ROCKETuC firmware core functionality README
+08.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This PDE incldues testcases to use against the "serial-rocket" firmware. It performs some basic tests against the firmware, checks the results and prints them out.
+
+
+Prerequisites
+-------------
+
+Make sure "serial-rocket" is compiled and flashed to your device. Open the PDE in your processing IDE, double check the serial port used in the source.  
+
+Also make sure "librocketcore", "libserial" and "libconio" libraries are already successfully compiled. To perform all of the tests, the following needs to be wired up on the Launchpad:
+
+* add additional LED to P2.5
+* add additional button btw. P2.3 and VDD
+* add additional button btw. P2.4 and GND 
+* add additional 10k poti between P1.5 and Vcc
+* add signal line (PWM) of servo to P2.2
+
+For complete schematic see "msp430g2553_launchpad_testsetup.png" under "doc/schematic" in the top-level directory.
+
+
+Basic Usage
+----------------------------
+
+For the TI Launchpad, connect the USB-port to your PC. Run the PDE, watch the results. 

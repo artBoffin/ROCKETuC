@@ -3,9 +3,9 @@ ROCKETuC firmware README
 sw@kaltpost.de
 ==========================================================================
 
-This is the firmware project used by the ROCKETuC project (http://rocketuc.com). The firmware helps you operate a MCU (currently the TI Launchpad with an MSP430G2553 installed) from a host connected through a serial line. For communication, the ROCKuC binary formt protocol, as described [here|https://github.com/areben/wiki@TODO], is used.
+This is the firmware project used by the ROCKETuC project (http://rocketuc.com). The firmware helps operate a MCU (currently the TI Launchpad with an MSP430G2553 installed) from a host connected through a serial line. For communication, the ROCKuC binary format protocol, as described [here|https://github.com/areben/wiki@TODO], is used.
 
-This README describes, how to compile the firmware binary and flash it to the trget MCU under Linux.    
+This README describes, how to compile the firmware binary and flash it to the target MCU under Linux.    
 
 
 Project Directory Layout
@@ -59,7 +59,7 @@ Each firmware sub-project ("*-rocket" and "test/*") have the following layout:
 Prerequisites
 -------------
 
-To compile all the libraries, firmware variants and test firmwares, the following mandatory tools need to be installed on your build-host:
+To compile all the libraries, firmware variants and test firmwares, the following mandatory tools need to be installed on your Linux build-host:
 
 * msp430-gcc for compiling (I use 4.5.3 which is [available on Ubuntu as packet|TODO link to Ubuntu Wiki])
 * mspdebug for flashing (I use 0.16 which is [available on Ubuntu as packet|TODO link to Ubuntu Wiki])

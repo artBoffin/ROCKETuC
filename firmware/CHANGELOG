@@ -6,6 +6,7 @@ sw@kaltpost.de
 
 Pre Alpha
 --------------------------------------------------------------------------
+07.05.2012	sw	added support for external interrupts on edge detection
 
 25.04.2012	sw	added support for hardware (Timer_A) based PWM
 				on P1.2/P1.6 and P2.1/P2.2

@@ -76,7 +76,6 @@
  */
 #define PIN_FUNCTION_UNKNOWN		0xFF
 
-
 /**
  * PIN function EXTERNAL INTERRUPT DISABLE 
  */
@@ -274,7 +273,7 @@ int pin_analog_read(unsigned char pin);
  * falling edge, then measures the time until a rising edge is detexted. 
  *
  * @param[in]	pin			PIN to perform this action for 
- * @return				    pulse lenght in ms on succes (positive value)	
+ * @return				    pulse lenght in usec on succes (positive value)	
  * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
  * 							(since it is not configured as INPUT)	
  * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
@@ -282,10 +281,45 @@ int pin_analog_read(unsigned char pin);
  */
 int pin_pulselength_read(unsigned char pin);
 
+/**
+ * Set the period for a PIN configured for PWM. 
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @param[in]	period		the period in usec. 
+ * @return				    pulse lenght in ms on succes (positive value)	
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as INPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int pin_pwm_function(unsigned char pin, int period);
 
+/**
+ * Set the duty-cycle for a PIN configured for PWM. The duty-cycle is given in percent.
+ * A value of 0xFF equals 100%.  
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @param[in]	duty_cycle	duty-cycle in percent (0xFF = 100%) 
+ * @return				    pulse lenght in ms on succes (positive value)	
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as INPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int pin_pwm_control(unsigned char pin, unsigned char duty_cycle);
 
+/**
+ * Enable the external interrupt function for a given pin. It could be specified when
+ * an interrupt is triggered (never=PWM_FUNCTION_EXTI_DISABLE, low-high-edge=PWM_FUNCTION_EXIT_LOWHIGH,
+ * high-low-edge=PWM_FUNCTION_EXTI_HIGHLOW).
+ *
+ * @param[in]	pin			PIN to perform this action for 
+ * @return				    pulse lenght in ms on succes (positive value)	
+ * 							PIN_STAT_ERR_UNSUPFUNC if PIN does not support this function 
+ * 							(since it is not configured as INPUT)	
+ * 							PIN_STAT_ERR_UNKPORT if given port for PIN is not known
+ * 							PIN_STAT_ERR_UNKPIN  if given pin nr. for PIN is not known
+ */
 int pin_exti_function(unsigned char pin, unsigned char function);
 
 #endif

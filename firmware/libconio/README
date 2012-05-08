@@ -1,12 +1,54 @@
-RPCKETuC Console IO
-14.04.2012 Stefan Wendler
+ROCKETuC firmware general console IO library (libconio.a) README
+08.05.2012 Stefan Wendler
 sw@kaltpost.de
-http://gpio.kaltpost.de/
+==========================================================================
+
+"libconio" provides a simple to use API for writing text to a console. Currently the console is the UART on USCI_A on the MSP430.  The library is not HW dependend since the HW part is provided by "libserial". Thus, this library is dependend on "libserial". The library is mainly used in the test firmware to provide some feedback on a serial console. 
+
+This README describes, how to compile the library under Linux.    
 
 
-Console IO C-library for MSP430G2553 MCUs
-==========================================
+Project Directory Layout
+------------------------
+
+* see toplevel README
 
 
-"libconio" provides a simple to use API for writing text to a console. Currently the console is theUART on USCI_A on the MSP430.  The library is not HW dependend since the HW part is provided by "libserial". Thus, this library is dependend on "libserial". 
+Prerequisites
+-------------
 
+* see toplevel README
+
+
+Compilation
+------------
+
+To compile this library issue:
+
+make
+
+This will produce the static library "libconio.a" in the "lib" sub-directory. 
+
+
+Generating API Documents
+------------------------
+
+* see toplevel README
+
+
+Applying Code Formating Guidelines
+----------------------------------
+
+* see toplevel README
+
+
+Performing Static Code Checks
+-----------------------------
+
+* see toplevel README
+
+
+Tailoring the Build Settings
+----------------------------
+
+* see toplevel README

@@ -1,2 +1,56 @@
-TODO
+ROCKETuC firmware core library (librocketcore.a) README
+08.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
 
+This sub-subproject of ROCKETuC firmware provides the core functionality (as a stic library) for the various firmware varaints. It implements the basic functionality defined by the ROCKETuC [protocol|https://github.com/areben/wiki@TODO]. This library depends on the "libpacket" library, also part of the ROCKETuC firmware project.  
+
+This README describes, how to compile the library under Linux.    
+
+
+Project Directory Layout
+------------------------
+
+* see toplevel README
+
+Additionally the "libpacket" sub-project has to be build successfully in advance to compile this library.
+
+
+Prerequisites
+-------------
+
+* see toplevel README
+
+
+Compilation
+------------
+
+To compile this library issue:
+
+make
+
+This will produce the static library "librocketcore.a" in the "lib" sub-directory. 
+
+
+Generating API Documents
+------------------------
+
+* see toplevel README
+
+
+Applying Code Formating Guidelines
+----------------------------------
+
+* see toplevel README
+
+
+Performing Static Code Checks
+-----------------------------
+
+* see toplevel README
+
+
+Tailoring the Build Settings
+----------------------------
+
+* see toplevel README

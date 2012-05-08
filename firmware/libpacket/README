@@ -1,1 +1,54 @@
-TODO
+ROCKETuC firmware general packet library (libpacket.a) README
+08.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This sub-subproject of ROCKETuC firmware provides the core functionality (as a stic library) needed to implement the binary ROCKETuC [protocol|https://github.com/areben/wiki@TODO]. This library does not depend on other libraries.  
+
+This README describes, how to compile the library under Linux.    
+
+
+Project Directory Layout
+------------------------
+
+* see toplevel README
+
+
+Prerequisites
+-------------
+
+* see toplevel README
+
+
+Compilation
+------------
+
+To compile this library issue:
+
+make
+
+This will produce the static library "libpacket.a" in the "lib" sub-directory. 
+
+
+Generating API Documents
+------------------------
+
+* see toplevel README
+
+
+Applying Code Formating Guidelines
+----------------------------------
+
+* see toplevel README
+
+
+Performing Static Code Checks
+-----------------------------
+
+* see toplevel README
+
+
+Tailoring the Build Settings
+----------------------------
+
+* see toplevel README

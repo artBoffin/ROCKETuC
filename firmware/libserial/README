@@ -1,9 +1,54 @@
-ROCKETuC Serial Access
-14.04.2012 Stefan Wendler
+ROCKETuC firmware general serial IO library (libserial.a) README
+08.05.2012 Stefan Wendler
 sw@kaltpost.de
-http://gpio.kaltpost.de/
-
-Serial communication C-library for MSP430G2553 MCUs
-===================================================
+==========================================================================
 
 "libserial" provides a simple to use API for configuring and using the USCI_A UART on the MSP430G2553.  
+
+This README describes, how to compile the library under Linux.    
+
+
+Project Directory Layout
+------------------------
+
+* see toplevel README
+
+
+Prerequisites
+-------------
+
+* see toplevel README
+
+
+Compilation
+------------
+
+To compile this library issue:
+
+make
+
+This will produce the static library "libserial.a" in the "lib" sub-directory. 
+
+
+Generating API Documents
+------------------------
+
+* see toplevel README
+
+
+Applying Code Formating Guidelines
+----------------------------------
+
+* see toplevel README
+
+
+Performing Static Code Checks
+-----------------------------
+
+* see toplevel README
+
+
+Tailoring the Build Settings
+----------------------------
+
+* see toplevel README
