@@ -3,7 +3,8 @@ ROCKETuC firmware Architecture
 sw@kaltpost.de
 ==========================================================================
 
-This document describes the basic ideas behind the ROCKETuC firmware architecture. 
+This document describes the basic ideas behind the ROCKETuC firmware 
+architecture. 
 
  
 Highlevel Overview
@@ -15,11 +16,24 @@ Highlevel Overview
 |        |           |       |
 +--------+           +-------+
 
-The above figure shows the basic concept behind ROCKETuC. A microcontroller (MCU) which is running the ROCKETuC firmware offers a defined set of functionality to a client (CLIENT). The functionality offered are typical things a MCU could perform. E.g. drive a digital output high/low. Read a digital or analog input, or drive a PWM on an output. 
+The above figure shows the basic concept behind ROCKETuC. A microcontroller 
+(MCU) which is running the ROCKETuC firmware offers a defined set of 
+functionality to a client (CLIENT). The functionality offered are typical 
+things a MCU could perform. E.g. drive a digital output high/low. Read a 
+digital or analog input, or drive a PWM on an output. 
 
-The protocol used between the CLIENT and the MCU is by default not dependend on a particular transport. But since the first implementation of the ROCKETuC firmware is based on a TI Launchpad which comes with a build in USB-2-serial converter, using the serial line was here was obvious.   
+The protocol used between the CLIENT and the MCU is by default not 
+dependend on a particular transport. But since the first implementation of 
+the ROCKETuC firmware is based on a TI Launchpad which comes with a build 
+in USB-2-serial converter, using the serial line was here was obvious.   
 
-To keep the overhead for the protocol minimal, but safe at the same time a frame based binary protocol is used. This protocol could be implemented by different clients in different languages. By the time of writing, a basic client implementation for Processing [TODO|link] and Java is available. In the next sections we will have a more detailed view on the firmware architecture. For details on the client architectures, have a look at the documents provided by a specific client implementatino. 
+To keep the overhead for the protocol minimal, but safe at the same time a 
+frame based binary protocol is used. This protocol could be implemented by 
+different clients in different languages. By the time of writing, a basic 
+client implementation for Processing [TODO|link] and Java is available. In 
+the next sections we will have a more detailed view on the firmware 
+architecture. For details on the client architectures, have a look at the 
+documents provided by a specific client implementation. 
 
 
 Firmware Layers
@@ -39,13 +53,34 @@ Firmware Layers
 |                    Hardware                     |
 +-------------------------------------------------+
 
-The above picture shows the general layers which build a ROCKETuC firmware. The base for all the layers is the hardware. On top of the hardware normally a (vendor) specific library or API is used to access the registers of a particular hardware. 
+The above picture shows the general layers which build a ROCKETuC firmware. 
+The base for all the layers is the hardware. On top of the hardware 
+normally a (vendor) specific library or API is used to access the registers 
+of a particular hardware. 
 
-On the next level, a bunch of base libraries is located. The "libpacket" library provides the functionality to build packets for communication with a client. "libpacket" does not yet define, how the payload is to be build, but it defines the packet framing (like start-byte, length, CRC). The payload for the core ROCKETuC functionality then is defined by "librocketcore". This library provides the core functionality provided by every ROCKETuC firmaware (e.g. digital read/write, PWM, ...). "librocketcore" implements that core functionality and thus talks to the hardware by using the layer below (register definitions, vendor APIs), and it also knows how to expose this functionality through the ROCKETuC protocol by using "libpacket" for the framing, and filling the payload accoding to the provided functionality. 
+On the next level, a bunch of base libraries is located. The "libpacket" 
+library provides the functionality to build packets for communication with a 
+client. "libpacket" does not yet define, how the payload is to be build, but 
+it defines the packet framing (like start-byte, length, CRC). The payload 
+for the core ROCKETuC functionality then is defined by "librocketcore". This 
+library provides the core functionality provided by every ROCKETuC firmaware 
+(e.g. digital read/write, PWM, ...). "librocketcore" implements that core 
+functionality and thus talks to the hardware by using the layer below 
+(register definitions, vendor APIs), and it also knows how to expose this 
+functionality through the ROCKETuC protocol by using "libpacket" for the 
+framing, and filling the payload accoding to the provided functionality. 
  
-Beside the core functionality there may other librares providing additional "special" functionality (e.g. to drive a display, or a motor controller). This "special" functino libraries are also going to use "libpacket" to provide their functionally as extenstion to the ROCKETuC protocol. If a "special" function library is going to extend core functionality, it may also use "librocketcore".
+Beside the core functionality there may other librares providing additional 
+"special" functionality (e.g. to drive a display, or a motor controller). 
+This "special" functino libraries are also going to use "libpacket" to 
+provide their functionally as extenstion to the ROCKETuC protocol. If a 
+"special" function library is going to extend core functionality, it may 
+also use "librocketcore".
 
-Beside the libraries providing the functionality, there is a library handling the protocols transport. This could e.g. be a library like "libserial" which uses the serial line for physical transport, or library using a ethernet shield or a wifi shield.  
+Beside the libraries providing the functionality, there is a library 
+handling the protocols transport. This could e.g. be a library like 
+"libserial" which uses the serial line for physical transport, or library 
+using a ethernet shield or a wifi shield.  
 
 All the parts described earlier are "glued" together by the firmware-layer.
 
@@ -53,22 +88,46 @@ All the parts described earlier are "glued" together by the firmware-layer.
 Firmware Remixes
 -------------------------------
 
-Since memory is limited on small devices, the idea is, that later there will be a whole set of different firmwares one could load on the device. Each firmware may then differ by the means of transport it uses, or in the functionality it provides. 
+Since memory is limited on small devices, the idea is, that later there 
+will be a whole set of different firmwares one could load on the device. 
+Each firmware may then differ by the means of transport it uses, or in the 
+functionality it provides. 
 
-E.g. one firmware may use the serial line as transport, and offer core functionality like digital IO, ADC and PWM. An other firmware could also use the serial line for transport, but offer to drive a display shield through the ROCKETuC protocol. Again an other firmware uses a WiFi shield connected to SPI for communication and offers just motor control as functionality. 
+E.g. one firmware may use the serial line as transport, and offer core 
+functionality like digital IO, ADC and PWM. An other firmware could also use 
+the serial line for transport, but offer to drive a display shield through 
+the ROCKETuC protocol. Again an other firmware uses a WiFi shield connected 
+to SPI for communication and offers just motor control as functionality. 
 
-Thus, by using a modular (or library) based approach as described before, it would be easy to come up with firmware "remixes" sering a special purpose. 
+Thus, by using a modular (or library) based approach as described before, it 
+would be easy to come up with firmware "remixes" sering a special purpose. 
   
 
 Supporting Different Hardware
 -------------------------------
 
-An other goal of the architecture is to clearly separate the hardware dependend parts form the commonly usable parts. By doing so, porting the firmware to a different hardware platform should be a fairly easy task. Thus, each library that has hardware dependend parts separates them by providing an isolated implementation (e.g. in a separate C file ending with the HW arch). Then, at compile time it could be decided, which HW dependend parts to compile and link for a particular platform.  
+An other goal of the architecture is to clearly separate the hardware 
+dependend parts form the commonly usable parts. By doing so, porting the 
+firmware to a different hardware platform should be a fairly easy task. Thus, 
+each library that has hardware dependend parts separates them by providing 
+an isolated implementation (e.g. in a separate C file ending with the HW 
+arch). Then, at compile time it could be decided, which HW dependend parts 
+to compile and link for a particular platform.  
 
 
 Client Bindings
 -------------------------------
 
-A client may be bound to a MCU running ROCKETuC firmware by implementing the ROCKETuC protocol and the transport provided by that particular firmware. Each client binding should at least implement the core functionality of the protocol. Since the core protocol could be enhanced by "special" function libraries, a client must always check for "unsupported function" errors returned by the firmware if a particular functionality is not provided by that firmware. 
+A client may be bound to a MCU running ROCKETuC firmware by implementing the 
+ROCKETuC protocol and the transport provided by that particular firmware. 
+Each client binding should at least implement the core functionality of the 
+protocol. Since the core protocol could be enhanced by "special" function 
+libraries, a client must always check for "unsupported function" errors 
+returned by the firmware if a particular functionality is not provided by that 
+firmware. 
 
-While this approach works in terms of error-handling, it may not be convinient to the client or the end-user. Thus, it may be help full to include a commoand to the ROCKETuC core protocol which allows a client to query all supported functions by this firmware, but this needs further thinking.
+While this approach works in terms of error-handling, it may not be convinient 
+to the client or the end-user. Thus, it may be help full to include a commoand 
+to the ROCKETuC core protocol which allows a client to query all supported 
+functions by this firmware, but this needs further thinking.
+
