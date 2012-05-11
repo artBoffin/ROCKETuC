@@ -20,20 +20,18 @@
 -->
 
 <project name="jrocket" default="compile" basedir=".">
-	<!-- set global properties for this build -->
 	<property name="src" location="src" />
+	<property name="dist" location="dist" />
 	<property name="build" location="bin" />
 	<property name="lib" location="/usr/share/java" />
 
 	<target name="init">
-		<!-- Create the time stamp -->
 		<tstamp />
 		<mkdir dir="${build}" />
-		<mkdir dir="${lib}" />
+		<mkdir dir="${dist}" />
 	</target>
 
-	<target name="compile" depends="init" description="compile the source ">
-		<!-- Compile the java code from ${src} into ${build} -->
+	<target name="compile" depends="init" description="compile the source">
 		<javac srcdir="${src}" destdir="${build}">
 			<classpath>
 				<pathelement location="${lib}/RXTXcomm.jar" />
@@ -41,6 +39,13 @@
 		</javac>
 	</target>
 
+	<target name="dist" depends="compile" description="make library jar">
+		  <jar destfile="${dist}/lib/libjrocket.jar"
+		       basedir="${build}"
+		       excludes="rocketuc/jrocket/examples/**"
+		  />
+	</target>
+	
 	<target name="clean" description="clean up">
 		<delete dir="${build}" />
 	</target>

@@ -33,9 +33,25 @@ public class PacketStream {
 	
 	private ReaderThread reader;
 	private WriterThread writer;
-		
+			
 	private static class ReaderThread extends Thread {
 	
+		private class HandlerThread extends Thread {
+
+			private Packet pkt;
+			
+			public HandlerThread(Packet pkt) {
+				super();
+				
+				this.pkt = pkt;
+			}
+
+			@Override
+			public void run() {
+				packetEventHandler.handleEvent(pkt);
+			}
+		}
+		
 		private PacketEventHandler packetEventHandler = null;
 		private boolean handleAllAsEvent = false;
 		private InputStream stream;
@@ -76,9 +92,8 @@ public class PacketStream {
 					if(pkt.isComplete()) {
 						if(packetEventHandler != null && 
 						  (handleAllAsEvent || pkt.getStart() == Packet.PACKET_START_INBEV)) {
-							// TODO: fire up handler thread to not block this loop while listner
-							// is working
-							packetEventHandler.handleEvent(pkt);
+							HandlerThread t = new HandlerThread(pkt);
+							t.run();
 						}
 						else {
 							buf.add(pkt);
@@ -177,13 +192,13 @@ public class PacketStream {
 		}				
 	}	
 	
-	public void send(Packet pkt) throws InterruptedException {
+	public synchronized void send(Packet pkt) throws InterruptedException {
 		if(writer != null && writer.isAlive()) {
 			writer.put(pkt);
 		}
 	}
 
-	public Packet receive() throws InterruptedException {
+	public synchronized Packet receive() throws InterruptedException {
 		if(reader != null && reader.isAlive()) {
 			return reader.get();
 		}
@@ -191,7 +206,7 @@ public class PacketStream {
 		return null;
 	}
 	
-	public Packet xfer(Packet pkt) throws InterruptedException {
+	public synchronized Packet xfer(Packet pkt) throws InterruptedException {
 		send(pkt);
 		return receive();
 	}

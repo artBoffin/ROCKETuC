@@ -27,14 +27,23 @@ import rocketuc.jrocket.comm.SerialPacketStream;
  * JRocket class using serial connection to MCU.
  */
 public class JRocketSerial extends JRocket {
-	
+
 	public JRocketSerial(String port) throws Exception {
 		super();
+		
+		init(port);
+	}
+
+	protected JRocketSerial() {
+		super();
+	}
+	
+	protected void init(String port) throws Exception {
 		
 		SerialPacketStream packetStream = new SerialPacketStream();
 		packetStream.connect(port);
 		
-		init(packetStream);
+		super.init(packetStream);		
 	}
 	
 	@Override
