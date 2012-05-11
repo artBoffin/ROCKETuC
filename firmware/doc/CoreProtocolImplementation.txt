@@ -1,0 +1,107 @@
+ROCKETuC firmware Core Protocol Implementation 
+11.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This document describes some implementation specific details of the ROCKuC 
+protocol on a certain hardware.  
+
+
+General Status Reporting
+------------------------
+
+The following table will give an overview about the states returned in response
+to a protocol request in general. 
+
+
+** Requests with no return values (like PIN_FUNCTION): 
+
+All requests which do not have an explicit return value will be anwsered with 
+a status message by the MCU. The status message contains one of the following
+status types in its payload:
+
+Type                Description
+---------------------------------------------------------------------
+ACK					Request was successfully processed by MCU
+BAD_PACKET			Packet was maleformed (e.g. wrong CRC, wrong data length)
+INVALID_PACKET		Packet type was not known
+INVALID_DATA		Data sent with packet was wrong for that type 
+INVALID_PIN_COMMAND	The command tried to execute for a given PIN was invalid
+                    (e.g. if configuring a PIN for analog read which is not 
+                     capable of analog read).	
+
+
+** Requests with return values (like PIN_DIGITAL_READ):
+
+For packets which return a value in response, the corresponding response packet 
+is returned if everything went well. In case of an error, a status packet is 
+returned. 
+
+The status message contains one of the following status types in its payload:
+
+Type                Description
+---------------------------------------------------------------------
+BAD_PACKET			Packet was maleformed (e.g. wrong CRC, wrong data length)
+INVALID_PACKET		Packet type was not known
+INVALID_DATA		Data sent with packet was wrong for that type 
+INVALID_PIN_COMMAND	The command tried to execute for a given PIN was invalid
+                    (e.g. if configuring a PIN for analog read which is not 
+                     capable of analog read).	
+
+
+** Trying to configure a reserved PIN
+
+If one tries to configure a PIN reserved for internal use trough a PIN_FUNCTION 
+request, a status message with type INVALID_PIN_COMMAND will be returned. 
+
+
+** Trying to configure a PIN with an unsupported function
+
+If one tries to configure a PIN with an unsupported function through a PIN_FUNCTION 
+request, a status message with type INVALID_PIN_COMMAND will be returned. 
+
+
+TI Launchpad MPS430G2553 Implementation
+---------------------------------------
+
+** Reserved PINs
+
+This depends on the firmware loaded to the MCU. 
+
+For the "serial-rocket" firmware which implements the ROCKETuC core protocol, 
+the following PINs are reserved: 
+
+PIN				Internal Use
+-------------------------------------
+P1.1			RX for UART to client
+P1.2			TX for UART to client
+
+
+** Available PIN functions
+
+X indicates function is available for PIN
+- indicates function is NOT available for PIN
+
+PIN    INPUT* OUTPUT ANALOG_IN PWM UART_RX UART_TX  	
+--------------------------------------------------
+P1.0     X      X       X       -    X       X   
+P1.1**   X      X       X       -    X       X
+P1.2**   X      X       X       X    X       X
+P1.3     X      X       X       -    X       X
+P1.4     X      X       X       -    X       X
+P1.5     X      X       X       -    X       X
+P1.6     X      X       X       X    X       X
+P1.7     X      X       X       -    X       X
+P2.0     X      X       -       -    X       X
+P2.1     X      X       -       X    X       X
+P2.2     X      X       -       X    X       X
+P2.3     X      X       -       -    X       X
+P2.4     X      X       -       -    X       X
+P2.5     X      X       -       -    X       X
+P2.6     X      X       -       -    X       X
+P2.7     X      X       -       -    X       X
+
+ *) Includes FLOAT, PULLUP, PULLDOWN
+**) Reserved for UART to client if serial transport is used by firmware
+
+
