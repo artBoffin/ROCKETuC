@@ -22,13 +22,13 @@ status types in its payload:
 
 Type                Description
 ---------------------------------------------------------------------
-ACK					Request was successfully processed by MCU
-BAD_PACKET			Packet was maleformed (e.g. wrong CRC, wrong data length)
-INVALID_PACKET		Packet type was not known
-INVALID_DATA		Data sent with packet was wrong for that type 
+ACK                 Request was successfully processed by MCU
+BAD_PACKET          Packet was maleformed (e.g. wrong CRC, wrong data length)
+INVALID_PACKET      Packet type was not known
+INVALID_DATA        Data sent with packet was wrong for that type 
 INVALID_PIN_COMMAND	The command tried to execute for a given PIN was invalid
                     (e.g. if configuring a PIN for analog read which is not 
-                     capable of analog read).	
+                    capable of analog read).	
 
 
 ** Requests with return values (like PIN_DIGITAL_READ):
@@ -41,12 +41,12 @@ The status message contains one of the following status types in its payload:
 
 Type                Description
 ---------------------------------------------------------------------
-BAD_PACKET			Packet was maleformed (e.g. wrong CRC, wrong data length)
-INVALID_PACKET		Packet type was not known
-INVALID_DATA		Data sent with packet was wrong for that type 
+BAD_PACKET          Packet was maleformed (e.g. wrong CRC, wrong data length)
+INVALID_PACKET      Packet type was not known
+INVALID_DATA        Data sent with packet was wrong for that type 
 INVALID_PIN_COMMAND	The command tried to execute for a given PIN was invalid
                     (e.g. if configuring a PIN for analog read which is not 
-                     capable of analog read).	
+                    capable of analog read).	
 
 
 ** Trying to configure a reserved PIN
@@ -73,8 +73,8 @@ the following PINs are reserved:
 
 PIN				Internal Use
 -------------------------------------
-P1.1			RX for UART to client
-P1.2			TX for UART to client
+P1.1            RX for UART to client
+P1.2            TX for UART to client
 
 
 ** Available PIN functions
@@ -104,4 +104,17 @@ P2.7     X      X       -       -    X       X
  *) Includes FLOAT, PULLUP, PULLDOWN
 **) Reserved for UART to client if serial transport is used by firmware
 
+
+** Limited Ressources
+
+Ressource     Function   Limited to PINs
+-----------------------------------------
+TIMER_A0      PWM        P1.2 or P1.6
+TIMER_A1      PWM        P2.1 or P2.2
+TIMER_A0      UART_TX    any non reserved
+TIEMR_A1      UART_RX    any non reserved
+
+In words, the obove table means: If PWM is configured for pin P1.2 or P1.6, 
+this will bind TIMER_A0. Thus, no other function needing TIMER_A0 could be
+set up at that time. 
 

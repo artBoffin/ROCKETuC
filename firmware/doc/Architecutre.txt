@@ -308,7 +308,13 @@ the case).
    [|]<--------------[|]                    
    [|]  event pkt.    |
     |                 |
-
+    |                 |
+    |    req. pkt.    |
+   [|]-------------->[|]  3) Client requests to end 
+   [|]               [|]     events for a certain condition 
+   [|]<--------------[|]                        
+    |    res. pkt.    |
+ 
 
 ** Streaming
 
@@ -317,16 +323,16 @@ more situation to consider. For example we have some kind of accelerometer
 which we like to read out continuously on the client side. If we used xfer 
 for that, this would produce a lot of overhead since each next value from the 
 accelerometer needs to be requested by a new client message. Enabling events 
-for the accelerometer to occure every n msecs. would save some overhead since 
+for the accelerometer to occure every n milli-seconds would save some overhead since 
 the request packet will not be needed, but still has plenty of overhead as 
-each single value from the accelerometer is wraped in a packet. Thus, a i
+each single value from the accelerometer is wraped in a packet. Thus, a 
 streaming mode is needed. When enabled for a certain value of interest, it 
 will continuously send a data stream containing only that value of interest. 
-The stream will end when the client requests it (e.g. by sending any kind of 
-request to the MCU). 
+The stream will end at the moment a client is sending any kind of 
+request to the MCU. 
 
 While in streaming mode, event receiving would not be possible, since there 
-would be no chance to destinct between ain event and the data stream. 
+would be no chance to destinct between an event and the data stream. 
 
 +--------+         +-----+
 | Client |         | MCU |
