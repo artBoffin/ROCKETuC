@@ -7,7 +7,7 @@ This document describes the basic ideas behind the ROCKETuC firmware
 architecture. 
 
  
-Highlevel Overview
+High-level Overview
 ------------------
 
 +--------+           +-------+
@@ -16,14 +16,14 @@ Highlevel Overview
 |        |           |       |
 +--------+           +-------+
 
-The above figure shows the basic concept behind ROCKETuC. A microcontroller 
+The above figure shows the basic concept behind ROCKETuC. A micro-controller 
 (MCU) which is running the ROCKETuC firmware offers a defined set of 
 functionality to a client (CLIENT). The functionality offered are typical 
 things a MCU could perform. E.g. drive a digital output high/low. Read a 
 digital or analog input, or drive a PWM on an output. 
 
 The protocol used between the CLIENT and the MCU is by default not 
-dependend on a particular transport. But since the first implementation of 
+depended on a particular transport. But since the first implementation of 
 the ROCKETuC firmware is based on a TI Launchpad which comes with a build 
 in USB-2-serial converter, using the serial line was here was obvious.   
 
@@ -69,7 +69,7 @@ it defines the packet framing (like start-byte, length, checksum).
 
 The payload for the core ROCKETuC functionality then is defined by 
 "librocketcore". This library provides the core functionality provided by 
-every ROCKETuC firmaware (e.g. digital read/write, PWM, ...). 
+every ROCKETuC firmware (e.g. digital read/write, PWM, ...). 
 "librocketcore" implements that core functionality and thus talks to the 
 hardware by using the layer below (register definitions, vendor APIs), and 
 it also knows how to expose this functionality through the ROCKETuC protocol 
@@ -78,10 +78,10 @@ the provided functionality.
  
 ** special function libraries 
 
-Beside the core functionality there other librares may provide additional 
+Beside the core functionality there other libraries may provide additional 
 "special" functionality (e.g. to drive a display, or a motor controller). 
 This "special" function libraries are also going to use "libpacket" to 
-provide their functionally as extenstion to the ROCKETuC protocol. If a 
+provide their functionally as extension to the ROCKETuC protocol. If a 
 "special" function library is going to extend core functionality, it may 
 also use "librocketcore".
 
@@ -90,14 +90,14 @@ also use "librocketcore".
 Beside the libraries providing the functionality, there is a library 
 handling the protocols transport. This could e.g. be a library like 
 "libserial" which uses the serial line for physical transport, or library 
-using a ethernet shield or a wifi shield.  
+using a Ethernet shield or a wifi shield.  
 
 ** firmware
 
 All the parts described earlier are "glued" together by the firmware-layer.
 
 
-Firmware Remixes
+Firmware Re-mixes
 -------------------------------
 
 Since memory is limited on small devices, the idea is, that later there 
@@ -111,18 +111,18 @@ the ROCKETuC protocol. Again an other firmware uses a WiFi shield connected
 to SPI for communication and offers just motor control as functionality. 
 
 Thus, by using a modular (or library) based approach as described before, it 
-would be easy to come up with firmware "remixes" serving a special purpose. 
+would be easy to come up with firmware "re-mixes" serving a special purpose. 
   
 
 Supporting Different Hardware
 -------------------------------
 
 An other goal of the architecture is to clearly separate the hardware 
-dependend parts form the commonly usable parts. By doing so, porting the 
+dependent parts form the commonly usable parts. By doing so, porting the 
 firmware to a different hardware platform should be a fairly easy task. Thus, 
-each library that has hardware dependend parts separates them by providing 
+each library that has hardware dependent parts separates them by providing 
 an isolated implementation (e.g. in a separate C file ending with the HW 
-arch). Then, at compile time it could be decided, which HW dependend parts 
+arch). Then, at compile time it could be decided, which HW dependent parts 
 to compile and link for a particular platform.  
 
 
@@ -138,7 +138,7 @@ returned by the firmware if a particular functionality is not provided by that
 firmware. 
 
 NOTE: While this approach works in terms of error-handling, it may not be 
-convinient to the client or the end-user. Thus, it may be help full to include 
+convenient to the client or the end-user. Thus, it may be help full to include 
 a command to the ROCKETuC core protocol which allows a client to query all 
 supported functions by this firmware, but this needs further thinking.
 
@@ -151,22 +151,22 @@ ROCKETuC Protocol
 The ROCKETuC core protocol allows to configure a PIN into various modes 
 (PIN_FUNCTION). E.g. a PIN could be configured through ROCKETuC to be a digital 
 output, a digital input, a analog input, a PWM output and so on. While in 
-theorie each PIN is able to perform each function, in reality, this is not 
+theories each PIN is able to perform each function, in reality, this is not 
 true. In fact, what functions a PIN is able to perform is highly hardware 
-dependend. For example on the MSP430G2553, not every PIN is able to perform 
+dependent. For example on the MSP430G2553, not every PIN is able to perform 
 hardware based PWM or ADC. 
 
 An other limitation often introduced by the hardware is, that a certain function 
 could only be performed on a certain number of pins. Again, the hardware PWM of 
 the MSP4302553 is tight to the MCUs timers. By having two timers, only to 
-independend hardware PWM signals could be generated at a time. Anyway, this 
+independent hardware PWM signals could be generated at a time. Anyway, this 
 might look different on a Cortex-M3 based MCU. 
 
 Also due to the fact, that some of the MCU resources are limited, it may happen, 
-that two different functions need the same ressource, and thus only one of this 
+that two different functions need the same resource, and thus only one of this 
 functions is possible at a time. For an example, we could look again at our 
 timers: if we offer the functionality for software UART, then this functionality 
-will need both timers to bitbang the RX and TX data. Thus, when software UART 
+will need both timers to bit-bang the RX and TX data. Thus, when software UART 
 function is configured, hardware PWM is not possible at that time since the timers 
 are already used.
 
@@ -180,7 +180,7 @@ transport.
 
 Beside the requirement, that the function requested through the protocol is 
 carried out, the issues described in the section before lead to some more 
-requirements the protocol implementatino has to fullfill:
+requirements the protocol implementation has to fulfill:
 
 * The implementation MUST know which PINs are able to carry out which functions. 
 We will call this the PIN CAPABILITIES. By knowing a PINs capabilities, the 
@@ -189,20 +189,20 @@ in case a client requests a configuration for a PIN which is not possible.
 
 * The firmware MUST know, which resources are limited, and when they are 
 reserved because of a requested function. We will call this the LIMITED 
-RESOURCES. By knowing about the limitied ressources, and knowing which 
+RESOURCES. By knowing about the limited resources, and knowing which 
 function consumes which limited resource, the firmware will be able to respond 
 with an error (invalid PIN function) if a requested functions requires a 
 limited resource which is already taken. 
 
-* The firmware MUST knwo, which PINs are reserved for internal use. We will 
+* The firmware MUST know, which PINs are reserved for internal use. We will 
 call this the RESERVED PINs. By knowing which PINs are reserved, the firmware 
 could report an error (unsupported PIN function) if a client trys to configure 
 a PIN which is not available.  
 
-Since the above requirements are highly hardware and firmware dependend, they 
+Since the above requirements are highly hardware and firmware dependent, they 
 need to be defined individually. 
 
-NOTE: the above requirements are firmware dependend, since e.g. the reserved 
+NOTE: the above requirements are firmware dependent, since e.g. the reserved 
 PINs may change when a firmware chooses to use e.g. SPI for communication 
 (and not UART). 
 
@@ -214,7 +214,7 @@ for the following reasons:
 If the checkings ware done on the client side, each client needs to implement the 
 checks again (and no two would be the same).
 
-* A firmware for a new hardware has to be tailored anyway. But a client libaray 
+* A firmware for a new hardware has to be tailored anyway. But a client library 
 should not need to be tailored because of a new hardware. 
 
 
@@ -239,8 +239,8 @@ packet for that and sends it to the MCU. After that, it waits until the MCU
 sends a response packet indicating success or failure. 
 
 A client using the xfer pattern needs to handle the situation where no response 
-comes back from the MCU. The propper way of client to handle this would be 
-using a timeout. I client may also consider doing a number of retrays if no 
+comes back from the MCU. The popper way of client to handle this would be 
+using a timeout. I client may also consider doing a number of retrys if no 
 response was received:
 
                          (START)
@@ -258,7 +258,7 @@ response was received:
        |                    |                     |
        |                   \|/                    |
        |      +--------------------------+        |
-       |      | Waiti until res. pkt.    |        |
+       |      | Wait until res. pkt.     |        |
        |      | pkt. or waited-time > wT |        |
        |      +--------------------------+        |
        |                    |                     |
@@ -271,22 +271,22 @@ response was received:
                            \|/                    |
                           (END)<------------------+
 
-Using the synchronious xfer pattern makes it easy for a client to know which 
-response belogs to a request. Thus, it is highly recommanded that a client 
+Using the synchronous xfer pattern makes it easy for a client to know which 
+response belongs to a request. Thus, it is highly recommended that a client 
 implementation provides functionality for this pattern. 
 
 
 ** Eventing
 
 The xfer pattern described above is not suitable for all communication. For 
-example a client needs to know when a digitial input on the MCU goes high. By 
+example a client needs to know when a digital input on the MCU goes high. By 
 using the xfer method, the client needs to poll the MCU for the PIN state over 
 and over again. In the case that the high period on the PIN was very short 
-(sohrter then the poll cycle), the client will not notice the state change. 
+(shorter then the poll cycle), the client will not notice the state change. 
 Thus, some kind of event pattern is needed. Here, the client enables eventing 
 for certain events of interest on the MCU (e.g. state change on a digital input), 
 and then receives a event packet from the MCU at the moment the event of 
-interest happend. A client will only miss an event, if they occure very fast and 
+interest happened. A client will only miss an event, if they occur very fast and 
 very often so that the buffer overflows on the MCU (which should be rarely 
 the case). 
  
@@ -323,23 +323,23 @@ more situation to consider. For example we have some kind of accelerometer
 which we like to read out continuously on the client side. If we used xfer 
 for that, this would produce a lot of overhead since each next value from the 
 accelerometer needs to be requested by a new client message. Enabling events 
-for the accelerometer to occure every n milli-seconds would save some overhead since 
+for the accelerometer to occur every n milli-seconds would save some overhead since 
 the request packet will not be needed, but still has plenty of overhead as 
-each single value from the accelerometer is wraped in a packet. Thus, a 
+each single value from the accelerometer is wrapped in a packet. Thus, a 
 streaming mode is needed. When enabled for a certain value of interest, it 
 will continuously send a data stream containing only that value of interest. 
 The stream will end at the moment a client is sending any kind of 
 request to the MCU. 
 
 While in streaming mode, event receiving would not be possible, since there 
-would be no chance to destinct between an event and the data stream. 
+would be no chance to distinct between an event and the data stream. 
 
 +--------+         +-----+
 | Client |         | MCU |
 +--------+         +-----+
     |    req. pkt.    |
    [|]-------------->[|]  1) Client requests to receive
-   [|]               [|]     a vertain value as data stream 
+   [|]               [|]     a certain value as data stream 
    [|]<--------------[|]     
     |    res. pkt.    |
     |                 |
