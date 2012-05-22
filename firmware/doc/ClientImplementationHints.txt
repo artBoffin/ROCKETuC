@@ -1,0 +1,323 @@
+ROCKETuC firmware Client Implementation Hints 
+10.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This document tries to give some hints on how to implement a ROCKETuC client.
+The descriptions are "high-level" and thus are not tight to a specific 
+programming language. 
+
+
+Requirements
+------------
+
+The requirements will be split into "basic" and "advanced". In general a 
+client implementing the "basic" requirements will be able to perform "Message xfer" 
+as described in the document "ROCKETuC firmware Architecture", and an 
+"advanced" client will additionally support "eventing" and "streaming". 
+
+
+** Basic requirements 
+
+* Core protocol functionality (excluding functionality for eventing)
+
+   - See ROCKETuC protocol definition
+
+* Message xfer: 
+
+   - Send ROCKETuC conform request to MUC, get response from MCU
+   - Be able to interpret status responses and process them in a way,
+     that the user of the client is able to know what was the problem 
+
+
+** Advanced requirements
+
+* Eventing functionality and streaming functionality
+
+   - See ROCKETuC protocol definition
+
+* Eventing
+
+   - Receive events, call back user defined handler
+
+* Streaming
+
+   - Offer user access stream 
+
+
+Handle Hardware Specific Functionality
+--------------------------------------
+
+A client implementation should make as less assumptions about the hardware 
+used on the MCU as possible. A client should not make any assumptions about
+the capabilities a PIN has, about which PINs are reserved or about limited
+resources. Instead, it should offer the ROCKETuC protocol functionality 
+without restriction, but be aware of the fact, that e.g. requesting a PIN
+function from the MCU may result in an error stating "unsupported pin function". 
+ 
+If a client for any reason needs to implement and/or expose hardware specific
+functionality, it should clearly state that it is doing so. A good way to 
+do so is having a general implementation, and then deriving a hardware specific
+implementation from this (including e.g. the hardware class in it's name).
+
+
+Packet Handling
+---------------
+
+** Packet Data Type
+
+A comment thing for all clients is to handle ROCKETuC protocol packets. Thus,
+it is a good idea to have a data type (class, struct or what ever the target 
+language supports) that represents a ROCKETuC packet. The packet representation
+should be able to do at least the following:
+
+* Allow to set/get the attributes defined by the ROCKETuC protocol: 
+
+  - start byte
+  - length
+  - type
+  - data
+  - CRC
+
+* Be able to calculate the CRC
+
+* Be able to check the CRC
+
+* Be able to return a representation of itself as byte array 
+
+* Be able to construct itself from an byte array
+
+
+A packet should not:
+
+* Make assumptions about the transport used later on (thus a packet will be
+  usable with any kind of transport)
+
+* Make any assumptions about which packet types are available, or how the 
+  packet data will be build (thus a packet will be usable with the ROCKETuC
+  core protocol, and with protocol extensions)
+
+A NOTE about "byte": whenever "byte" is used in this document, a 8-bit unsigned
+byte is meant. In C this would be "unsigned char", in Java, well there is no such
+thing like 8-bit-unsigned-byte, thus one may use "short" or "char" or "byte" (and 
+take care about the correct casting). 
+
+
+** Packet Parsing
+
+As stated above a packet should be able to construct itself from a byte 
+representation as for example received from an input stream. On the client
+side, only the functionality for parsing MCU response packets is needed. 
+
+Parsing a packet from a stream of bytes could be easily expressed by a 
+simple state machine:
+
+
+bIn : the last byte received
+
+   (NEW_PACKET)
+         |
+         +-------------+
+        \|/            | bIn != START_BYTE 
+(WAIT_FOR_START_BYTE)--+			
+         |
+         | bIn == START_BYTE          save start byte in packet property p.start
+         |
+         +-------------+
+        \|/            | bIn == EMPTY
+  (WAIT_FOR_LENGTH)----+
+         |
+         | bIn == ANY_BYTE            save length in packet property p.length
+         |
+         +-------------+
+        \|/            | bIn == EMPTY
+  (WAIT_FOR_TYPE)------+
+         |
+         | bIn == ANY_BYTE            save type in packet property p.type
+         |
+         +-------------+
+        \|/            | bIn == EMPTY                          
+  (WAIT_FOR_DATA)------+
+  /|\    |
+   |     | bIn == ANY_BYTE,           save data in packet property p.data[i]
+   |     |                           
+   +-----+ length(p.data) < p.length
+         |
+         | length(p.data) == p.length
+         |
+         +--------------+
+        \|/             | bIn == EMPTY
+  (WAIT_FOR_CRC)<-------+
+         |
+         | bIn == ANY_BYTE            save CRC in packet property p.crc
+         |
+        \|/      
+  (PACKET_COMPLETE)
+   
+At the moment a packet is complete, the CRC should be calculated and compared
+against the CRC received and stored in p.crc. If the values do not match an
+exception should be generated. 
+
+
+Packet Streaming
+----------------
+
+Heaving a packet is fine, but we need to stream the packet content over some
+kind of transport (e.g. a serial line). Thus, we need a implementation for a
+transport stream which is able to send/receive packets in byte form. Since
+we defined above, that a packet itself should know how to represent itself 
+as a byte stream and how to assembly itself from a byte stream, the only
+thing left for streaming is the functionality for transferring the bytes from
+and to the physical transport.
+
+
+** Sending packet data
+
+Sending of packet data is as simple as asking the packet which should be send 
+for its byte representation, and then push each byte on the physical transport.
+
+When doing so, a few things should be kept in mind:
+
+* Sending my stall (e.g. because the MCU is gone). Thus, it may be a good idea 
+  to have some sort of timeout, and if that timeout is reached, create an exception.
+
+A implementation for packet streaming my offer something like "sendPacket" as a
+convenient function to send the bytes of a whole packet. 
+
+
+** Receiving packet data 
+
+Receiving packet data is as simple as reading the bytes one after the other from 
+the physical transport, and pass it to the packet parser to make it assemble the 
+packet. If the parse is part of the packet implementation, it is convenient to 
+have a operation like "addByte" which allows to pass the next byte to the parser. 
+If the packet also provides a operation like "isComplete", one could simply pump
+data read from the transport to the parser (addByte) until the packet states it
+is complete (isComplete). 
+
+When doing so, a few things should be kept in mind:
+
+* Receiving may stall (e.g. because the MCU is gone). Thus it may be a good idea
+  to have some sort of timeout, and if that timeout is reached, create an exception.
+
+A implementation for packet streaming my offer something like "receivePacket" as a
+convenient function to receive and return a whole packet. 
+
+
+Basic Client
+------------
+
+A basic client must implement functionality for packet xfer. This should be fairly 
+simple having a packet implementation and a implementation form streaming packets. 
+A basic flow for packet xfer may look like this:
+
+
+                         (START)
+                            |
+                           \|/ 
+                    -----------------       Yes
+       +---------> /  retrys > mRT   \------------+
+       |           \                 /            |
+       |            -----------------             |
+       |                    | No                  |
+       |                   \|/                    |
+       |            +----------------+            |
+       |            | Send req. pkt. |            |
+       |            +----------------+            |
+       |                    |                     |
+       |                   \|/                    |
+       |      +--------------------------+        |
+       |      | Wait until res. pkt.     |        |
+       |      | pkt. or waited-time > wT |        |
+       |      +--------------------------+        |
+       |                    |                     |
+       |                   \|/                    |
+       |   YES      -----------------             |
+       +-----------/  wait-time > wt \            |
+                   \                 /            |
+                    -----------------             |
+                            |                     |
+                           \|/                    |
+                          (END)<------------------+
+
+
+
+Advanced Client
+---------------
+
+Things are getting slightly more complicated for an advanced client implementation. 
+
+
+** Receiver thread
+
+Due to the fact, that an advanced client must be able to receive events at any time
+a receiver thread is needed which is able to read all incoming bytes from the
+physical transport, and at the time a packet is complete, knows if this was an 
+event (which must be passed to an event handler), or if it was a response to a
+packet sent earlier. 
+
+By assuming, that the MCU responds to requests in the order they were received the 
+client should be thread safe if the "xfer" operation is synchronized so no two 
+threads at the same time are able to issue an "xfer". 
+
+
+         Client               ROCKETuC       Receive            
+         Thread                 API          Thread      
+ 
+     A             B                                           MCU 
+     |             |             |              |               |
+1   [|]--xfer------------------>[|]--sendReq------------------>[|]
+    [|]            |            [|]--getResp-->[|]             [|]
+2   [|]           [|]--xfer---->[|]            [|]<--response--[|]
+    [|]           [|]           [|]<---resp----[|]              |
+3   [|]<-response---------------[|]             |               |
+4    |            [|]           [|]--sendReq------------------>[|]
+     |            [|]           [|]--getResp-->[|]             [|]
+5    |            [|]           [|]            [|]<---event----[|]
+   <-------------callEventHandler--------------[|]             [|]
+     |            [|]           [|]            [|]<--response--[|]
+     |            [|]           [|]<---resp----[|]              |
+6    |            [|]<-response-[|]             |               |
+     |             |             |              |               |
+
+
+The figure above shows the following:
+
+1) Client thread A starts an "xfer" by calling the corresponding API
+   method. The API uses the physical transport to deliver the message
+   to the MCU. It then asks the receiver thread for the next response
+   received from the MCU. This call is blocking, thus it will wait
+   until a response was received.
+
+2) While thread A waits for its "xfer" to complete, thread B starts
+   an other "xfer". Since "xfer" is synchronized in the API, the
+   request from thread B will just sit and wait until "xfer" for 
+   A completed. 
+
+3) MCU has finished processing of request for "xfer" from A, the response
+   was sent back and parsed to a packet by the receiver thread, thus the
+   "getResp" call from (1) could now be serverved, and the API pushes back
+   the response to thread A. This completes the "xfer" from A.
+
+4) "xfer" request from B could now be processed, thus the API sends the 
+   packet data to the MCU and starts waiting for a response. 
+
+5) While B waits for a response to its request, and event occures on the MCU. 
+   The MCU passes the event packet to the receiver thread, the receiver thread
+   identifies the packet as an event packet and passes it to an registered event 
+   handler. 
+
+6) Now the reveiver thread receives the response to the "xfer" from B and passes
+   it to the API. The API passes it back to B and "xfer" from B is complete. 
+
+
+When heaving a closer look at the sequence form above, a few critical points 
+(which one should take care of when impementing) could be identified: 
+
+* When the API waits for a response, it should use a time-out after which it
+  cancels the "xfer" with an error. Otherwise all subsequent calls to "xfer" from
+  any thread will starve (since "xfer" is synchronized). 
+
+* The receiver thread must check the packet type (by inspecting the start-byte), since
+  an "xfer" could be potentially interrupted by an event packet. 
+
