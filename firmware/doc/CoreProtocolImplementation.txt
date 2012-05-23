@@ -3,7 +3,7 @@ ROCKETuC firmware Core Protocol Implementation
 sw@kaltpost.de
 ==========================================================================
 
-This document describes some implementation specific details of the ROCKuC 
+This document describes some implementation specific details of the ROCKETuC 
 protocol on a certain hardware.  
 
 

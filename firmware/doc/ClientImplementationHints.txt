@@ -257,8 +257,8 @@ event (which must be passed to an event handler), or if it was a response to a
 packet sent earlier. 
 
 By assuming, that the MCU responds to requests in the order they were received the 
-client should be thread safe if the "xfer" operation is synchronized so no two 
-threads at the same time are able to issue an "xfer". 
+client should be thread safe if the "xfer" operation is synchronized in a way that 
+no threads at the same time are able to issue an "xfer". 
 
 
          Client               ROCKETuC       Receive            
@@ -290,29 +290,29 @@ The figure above shows the following:
    until a response was received.
 
 2) While thread A waits for its "xfer" to complete, thread B starts
-   an other "xfer". Since "xfer" is synchronized in the API, the
+   an other "xfer". Since "xfer" is synchronized by the API, the
    request from thread B will just sit and wait until "xfer" for 
    A completed. 
 
 3) MCU has finished processing of request for "xfer" from A, the response
    was sent back and parsed to a packet by the receiver thread, thus the
-   "getResp" call from (1) could now be serverved, and the API pushes back
-   the response to thread A. This completes the "xfer" from A.
+   "getResp" call from (1) could now be served, and the API pushes back
+   the response to thread A. This completes the "xfer" for A.
 
 4) "xfer" request from B could now be processed, thus the API sends the 
    packet data to the MCU and starts waiting for a response. 
 
-5) While B waits for a response to its request, and event occures on the MCU. 
-   The MCU passes the event packet to the receiver thread, the receiver thread
-   identifies the packet as an event packet and passes it to an registered event 
+5) While B waits for a response to its request, an event occurs on the MCU. 
+   The MCU passes the event to the receiver thread, the receiver thread
+   identifies the data as an event packet and passes it to an registered event 
    handler. 
 
-6) Now the reveiver thread receives the response to the "xfer" from B and passes
-   it to the API. The API passes it back to B and "xfer" from B is complete. 
+6) Now the receiver thread receives the response to the "xfer" from B and passes
+   it to the API. The API passes it back to B and "xfer" for B is complete. 
 
 
 When heaving a closer look at the sequence form above, a few critical points 
-(which one should take care of when impementing) could be identified: 
+(which one should take care of when implementing) could be identified: 
 
 * When the API waits for a response, it should use a time-out after which it
   cancels the "xfer" with an error. Otherwise all subsequent calls to "xfer" from
@@ -326,8 +326,9 @@ When heaving a closer look at the sequence form above, a few critical points
 
 On request, the MCU will stream a value of interest continuously to the client until
 the MCU receives an other request from the client. While in streaming mode, no 
-events from the MCU are possible. Streaming is stopped at the moment the client send
+events from the MCU are possible. Streaming is stopped at the moment the client sends
 an other "xfer" request to the MCU. Only one thread at a time is able to use streaming.
+
 
          Client               ROCKETuC       Receive            
          Thread                 API          Thread      
@@ -352,22 +353,23 @@ an other "xfer" request to the MCU. Only one thread at a time is able to use str
 8    |            [|]           [|]--sendReq------------------>[|]
     ...           ...           ...                            ...
 
+
 The figure above shows the following:
 
-1) Client thread A request streaming of a certain value form the MUC for the API.
+1) Client thread A request streaming of a certain value form the MUC through the API.
    The API sends that request to the MCU and waits for the response. 
 
-2) Thread B concurrently requests also streaming. This request is blockeed util 
-   streaming initiated by thread A has terminiated in (7).
+2) Thread B concurrently requests also streaming. This request is blocked until 
+   streaming initiated by thread A has terminated in (7).
 
-3) If the API received a OK response to thread As stream request, the API asks 
+3) If the API received a non-error response to thread As stream request, the API asks 
    the receiving thread to handle over a stream object.
 
 4) The stream object is passed back to the client thread. The MCU now may start 
    streaming data at any time.
 
 5) The client thread A uses the stream object received in (4) for retrieving the
-   data out of the stream. 
+   data stream. 
 
 6) The client has to call subsequently the "getData" function of the stream object
    to get newly arrived data form the MCU.
@@ -376,14 +378,14 @@ The figure above shows the following:
 
 8) The stream request form thread B could now be processed. 
 
- When heaving a closer look at the sequence form above, a few critical points 
-(which one should take care of when impementing) could be identified: 
+When heaving a closer look at the sequence form above, a few critical points 
+(which one should take care of when implementing) could be identified: 
 
 * At 4 we see, that streaming from the MCU could happen at any time. Thus it may
   be a good idea to have some buffer for the data in the receive thread.
 
-* The receivthread must not parse the data from the MCU when in streaming mode
-  but just passe the received bytes along. 
+* The receive thread must not parse the data from the MCU when in streaming mode
+  but just passe the received bytes along (by using the stream object). 
 
 * At 7 thread A ends streaming by issuing a new "xfer". But the stream could be 
   end by any other thread to by staring an "xfer". 
