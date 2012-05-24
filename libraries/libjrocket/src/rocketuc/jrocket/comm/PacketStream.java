@@ -29,7 +29,7 @@ import rocketuc.jrocket.util.RingBuffer;
 
 public class PacketStream {
 	
-	protected static final int RING_BUFFER_SIZE = 32;
+	protected static final int RING_BUFFER_SIZE = 4;
 	
 	private ReaderThread reader;
 	private WriterThread writer;

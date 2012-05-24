@@ -21,6 +21,7 @@
  
 package rocketuc.jrocket;
 
+import rocketuc.jrocket.comm.CommException;
 import rocketuc.jrocket.comm.SerialPacketStream;
 
 /**
@@ -28,26 +29,49 @@ import rocketuc.jrocket.comm.SerialPacketStream;
  */
 public class JRocketSerial extends JRocket {
 
-	public JRocketSerial(String port) throws Exception {
+	/**
+	 * New JRocket instance connection to MCU through a serial port.
+	 *
+	 * @param port	serial port to use for connection
+	 * @throws JRocketException
+	 */
+	public JRocketSerial(String port) throws JRocketException {
 		super();
 		
 		init(port);
 	}
 
+	/**
+ 	 * New, unconnected JRocket instance (use init to connect).
+ 	 */
 	protected JRocketSerial() {
 		super();
 	}
-	
-	protected void init(String port) throws Exception {
+
+    /**
+	 * Connect JRocket instance to MCU through a serial port.
+	 *
+	 * @param port	serial port to use for connection
+	 * @throws JRocketException
+	 */
+	protected void init(String port) throws JRocketException {
 		
-		SerialPacketStream packetStream = new SerialPacketStream();
-		packetStream.connect(port);
+		try {
+			SerialPacketStream packetStream = new SerialPacketStream();
+			packetStream.connect(port);
 		
-		super.init(packetStream);		
+			super.init(packetStream);		
+		}
+		catch(CommException e) {
+			throw new JRocketException(e); 
+		}
 	}
 	
+	/**
+ 	 * Destructor 
+ 	 */
 	@Override
-	public void finalize() throws Throwable{
+	public void finalize() throws Throwable {
 		super.finalize();
 		((SerialPacketStream)packetStream).disconnect();
 	}

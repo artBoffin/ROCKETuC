@@ -24,49 +24,71 @@ package rocketuc.jrocket.examples;
 import rocketuc.jrocket.comm.Packet;
 import rocketuc.jrocket.comm.SerialPacketStream;
 
+/**
+ * This example shows: 
+ *
+ * How to use the generic packet and packet-stream implementations
+ * to send a request to the MCU and receive a response (xfer).
+ */
 public class PacketXferExample {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		// serial packet stream to transport packets over a serial line
 		SerialPacketStream sps = new SerialPacketStream();
 		
 		try {
+			// connect the stream to serial port on ttyUSB0
 			sps.connect("/dev/ttyUSB0");
-			System.out.println("CONNECTED");
-			
+
+			// start send-/receive-threads
 			sps.start();
  
+			// received packet
 			Packet ret;
 			
-			// PIN FUNCTION digital p1.0 Packet
-			ret = sps.xfer(new Packet((byte)0x24, (byte)0x06, (byte)0x04, new byte[] { (byte)0x10, (byte)0x03 }));
+			// xfer packet for PIN FUNCTION digital p1.0 (LED on Launchpad) 
+			ret = sps.xfer(new Packet(
+				(byte)0x24, (byte)0x06, (byte)0x04, 
+				new byte[] { (byte)0x10, (byte)0x03 }));
+
 			System.out.println("Set P1.0 to digital IO responded with: " + ret);
 
+			// blink the LED on p1.0 10 times
 			for(int i = 0; i < 10; i++) {
-				// PIN CONTROL digital p1.0 
-				ret = sps.xfer(new Packet((byte)0x24, (byte)0x06, (byte)0x05, new byte[] { (byte)0x10, (byte)0x01 }));
+
+				// xfer packet for PIN CONTROL digital p1.0 HIGH 
+				ret = sps.xfer(new Packet(
+					(byte)0x24, (byte)0x06, (byte)0x05, 
+					new byte[] { (byte)0x10, (byte)0x01 }));
+
 				System.out.println("Set P1.0 HIGH responded with: " + ret);
 	
 				Thread.sleep(250);
 				
-				// PIN CONTROL digital p1.0 
-				ret = sps.xfer(new Packet((byte)0x24, (byte)0x06, (byte)0x05, new byte[] { (byte)0x10, (byte)0x00 }));
+				// xfer packet for PIN CONTROL digital p1.0 LOW 
+				ret = sps.xfer(new Packet(
+					(byte)0x24, (byte)0x06, (byte)0x05, 
+					new byte[] { (byte)0x10, (byte)0x00 }));
+
 				System.out.println("Set P1.0 LOW responded with: " + ret);
 				
 				Thread.sleep(250);
 			}
 			
+			// stop send-/receive-thread
 			sps.stop();
 			
+			// disconnect serial line
 			sps.disconnect();			
 
 			System.out.println("DISCONNECTED");
 			
-		} catch (Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}			
 	}
-
 }

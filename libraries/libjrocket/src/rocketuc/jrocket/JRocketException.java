@@ -45,7 +45,7 @@ public class JRocketException extends Exception {
 	}
 
 	/**
-	 * Serial
+	 * Default serial UID
 	 */
 	private static final long serialVersionUID = 1L;
 }

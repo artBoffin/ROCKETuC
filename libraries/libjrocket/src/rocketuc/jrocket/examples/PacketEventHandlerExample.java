@@ -25,8 +25,23 @@ import rocketuc.jrocket.comm.Packet;
 import rocketuc.jrocket.comm.PacketEventHandler;
 import rocketuc.jrocket.comm.SerialPacketStream;
 
+/**
+ * This example shows: 
+ *
+ * How to use the generic packet and packet-stream implementations
+ * to send a request to the MCU and receive responses through an
+ * event handler. 
+ *
+ * Note: to register as packet event handler, a class must be derived 
+ * from "PacketEventHandler".
+ */
 public class PacketEventHandlerExample implements PacketEventHandler {
 
+	/**
+ 	 * Callback handler for external interrupts.
+ 	 *
+ 	 * @param pkt	packet received with this interrupt from the MCU
+ 	 */
 	@Override
 	public void handleEvent(Packet pkt) {
 		System.out.println("HANDLER received packet: " + pkt);
@@ -34,31 +49,48 @@ public class PacketEventHandlerExample implements PacketEventHandler {
 
 	public static void main(String[] args) {
 		
+		// instance of the event handler
 		PacketEventHandlerExample h = new PacketEventHandlerExample();
 		
+		// packet stream over serial line
 		SerialPacketStream sps = new SerialPacketStream();
 		
 		try {
+			// connect serial line to port ttyUSB0
 			sps.connect("/dev/ttyUSB0");
-			System.out.println("CONNECTED");
 
+			// register event handler
 			sps.setEventHandler(h, true);			
+
+			// start send-/receive-threads
 			sps.start();
 			
-			// PIN FUNCTION digital p1.0 Packet
-			sps.send(new Packet((byte)0x24, (byte)0x06, (byte)0x04, new byte[] { (byte)0x10, (byte)0x03 }));
+			// send PIN FUNCTION digital out p1.0 (LED on Launchpad) 
+			sps.send(new Packet(
+				(byte)0x24, (byte)0x06, (byte)0x04, 
+				new byte[] { (byte)0x10, (byte)0x03 }));
 
+			// blinks p1.0 10 times
 			for(int i = 0; i < 10; i++) {
-				// PIN CONTROL digital p1.0 
-				sps.send(new Packet((byte)0x24, (byte)0x06, (byte)0x05, new byte[] { (byte)0x10, (byte)0x01 }));
+				// PIN CONTROL digital p1.0 LOW 
+				sps.send(new Packet(
+					(byte)0x24, (byte)0x06, (byte)0x05, 
+					new byte[] { (byte)0x10, (byte)0x01 }));
+
 				Thread.sleep(250);
 				
-				// PIN CONTROL digital p1.0 
-				sps.send(new Packet((byte)0x24, (byte)0x06, (byte)0x05, new byte[] { (byte)0x10, (byte)0x00 }));			
+				// PIN CONTROL digital p1.0 HIGH 
+				sps.send(new Packet(
+					(byte)0x24, (byte)0x06, (byte)0x05, 
+					new byte[] { (byte)0x10, (byte)0x00 }));			
+
 				Thread.sleep(250);
 			}
 			
+			// stop send-/receive-threads
 			sps.stop();
+
+			// disconnect serial line
 			sps.disconnect();
 	
 			System.out.println("DISCONNECTED");

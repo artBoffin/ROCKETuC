@@ -28,8 +28,7 @@ public class PacketException extends Exception {
 	}
 
 	/**
-	 * 
+	 * Default serial UID
 	 */
 	private static final long serialVersionUID = 1L;
-
 }

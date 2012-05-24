@@ -22,8 +22,16 @@
 package rocketuc.jrocket.examples;
 
 import rocketuc.jrocket.JRocket;
+import rocketuc.jrocket.JRocketException;
 import rocketuc.jrocket.JRocketSerial;
 
+/**
+ * This example shows: 
+ *
+ * how to connect to the MCU through serial line, 
+ * configure a pin as analog input, and perform a 
+ * single read on that pin. 
+ */
 public class JRocketAnalogReadExample {
 
 	/**
@@ -32,32 +40,42 @@ public class JRocketAnalogReadExample {
 	public static void main(String[] args) {
 		
 		try {		
+			// connect through serial line on ttyUSB0 to MCU
 			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
 			
+			// configure pin 1.5 for analog read
  			System.out.print("Set P1.5 to ANALOG: ");
 			jr.pinMode(JRocket.PIN_1_5, JRocket.ANALOG);
 			System.out.println("OK");
 
  			System.out.print("Read P1.5 ANALOG: ");
  			
+			// perform analog read on pin 1.5
 			short a = jr.analogRead(JRocket.PIN_1_5);
-			float v = (float) ((3.3 / 1025.0) * (float)a);
+
+			// convert value from analog read to volts: 
+			// - assuming Vmax is 3.3V
+			// - assuming max value from analog read is 1024
+			float v = (float) ((3.3 / 1024.0) * (float)a);
 			
 			System.out.println("OK");
 			System.out.println(" -  value : " + a + " (" + Integer.toHexString(a) + ")");
 			System.out.println(" - ~volts : " + v);
 			
+			// reset MCU
 			System.out.print("RESET: ");
 			jr.reset();
 			System.out.println("OK");
 
+			// call destructor to terminate physical connection correctely
 			jr.finalize();
 			
 			System.out.println("DONE");
-			
-		} catch (Exception e) {
+		} catch (JRocketException e) {
+			// communication on physical or protocol layer failed
 			e.printStackTrace();
 		} catch (Throwable e) {
+			// destructor (finalize) failed 
 			e.printStackTrace();
 		}			
 	}

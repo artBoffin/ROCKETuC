@@ -33,29 +33,33 @@ public class SerialPacketStream extends PacketStream {
 		super();
 	}
 
-	public void connect(String portName) throws Exception {
-		
-		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-		
-		if (portIdentifier.isCurrentlyOwned()) {
-			System.err.println("Error: Port is currently in use");
-			// TODO: throw exception
-		} else {
-			CommPort commPort = portIdentifier.open(this.getClass().getName(), 2000);
+	public void connect(String portName) throws CommException {
+			
+		try {
 
-			if (commPort instanceof SerialPort) {
-				serialPort = (SerialPort) commPort;
-				serialPort.setSerialPortParams(
+			CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+		
+			if (portIdentifier.isCurrentlyOwned()) {
+				throw new CommException("Port already in use");
+			} else {
+				CommPort commPort = portIdentifier.open(this.getClass().getName(), 2000);
+
+				if (commPort instanceof SerialPort) {
+					serialPort = (SerialPort) commPort;
+					serialPort.setSerialPortParams(
 						9600, 
 						SerialPort.DATABITS_8,
 						SerialPort.STOPBITS_1, 
 						SerialPort.PARITY_NONE);
 
-				init(serialPort.getInputStream(), serialPort.getOutputStream());
-			} else {
-				System.err.println("Error: Only serial ports are handled by this example.");
-				// TODO: throw exception
+					init(serialPort.getInputStream(), serialPort.getOutputStream());
+				} else {
+					throw new CommException("Only serial ports are supported");
+				}
 			}
+		} 
+		catch(Exception e) {
+			throw new CommException(e);
 		}
 	}
 	

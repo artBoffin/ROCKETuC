@@ -50,8 +50,7 @@ public class JRocket implements PacketEventHandler {
 	/**
  	 * OUT-bound packet of type DEVICE CONTROL 
  	 */
-	@SuppressWarnings("unused")
-	private final static byte PACKET_OUT_DEVICE_CONTROL 					= (byte)0x03;
+	private final static byte PACKET_OUT_DEVICE_CONTROL 				= (byte)0x03;
 
 	/**
  	 * OUT-bound packet of type PIN FUNCTION 
@@ -136,7 +135,7 @@ public class JRocket implements PacketEventHandler {
 	/**
  	 * Return status INVLAID DATA for the STATUS OUT-bound packet
  	 */
-	private final static byte PACKET_RETURN_INAVLID_DATA					= (byte)0x04;
+	private final static byte PACKET_RETURN_INAVLID_DATA				= (byte)0x04;
 
 	/**
  	 * Return status INVALID PIN COMMAND for the STATUS OUT-bound packet
@@ -156,7 +155,7 @@ public class JRocket implements PacketEventHandler {
 	/**
  	 * Control command PIN TOGGLE for the PIN CONTROL packet
  	 */
-	private final static byte PIN_CONTROL_TOGGLE							= (byte)0x02;
+	private final static byte PIN_CONTROL_TOGGLE						= (byte)0x02;
 
 	/**
  	 * Control command DIGITAL READ for the PIN CONTROL packet
@@ -196,7 +195,7 @@ public class JRocket implements PacketEventHandler {
 	/**
  	 * PIN function analog input
  	 */
-	private final static byte PIN_FUNCTION_ANALOG_IN						= (byte)0x04;
+	private final static byte PIN_FUNCTION_ANALOG_IN					= (byte)0x04;
 
 	/**
  	 * PIN function PWM output
@@ -216,17 +215,17 @@ public class JRocket implements PacketEventHandler {
 	/**
 	 * PIN function EXTERNAL INTERRUPT DISABLE
 	 */
-	private final static byte PIN_FUNCTION_EXTI_DISABLE 					= (byte) 0x00;
+	private final static byte PIN_FUNCTION_EXTI_DISABLE 				= (byte) 0x00;
 	
 	/**
 	 * PIN function EXTERNAL INTERRUPT HIGH-LOW
 	 */
-	private final static byte PIN_FUNCTION_EXTI_LOWHIGH 					= (byte) 0x01;
+	private final static byte PIN_FUNCTION_EXTI_LOWHIGH 				= (byte) 0x01;
 	
 	/**
 	 * PIN function EXTERNAL INTERRUPT HIGH-LOW
 	 */
-	private final static byte PIN_FUNCTION_EXTI_HIGHLOW 					= (byte) 0x02;
+	private final static byte PIN_FUNCTION_EXTI_HIGHLOW 				= (byte) 0x02;
 
 	/**
 	 * Constant to write a low value to a pin (in a call to
@@ -276,10 +275,19 @@ public class JRocket implements PacketEventHandler {
 	 */
 	public final static byte PWM = PIN_FUNCTION_PWM;
 
+	/**
+     * No edge detectino for external interrupt
+     */
 	public final static byte EDGE_NONE	= PIN_FUNCTION_EXTI_DISABLE;
 	
+	/**
+     * Low-to-high edge detectino for external interrupt
+     */
 	public final static byte EDGE_LOWHIGH = PIN_FUNCTION_EXTI_LOWHIGH;
 	
+	/**
+     * High-tolow edge detectino for external interrupt
+     */
 	public final static byte EDGE_HIGHLOW = PIN_FUNCTION_EXTI_HIGHLOW;	
 	
 	/**
@@ -590,7 +598,9 @@ public class JRocket implements PacketEventHandler {
 	}
 
 	/**
-	 * TODO
+	 * Enabled / disables external interrupts for a given pin. 
+	 * Interrupting is disabled if mode is set to EDGE_NONE, 
+	 * and enabled with EDGE_LOWHIGH or EDGE_HIGHLOW. 
 	 * 
 	 * @param pin the pin whose mode to set 
 	 * @param mode for extrnal interrupt

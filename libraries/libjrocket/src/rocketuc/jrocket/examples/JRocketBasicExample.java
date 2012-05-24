@@ -25,8 +25,16 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import rocketuc.jrocket.JRocket;
+import rocketuc.jrocket.JRocketException;
 import rocketuc.jrocket.JRocketSerial;
 
+/**
+ * This example shows: 
+ *
+ * how to connect to the MCU through serial line, 
+ * configure a pin as output (LED 1 from Launchpad), switch the output
+ * on/off, then reset the MCU. 
+ */
 public class JRocketBasicExample {
 
 	/**
@@ -35,12 +43,15 @@ public class JRocketBasicExample {
 	public static void main(String[] args) {
 		
 		try {		
+			// connect through serial line on ttyUSB0 to MCU
 			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
 
+			// send NULL packet
 			System.out.print("Sending NULL: ");
 			jr.packetNull();
 			System.out.println("OK");
 
+			// retrive system info an print it 
 			System.out.print("Sending SYSTEMINFO: ");
 			HashMap<String, Integer> inf = jr.systemInfo();
 			System.out.println("OK");
@@ -49,39 +60,47 @@ public class JRocketBasicExample {
 				System.out.println(" - " + e.getKey() + " : " + Integer.toHexString(e.getValue()));
 			}
 			
+			// configure pin 1.0 (internal LED on Launchpad) for output
  			System.out.print("Set P1.0 to OUTPUT: ");
 			jr.pinMode(JRocket.PIN_1_0, JRocket.OUTPUT);
 			System.out.println("OK");
 			
+			// set pin 1.0 to high (enable LED)
   			System.out.print("Set P1.0 to HIGH: ");
 			jr.digitalWrite(JRocket.PIN_1_0, JRocket.HIGH);
 			System.out.println("OK");
 
+			// wait 0.5 sec., then set pin 1.0 to low (disable LED by toggeling)
 			Thread.sleep(500);			
 
   			System.out.print("Set P1.0 to TOGGLE: ");
 			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
 			System.out.println("OK");
 
+			// wait 0.5 sec., then set pin 1.0 to high (enable LED by toggeling)
 			Thread.sleep(500);			
 
   			System.out.print("Set P1.0 to TOGGLE: ");
 			jr.digitalWrite(JRocket.PIN_1_0, JRocket.TOGGLE);
 			System.out.println("OK");
 			
+			// wait again 0.5 sec. then reset MCU (this again will disable the LED)
 			Thread.sleep(500);
 			
 			System.out.print("RESET: ");
 			jr.reset();
 			System.out.println("OK");
 
+			// call destructor to terminate physical connection correctely
 			jr.finalize();
 			
 			System.out.println("DONE");
-			
-		} catch (Exception e) {
+
+		} catch (JRocketException e) {
+			// communication on physical or protocol layer failed
 			e.printStackTrace();
 		} catch (Throwable e) {
+			// destructor (finalize) failed 
 			e.printStackTrace();
 		}			
 	}
