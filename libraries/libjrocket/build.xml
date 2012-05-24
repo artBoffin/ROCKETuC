@@ -23,7 +23,7 @@
 	<property name="src" location="src" />
 	<property name="dist" location="dist" />
 	<property name="build" location="bin" />
-	<property name="lib" location="/usr/share/java" />
+	<property name="lib" location="lib" />
 
 	<target name="init">
 		<tstamp />
@@ -32,7 +32,7 @@
 	</target>
 
 	<target name="compile" depends="init" description="compile the source">
-		<javac srcdir="${src}" destdir="${build}">
+		<javac srcdir="${src}" destdir="${build}" target="1.5" source="1.5">
 			<classpath>
 				<pathelement location="${lib}/RXTXcomm.jar" />
 			</classpath>

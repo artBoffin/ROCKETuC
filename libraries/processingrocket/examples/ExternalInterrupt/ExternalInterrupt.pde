@@ -9,20 +9,20 @@ MyROCKETuC r;
  */
 void setup() {
   try {
-	// connect to MCU
+    // connect to MCU
     r = new MyROCKETuC(this, "/dev/ttyUSB0");
     
-	// setup P1.0 as digital output (the build in LED on the Launchpad)
+    // setup P1.0 as digital output (the build in LED on the Launchpad)
     print("Set P1.0 to OUTPUT: ");
     r.pinMode(ROCKETuC.PIN_1_0, ROCKETuC.OUTPUT);
     println("OK");
     
-	// set P1.3 as digital input-float
+    // set P1.3 as digital input-float
     print("Set P1.3 to INPUT FLOAT: ");
     r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
     println("OK");    
     
-	// enable external interrupt for p1.3 on high-low transition
+    // enable external interrupt for p1.3 on high-low transition
     print("Enable EXTI on HIGH-LOW transition for P1.3: ");
     r.externalInterrupt(ROCKETuC.PIN_1_3, ROCKETuC.EDGE_HIGHLOW);
     println("OK");    
@@ -38,7 +38,7 @@ void setup() {
 void draw() {
   
   try {
-	// blink p1.0 by toggeling
+    // blink p1.0 by toggeling
     print("Toggle P1.0: ");
     r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
     println("OK");
