@@ -3,7 +3,7 @@ ROCKETuC Java Binding README
 sw@kaltpost.de
 ==========================================================================
 
-This is library provides a Java binding to a MCU running the ROCKETuC firmwarei.
+This is library provides a Java binding to a MCU running the ROCKETuC firmware.
 
 The README describes, how to compile the library by using ant.    
 
@@ -12,37 +12,57 @@ The README describes, how to compile the library by using ant.
 Project Directory Layout
 ------------------------
 
-TODO
+The top-level directory structure of the libjrocket project looks something like this:
+
++- build.xml       Ant build file
++- dist            Library JAR file will be placed here
++- README          This README
++- src             The Java sources
+
 
 Prerequisites
 -------------
 
-To compile all the libraries, a JDK (>= 5), Ant and RXTXcomm.jar (http://rxtx.qbang.org/) is needed. Check the "build.xml" to refelct the path where your RXTXcomm.jar is located.
+To compile all the libraries, a JDK (>= 5), Ant and RXTXcomm.jar (http://rxtx.qbang.org/)
+are needed. Check the "build.xml" to refelct the path where your RXTXcomm.jar is located.
+On Ubuntu there is a package "librxtx-java" which you could apt-get. 
+
 
 Compilation
 ------------
+
+** Using ant on the commandline
 
 To compile the sources go to the libraries top-level directory and issue:
 
 ant
 
-This will produce the binaries under "bin" 
+This will produce the binaries (classes) under "bin". To create a distributable
+JAR file, issue:
+
+ant dist
+
+This will place the library under "dist". To clean up the binaries under "bin", 
+and the library under "dist" usr:
+
+ant clean
+
+
+** Using eclipse
+
+You clould also use eclipse to compile the project. Just click on "New Project" and
+choose "Creste Project from Existing Ant file" and follow the wizzard.
 
 
 Examples
 --------
 
-Some examples are located under "src/rocketuc/jrocket/examples":
+Some examples are located under "src/rocketuc/jrocket/examples". On the commandline,
+you could run them after a successful build from the top-level library directory
+ like this:
 
-PacketEventHandlerExample
+java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.<ExampleClassToRun>
 
-Asynchronous responses from the MCU are handled by a registered event handler. To run the example:
+Or, if you produced the library with "ant dist", you could use:
 
-java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.PacketEventHandlerExample
-
-
-PacketXferExample
-
-Synchronous responses. To run the example:
-
-java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.PacketXferExample
+java -cp ./dist/lib/libjrocket.jar:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.<ExampleClassToRun>
