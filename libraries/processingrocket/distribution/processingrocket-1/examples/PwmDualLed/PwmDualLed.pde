@@ -23,8 +23,9 @@
  * This example shows:
  * 
  * how to connect to a MCU through a serial line
- * how to configure a pin for analog input (p1.5)
- * how to read the value for the analog input and convert it to volts 
+ * how to configure two pins for PWM output (p1.6+p2.1, the internal LED on the Launchpad + one extra LED)
+ * how to set the PWM period
+ * how to set the PWM duty cycle 
  */
 
 import rocketuc.processing.*;
@@ -32,39 +33,33 @@ import rocketuc.processing.*;
 // our instance of the ROCKETuC API
 ROCKETuC r;
 
-// we keep track of the last value, thus we could only update the
-// display when the previous and the current value differat min. 0.1V
-float pV = -1;
+// current duty cycle of P1.6 and P2.1
+short dc1  = 0;
+short dc2  = 0xFF;
 
-// where to disply the output on the screen
-int tx = 30;
-int ty = 70;
+// direction in which to increase/decrease the duty cycle on P1.6 and P2.1
+short dir1 =  5;
+short dir2 = -5;
 
 /**
  * setup function called by processing on startup
  */
 void setup() {  
-  
-  // screen size
-  size(480, 120);
-
-  // get font 3 with font size 24
-  PFont myFont = createFont(PFont.list()[3], 24);
-
-  // use this font for writing text 
-  textFont(myFont);
-  
-  // set background to black
-  background(0);
-             
   try {
     // connect to MCU
     r = new ROCKETuC(this, "/dev/ttyACM0");
     
-    // configure p1.5 for analog input
-    print("Set P1.5 to ANALOG: ");
-    r.pinMode(ROCKETuC.PIN_1_5, ROCKETuC.ANALOG);
+    // configure p1.6+p2.1 (build in LED + extra LED) as PWM output
+    print("Set P1.6+P2.1 to PWM: ");
+    r.pinMode(ROCKETuC.PIN_1_6, ROCKETuC.PWM);
+    r.pinMode(ROCKETuC.PIN_2_1, ROCKETuC.PWM);    
     println("OK");
+    
+    // set PWM period to 1000us on p1.6+1p2.1 
+    print("Set P1.6+P2.1 period to 1000us: ");
+    r.pwmPeriod(ROCKETuC.PIN_1_6, 1000);
+    r.pwmPeriod(ROCKETuC.PIN_2_1, 1000);    
+    println("OK");    
   }
   catch(Exception e) {
     // If something goes wrong while communication with the MCU
@@ -78,23 +73,45 @@ void setup() {
  * draw is called cyclic from processing
  */
 void draw() {
+  try {
     
-  try {    
-	// perform analog read on p1.5
-    short a = r.analogRead(ROCKETuC.PIN_1_5);
-
-    // convert value from analog read to volts: 
-    // - assuming Vmax is 3.3V
-    // - assuming max value from analog read is 1024
-    float v = (float) ((3.3 / 1024.0) * (float)a);
+    // modifiy duty cycle
+    dc1 += dir1;
     
-    // only if delta between the current value (v) and the previous value (pV)
-     // is bigger than 0.1, update the display 
-    if(pV - v > 0.1 || v - pV > 0.1) {
-      background(0);
-      text("AnalogRead P1.0: ~volts " + v, tx, ty);
-      pV = v;
+    // if max. duty cycle (0xFF) reached, reverse direction
+    if(dc1 >= 0xFF) {
+       dir1 *= -1;
+       // make sure DC is still valid
+       dc1 = 0xFF;
     }
+    // if min. duty cycle (0x00) reached, reverse direction
+    else if(dc1 <= 0x00) {
+       dir1 *= -1;
+       // make sure DC is still valid
+       dc1 = 0x00;
+    }
+
+    // modifiy duty cycle
+    dc2 += dir2;
+    
+    // if max. duty cycle (0xFF) reached, reverse direction
+    if(dc2 >= 0xFF) {
+       dir2 *= -1;
+       // make sure DC is still valid
+       dc2 = 0xFF;
+    }
+    // if min. duty cycle (0x00) reached, reverse direction
+    else if(dc2 <= 0x00) {
+       dir2 *= -1;
+       // make sure DC is still valid
+       dc2 = 0x00;
+    }
+
+    // write modified DC   
+    print("Set P1.6+P2.1 duty cycle to " + dc1 + "/" + dc2 + ": ");
+    r.pwmDuty(ROCKETuC.PIN_1_6, dc1);
+    r.pwmDuty(ROCKETuC.PIN_2_1, dc2);
+    println("OK");    
   }
   catch(Exception e) {
     // If something goes wrong while communication with the MCU

@@ -23,8 +23,8 @@
  * This example shows:
  * 
  * how to connect to a MCU through a serial line
- * how to configure a pin for digital output (p1.0, the internal LED on the Launchpad)
- * how to toggle the state for the output (blink the LED) 
+ * how to configure pins for digital output (p1.0+p1.6, the internal LEDs on the Launchpad)
+ * how to toggle the state of an digital output (blink the LED) 
  */
 
 import rocketuc.processing.*;
@@ -37,36 +37,45 @@ ROCKETuC r;
  */
 void setup() {  
   try {
-	// connect to MCU on serial port ttyUSB0
-    r = new ROCKETuC(this, "/dev/ttyUSB0");
+    // connect to MCU
+    r = new ROCKETuC(this, "/dev/ttyACM0");
     
-	// configure p1.0 (build in LED) as digital output
-    print("Set P1.0 to OUTPUT: ");
+    // configure p1.0 (build in LED) as digital output, initially set HIGH
+    print("Set P1.0 to OUTPUT/HIGH: ");
     r.pinMode(ROCKETuC.PIN_1_0, ROCKETuC.OUTPUT);
+    r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.HIGH);
     println("OK");
+
+    // configure p1.6 (build in LED) as digital output, initially set LOW
+    print("Set P1.6 to OUTPUT/LOW: ");
+    r.pinMode(ROCKETuC.PIN_1_6, ROCKETuC.OUTPUT);
+    r.digitalWrite(ROCKETuC.PIN_1_6, ROCKETuC.LOW);
+    println("OK");
+    
   }
   catch(Exception e) {
-	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
     print(e.getMessage());
   }
 }
 
 /**
- * draw is called repeadedly from processing
+ * draw is called cyclic from processing
  */
 void draw() {
   try {
     // toggle p1.0 between high/low state (LED on/off)
-    print("Toggle P1.0: ");
+    print("Toggle P1.0+P1.6: ");
     r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
+    r.digitalWrite(ROCKETuC.PIN_1_6, ROCKETuC.TOGGLE);
     println("OK");
   }
   catch(Exception e) {
-	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
     print(e.getMessage());
   }
   

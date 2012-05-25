@@ -42,7 +42,7 @@ MyROCKETuC r;
 void setup() {
   try {
     // connect to MCU
-    r = new MyROCKETuC(this, "/dev/ttyUSB0");
+    r = new MyROCKETuC(this, "/dev/ttyACM0");
     
     // setup P1.0 as digital output (the build in LED on the Launchpad)
     print("Set P1.0 to OUTPUT: ");
@@ -60,15 +60,15 @@ void setup() {
     println("OK");    
   }
   catch(Exception e) {
- 	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
     print(e.getMessage());
   }
 }
 
 /**
- * draw is called repeadedly from processing
+ * draw is called cyclic from processing
  */
 void draw() {
   
@@ -79,9 +79,9 @@ void draw() {
     println("OK");
   }
   catch(Exception e) {
- 	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
     print(e.getMessage());
   }
   

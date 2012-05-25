@@ -58,24 +58,24 @@ void setup() {
   background(0);
              
   try {
-	// connect to MCU on serial port ttyUSB0
-    r = new ROCKETuC(this, "/dev/ttyUSB0");
+    // connect to MCU
+    r = new ROCKETuC(this, "/dev/ttyACM0");
     
-	// configure p1.5 for analog input
+    // configure p1.5 for analog input
     print("Set P1.5 to ANALOG: ");
     r.pinMode(ROCKETuC.PIN_1_5, ROCKETuC.ANALOG);
     println("OK");
   }
   catch(Exception e) {
-	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
     print(e.getMessage());
   }
 }
 
 /**
- * draw is called repeadedly from processing
+ * draw is called cyclic from processing
  */
 void draw() {
     
@@ -88,8 +88,8 @@ void draw() {
     // - assuming max value from analog read is 1024
     float v = (float) ((3.3 / 1024.0) * (float)a);
     
-	// only if delta between the current value (v) and the previous value (pV)
- 	// is bigger than 0.1, update the display 
+    // only if delta between the current value (v) and the previous value (pV)
+     // is bigger than 0.1, update the display 
     if(pV - v > 0.1 || v - pV > 0.1) {
       background(0);
       text("AnalogRead P1.0: ~volts " + v, tx, ty);
@@ -97,9 +97,9 @@ void draw() {
     }
   }
   catch(Exception e) {
- 	// If something goes wrong while communication with the MCU
-	// the catch block will be precessed. Here the error handling
-	// should be done. 
-   print(e.getMessage());
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
+    print(e.getMessage());
   }
 }
