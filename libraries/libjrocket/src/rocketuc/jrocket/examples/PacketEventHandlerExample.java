@@ -42,7 +42,6 @@ public class PacketEventHandlerExample implements PacketEventHandler {
  	 *
  	 * @param pkt	packet received with this interrupt from the MCU
  	 */
-	@Override
 	public void handleEvent(Packet pkt) {
 		System.out.println("HANDLER received packet: " + pkt);
 	}
@@ -56,8 +55,8 @@ public class PacketEventHandlerExample implements PacketEventHandler {
 		SerialPacketStream sps = new SerialPacketStream();
 		
 		try {
-			// connect serial line to port ttyUSB0
-			sps.connect("/dev/ttyUSB0");
+			// connect serial line
+			sps.connect("/dev/ttyACM0");
 
 			// register event handler
 			sps.setEventHandler(h, true);			

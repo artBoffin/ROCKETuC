@@ -41,8 +41,8 @@ public class PacketXferExample {
 		SerialPacketStream sps = new SerialPacketStream();
 		
 		try {
-			// connect the stream to serial port on ttyUSB0
-			sps.connect("/dev/ttyUSB0");
+			// connect the stream to serial port
+			sps.connect("/dev/ttyACM0");
 
 			// start send-/receive-threads
 			sps.start();

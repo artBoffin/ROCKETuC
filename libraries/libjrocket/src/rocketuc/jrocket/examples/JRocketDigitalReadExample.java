@@ -44,8 +44,8 @@ public class JRocketDigitalReadExample {
 	public static void main(String[] args) {
 		
 		try {		
-			// connect through serial line on ttyUSB0 to MCU
-			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
+			// connect through serial line to MCU
+			JRocket jr = new JRocketSerial("/dev/ttyACM0");
 
 			// configure pin 1.3 (build in button) as input-float
  			System.out.print("Set P1.3 to INPUT FLOAT: ");

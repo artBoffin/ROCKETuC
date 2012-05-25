@@ -43,8 +43,8 @@ public class JRocketBasicExample {
 	public static void main(String[] args) {
 		
 		try {		
-			// connect through serial line on ttyUSB0 to MCU
-			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
+			// connect through serial line to MCU
+			JRocket jr = new JRocketSerial("/dev/ttyACM0");
 
 			// send NULL packet
 			System.out.print("Sending NULL: ");

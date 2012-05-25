@@ -70,8 +70,8 @@ public class JRocketExternalInterruptExample extends JRocketSerial{
 	public static void main(String[] args) {
 		
 		try {		
-			// connect through serial line on ttyUSB0 to MCU
-			JRocket jr = new JRocketExternalInterruptExample("/dev/ttyUSB0");
+			// connect through serial line to MCU
+			JRocket jr = new JRocketExternalInterruptExample("/dev/ttyACM0");
 
 			// configure pin 1.3 (internal button on Launchpad) as input-float
  			System.out.print("Set P1.3 to INPUT FLOAT: ");
