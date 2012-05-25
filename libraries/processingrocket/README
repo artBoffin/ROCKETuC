@@ -1,1 +1,72 @@
-TODO
+ROCKETuC Processing Library README
+25.04.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This is library provides a processing library for connecting to a MCU running 
+the ROCKETuC firmware. This is basically a processing wrapper around "libjrocket". 
+
+The README describes, how to compile the library by using ant.    
+
+NOTE: The library supports Processing 2.0 only!
+
+
+Project Directory Layout
+------------------------
+
+The top-level directory structure of the processingrocket project looks something like this:
+
++- data          Extra data that goes into the processing library
++- distribution  The distributable processing library goes here
++- examples      PDE examples that go into the processing library
++- extlib        Third-Party libraries needed at compiltime
++- lib           Third-Party libraries that go into processing library
++- sketchbook    If no other directory was configured, sketchbook for library testing in 
+                 processing
++- README        This README
++- resources     Resources needed for building, includes "build.xml" and "build.properties" 
++- src           Java sources for the processing library
++- web           HTML page with summary for this library
+
+
+Prerequisites
+-------------
+
+To compile all the libraries, a JDK (>= 5), and Ant are needed. 
+
+Since this library relays on "libjrocket", this library needs to be in place as 
+well. By default, it is included as a symlink under the "lib" subdirectory. If, 
+for some reason, this does not work for your (e.g. because your OS does not support 
+symlinks), then just hardcopy the library from "i../libjrocket/dist/lib" to "lib". 
+
+For instructions on how to compile "libjerocket" see the README in that projects
+sub-directory. 
+
+Also check "build.properties" under "ressources" to reflect your path for the sketchbook location.
+By default a sketchbook is created in the projects top-level directory.
+
+
+Compilation
+------------
+
+** Using ant on the commandline
+
+To compile the sources go to the "ressources" directory of the library and issue:
+
+ant
+
+This will produce the distributable processing library as a ZIP-file under 
+distribution. It will also put the library into your "sketchbook" location 
+so you could check the library with processing imidiately. 
+
+
+** Using eclipse
+
+You clould also use eclipse to compile the project. Just click on "New Project" and
+choose "Creste Project from Existing Ant file" and follow the wizzard.
+
+
+Examples
+--------
+
+After compiling the library and (re-)starting processing, go to "File/Example", choose "Contributed Libraries" and open "processingrocket" to see the available PDE examples.
