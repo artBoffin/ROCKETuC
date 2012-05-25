@@ -16,6 +16,7 @@ The top-level directory structure of the libjrocket project looks something like
 
 +- build.xml       Ant build file
 +- dist            Library JAR file will be placed here
++- extlib          Third party libraries
 +- README          This README
 +- src             The Java sources
 
@@ -23,9 +24,7 @@ The top-level directory structure of the libjrocket project looks something like
 Prerequisites
 -------------
 
-To compile all the libraries, a JDK (>= 5), Ant and RXTXcomm.jar (http://rxtx.qbang.org/)
-are needed. Check the "build.xml" to refelct the path where your RXTXcomm.jar is located.
-On Ubuntu there is a package "librxtx-java" which you could apt-get. 
+To compile all the libraries, a JDK (>= 5), and Ant are needed.
 
 
 Compilation
@@ -59,10 +58,14 @@ Examples
 
 Some examples are located under "src/rocketuc/jrocket/examples". On the commandline,
 you could run them after a successful build from the top-level library directory
- like this:
+like this:
 
-java -cp ./bin:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.<ExampleClassToRun>
+java -cp ./bin:./extlib/RXTXcomm.jar -Djava.library.path=extlib/<YourPlatform>/ 
+      rocketuc.jrocket.examples.<ExampleClassToRun>
 
 Or, if you produced the library with "ant dist", you could use:
 
-java -cp ./dist/lib/libjrocket.jar:/usr/share/java/RXTXcomm.jar rocketuc.jrocket.examples.<ExampleClassToRun>
+java -cp ./dist/lib/libjrocket.jar:./extlib/RXTXcomm.jar -Djava.library.path=extlib/<YourPlatform>/ 
+     rocketuc.jrocket.examples.<ExampleClassToRun>
+
+NOTE: <YourPlatform> is one of: linux32, linux64, windows32, macosx32.
