@@ -273,7 +273,9 @@ int pin_setup(unsigned char pin, unsigned char function)
 
 		if(port == 1) {
 			// only one pin on port 1 is able to perform PWM
-			if(pin_with_function(PIN_1_0, function) < PIN_2_0) { 
+			unsigned char pf = pin_with_function(PIN_1_0, function);
+
+			if(pf > 0 && pf < PIN_2_0) { 
 				return PIN_STAT_ERR_UNSUPFUNC;
 			}
 			P1DIR |=  bit;					// set direction to out                 
