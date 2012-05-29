@@ -21,6 +21,7 @@
 
 <project name="jrocket" default="compile" basedir=".">
 	<property name="src" location="src" />
+	<property name="doc" location="doc/gen" />
 	<property name="dist" location="dist" />
 	<property name="build" location="bin" />
 	<property name="lib" location="extlib" />
@@ -30,6 +31,7 @@
 		<tstamp />
 		<mkdir dir="${build}" />
 		<mkdir dir="${dist}" />
+		<mkdir dir="${doc}" />
 	</target>
 
 	<target name="compile" depends="init" description="compile the source">
@@ -46,9 +48,26 @@
 		       excludes="rocketuc/jrocket/examples/**"
 		  />
 	</target>
+
+	<target name="javadoc">
+		<javadoc bottom="Java Binding to ROCKETuC" 
+				destdir="${doc}" 
+				verbose="false" 
+				doctitle="Javadocs: libjrocket" 
+				public="true" version="false">
+ 			<classpath>
+				<pathelement location="${lib}/RXTXcomm.jar" />
+				<pathelement location="${build}" />
+			</classpath>
+ 			<fileset dir="${src}" defaultexcludes="yes">
+				<include name="**/*"/>
+			</fileset>
+	 	</javadoc>
+	</target>
 	
 	<target name="clean" description="clean up">
 		<delete dir="${build}" />
+		<delete dir="${doc}" />
 	</target>
 
 </project>
