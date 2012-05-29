@@ -64,6 +64,7 @@ void setup() {
     // the catch block will be processed. Here the error handling
     // should be done. 
     print(e.getMessage());
+	exit();
   }
 }
 
