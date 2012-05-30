@@ -1,0 +1,560 @@
+ROCKETuC Processing Library GETTING STARTED 
+28.05.2012 Stefan Wendler
+sw@kaltpost.de
+==========================================================================
+
+This document describes the basic usage of the processing library for ROCKETuC. 
+
+
+Prerequisites
+-------------
+
+It is assumed, that the following is in place:
+
+* Processing >= 2.0 
+* A copy of the ROCKETuC Processing Library Distribution
+* A TI Launchpad equipped with the MSP430G2553 connected to the USB 
+  port of your PC, and the virtual COM port it is using is known.
+* Your sketchbook location is known
+
+
+Flashing the Firmware to your Launchpad
+---------------------------------------
+
+** On Linux
+
+TODO
+
+** On MacOSX
+
+TODO: I just don't know how
+
+** On Windows
+
+TODO: I just don't know how
+
+
+Installing Processing
+---------------------
+
+** On Linux
+
+TODO
+
+** On MacOSX
+
+TODO
+
+** On Windows
+
+TODO
+
+
+Installing the ROCKETuC Library
+-------------------------------
+
+** Extract the Library 
+
+Make sure processing is not running. Change to your sketchbook folder. 
+
+Some known default locations are: 
+
+* For Linux users, the sketchbook folder is located under ~/sketchbook.
+* For Mac users, the sketchbook folder is located inside ~/Documents/Processing.  
+* For Windows users, the sketchbook folder is located inside 'My Documents'/Processing.
+
+In the sketchbook folder create a subfolder "processingrocket". Then extract the contents 
+of the library distribution "processingrocket.zip" into this new subfolder. Your sketchbook
+should look something like this after you extracted the library:
+
+sketchbook/
++-- libraries
+    +-- processingrocket
+        +-- examples
+        +-- library
+        +-- reference
+        +-- src
+
+
+** Check the Installation
+
+Now start processing, then select "Examples" from the "File" menu. In the examples window 
+navigate to "Contributed". There you should see an entry "processingrocket". When
+opening this entry, the available exmaples for processing should be shown. If you don't
+see the "processingrocket" entry at all, double check you extracted everything into the
+correct sketchbook location.   
+
+
+Basic API Usage
+---------------
+
+In the following sub-section it will be shown, how the API basics work. We create a 
+sketch which blinks the build LED on pin 1.0 of the Launchpad. To follow the 
+examples you may want to create a new sketch in processing. 
+
+
+** Import "processingreocket" Functionality
+
+Every sketch that wishes to use ROCKETuC functionality must import the corresponding
+library packet. This is done at the beginning of your skatch by using the import 
+statement:
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+
+** Create an API Instance
+
+Next an API instance to work on is needed. The instance needs to know, to which serial 
+port your Launchpad/MCU is connected (it is also possible to create multible instances
+if you connected more then one Launchpad). The API functionality later on is called by
+referencing to the instance through its instance variable. Since we my want to use 
+ROCKETuC API functionality all accross out sketch, it is a good idea to make the instance
+variable global: 
+
+  // our instance of the ROCKETuC API referenced through variable r
+  ROCKETuC r;
+
+A good place for instance creation is the "setup" method of your sketch. This method is
+called be processing once you run your sketch:
+
+  /**
+   * setup function called by processing on startup
+   */
+  void setup() {  
+    try {
+	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+      r = new ROCKETuC(this, "/dev/ttyACM0");
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+The above example shows, that on instance creation (new ROCKERuC ...), the 
+serial port to which the MCU is connected has to be passed along, and that
+the instance creating is enclosed into a "try-catch" statement. This is 
+because the API imidiately tries to connect to the MCU through the serial 
+port given. If connection to the MCU fails, an exeption is thrown by the 
+API. The exception is then handled by the catch staement. Since it is
+pretty hoples to continue with the sketch if the initial connection fails,
+the error message from the exeption is printed out, and then the skatch 
+is terminated. 
+
+
+** Configure the PIN functionality
+
+Now that we have a connection to the MCU establised, we have to tell the MCU
+what pins we like to use in out skatch, and what functionality we intend
+these pins to perform. Configuring the PIN functionality could also be done 
+in the "setup" method of your sketch since it has to be perfomred only once. 
+
+The following code snipped shows how to configrure the build in LED on pin 1.0
+of the Launchpad as an digital output: 
+
+ /**
+  * setup function called by processing on startup
+  */
+  void setup() {  
+    try {
+	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+      r = new ROCKETuC(this, "/dev/ttyACM0");
+    
+      // configure p1.0 (build in LED) as digital output, initially set HIGH
+      r.pinMode(ROCKETuC.PIN_1_0, ROCKETuC.OUTPUT);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+The API operation to configure pin functionality is "pinMode". It takes two parameters: 
+the pin to configure and the function which should be set for that pin. Again, this
+could go wrong, and thus the statement is also placed insed the "try-catch" block. 
+
+What should go wrong here you may ask? Well there are a lots of possiblilities: 
+
+* Connection of MCU droopped
+* Not all pins support all functions
+* The pin you passed allong is reserved for internal use
+* The pin is not knwon on the particular MCU attached to the Launchpad
+
+
+** Perform an Operation on a Pin 
+
+Now that we configured our pin successfully, we wan' to do something whith it. For a pin 
+configured as digital output (as shown above), its state (high/low) could be changed
+by using the "digitalWrite" API functionality. If for example we want to toggle the 
+state of the digital output for blinking the build in LED, we could call "digitalWrite"
+within the "draw" method of out skatch. This method is called repeadedly from processing
+(normally to do screen updates):
+
+/**
+ * draw is called cyclic from processing
+ */
+void draw() {
+  try {
+    // toggle pin 1.0 between high/low state (LED on/off)
+    r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
+  }
+  catch(Exception e) {
+     // If something goes wrong while communication with the MCU
+     // the catch block will be processed. Here the error handling
+     // should be done. 
+     println(e.getMessage());
+	exit();
+  }
+  
+  // wait a little 
+  delay(500);
+}
+
+As for the other ROCKETuC API functions, digitalWrite could also thrown an exception if
+somethign went wrong. E.g. communication to the MCU could break down, or you where trying
+to perform an operation on a PIN for which it was not configured. E.g. if you configured 
+your pin for analog input, ant then later on try to perform a digital write on that pin, 
+an exception will be thrown. 
+
+"digitalWrite" takes two parameters, the PIN to which to write, and the status. The 
+status is one of "ROCKETuC.HIGH", "ROCKETuC.LOW" or "ROCKETuC.TOGGLE". 
+ 
+
+** The Complete Sketch
+
+Our complete skatch which blinks the LED on P1.0 then looks like this:
+
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+  // our instance of the ROCKETuC API referenced through variable r
+  ROCKETuC r;
+
+  /**
+   * setup function called by processing on startup
+   */
+  void setup() {  
+    try {
+	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+      r = new ROCKETuC(this, "/dev/ttyACM0");
+    
+      // configure p1.0 (build in LED) as digital output, initially set HIGH
+      r.pinMode(ROCKETuC.PIN_1_0, ROCKETuC.OUTPUT);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+/**
+ * draw is called cyclic from processing
+ */
+void draw() {
+  try {
+    // toggle pin 1.0 between high/low state (LED on/off)
+    r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
+  }
+  catch(Exception e) {
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
+    println(e.getMessage());
+	exit();
+  }
+  
+  // wait a little 
+  delay(500);
+}
+
+
+Digital Input
+-------------
+
+In the previous section we configured a pin for digital output. Now we will 
+have a look on how to use digitail input. In this example we are going to 
+configure pin 1.3 (the build in user button on the Launchpad) as digital input,
+and then read in its current state. 
+
+
+** Import "processingreocket" Functionality
+
+see "Basic API Usage"
+
+
+** Create an API Instance
+
+see "Basic API Usage"
+
+
+** Configure the PIN functionality
+
+For configuring the pins functionality, again "pinMode" is used. This time we want 
+the pin 1.3 to be in mode "ROCKETuC.INPUT":
+
+ // set P1.3 as digital input
+ r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+
+ROCKETuC knows three different input configuration one could assign to pin:
+
+INPUT    : It is assumed, that an external pull-up/down resistor is provided. 
+           This mode is often reffered as floating. The internal button on P1.3
+           on the Launchpad has an external pull-up resistor.  
+
+PULLUP   : Internal pull-up resitor is enabled. Thus, initial state is high, 
+           and e.g. a connected button must connect to ground if closed. 
+
+PULLDOWN : Internal pull-down resitor is enabled. Thus, initial state is low, 
+           and e.g. a connected button must connect to VCC if closed. 
+
+
+** Perform an Operation on a Pin 
+
+The operation that could be performed on a pin configured as digital input is 
+"digitalRead". The function takes as argument a pin for which to perform the 
+read and returns the current state of the pin (high or low). E.g. to check if
+button at pin 1.3 is pressed, we could do the following: 
+
+ // read pin 1.3 until state changed form high to low
+ if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
+   println("Button pressed!");
+ }
+	
+
+** The Complete Sketch
+
+Our complete sketch which checks if button on  P1.3 was pressed may look like this:
+
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+  // our instance of the ROCKETuC API referenced through variable r
+  ROCKETuC r;
+
+  /**
+   * setup function called by processing on startup
+   */
+  void setup() {  
+    try {
+	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+      r = new ROCKETuC(this, "/dev/ttyACM0");
+    
+      // set P1.3 as digital input
+      r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+/**
+ * draw is called cyclic from processing
+ */
+void draw() {
+  try {
+    // read pin 1.3 until state changed form high to low
+    if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
+      println("Button pressed!");
+    }
+  }
+  catch(Exception e) {
+    // If something goes wrong while communication with the MCU
+    // the catch block will be processed. Here the error handling
+    // should be done. 
+    println(e.getMessage());
+	exit();
+  }
+}
+
+External Interrupts
+-------------------
+
+Since polling the state of an digital input is not very elegant nor very performant, 
+one could configure ROCKETuC to send and interrupt every time a monitored pin changes 
+its state. To reveive such an interrupt, one has to override the intrrupt handler
+by deriving a class from the ROCKETuC API class. 
+
+** Import "processingreocket" Functionality
+
+see "Basic API Usage"
+
+
+** Create an API Instance
+
+see "Basic API Usage"
+
+
+** Configure the PIN functionality
+
+First pin 1.3 has to be configured to be an input:
+ 
+ // set P1.3 as digital input
+ r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+
+Additionally we use "" to configure interrupting for this pin. "" takes two argument: 
+the pin for which to receive interrupts, and the for which state change to receive interrupts.
+
+ // enable external interrupt for p1.3 on high-low transition
+ r.externalInterrupt(ROCKETuC.PIN_1_3, ROCKETuC.EDGE_HIGHLOW);
+
+The API knows the following state change conditions: 
+
+EDGE_HIGHLOW   state on input changed from high to low
+
+EDGE_LOWHIGH   state on input changed from low to high
+
+EDGE_NONE      disables previously enabled interrupting 
+
+
+** Write the Interrupt Handler
+
+Writing the interrupt handler is as simple as deriving a new class from ROCKETuC
+and then providing out own implementation of "externalInterrupt". Everytime an
+external interrupt happens, this operation is called through the API. The pin on
+which the interrupt happened is passed in as parameter. In out skatch we now use 
+"MyROCKETuC" instead of "ROCKETuC".
+
+
+ /**
+  * We derive a class from ROCKETuC to override the
+  * event handler for the external interrupt.
+  */
+ class MyROCKETuC extends ROCKETuC {
+    
+   /**
+    * Constructor just passes values to parent class
+    */
+   MyROCKETuC(PApplet applet, String port) throws Exception {
+     super(applet, port);
+   }
+  
+   /**
+    * Interrupt handler, called every time p1.3 goes from high to low
+    */
+   void externalInterrupt(short pin) {
+     // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
+     // and 19 in dec.  
+     println("External interrupt on PIN: " + pin);
+   }  
+ }
+
+
+** The Complete Sketch
+
+Our complete sketch which handles presses on button on  P1.3 may look like this:
+
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+  // our instance of the ROCKETuC API referenced through variable r
+  // note that we use our extended class here
+  MyROCKETuC r;
+
+  /**
+   * setup function called by processing on startup
+   */
+  void setup() {  
+    try {
+	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+      // note that we use our extended class here
+      r = new MyROCKETuC(this, "/dev/ttyACM0");
+    
+      // set P1.3 as digital input
+      r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+
+      // enable external interrupt for p1.3 on high-low transition
+      r.externalInterrupt(ROCKETuC.PIN_1_3, ROCKETuC.EDGE_HIGHLOW);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+ /**
+  * We derive a class from ROCKETuC to override the
+  * event handler for the external interrupt.
+  */
+ class MyROCKETuC extends ROCKETuC {
+    
+   /**
+    * Constructor just passes values to parent class
+    */
+   MyROCKETuC(PApplet applet, String port) throws Exception {
+     super(applet, port);
+   }
+  
+   /**
+    * Interrupt handler, called every time p1.3 goes from high to low
+    */
+   void externalInterrupt(short pin) {
+     // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
+     // and 19 in dec.  
+     println("External interrupt on PIN: " + pin);
+   }  
+ }
+
+
+Analog Input
+------------
+
+** Import "processingreocket" Functionality
+
+see "Basic API Usage"
+
+
+** Create an API Instance
+
+see "Basic API Usage"
+
+
+** Configure the PIN functionality
+
+see "Basic API Usage"
+
+
+TODO
+
+
+Pulse Width Modulation
+----------------------
+
+** Import "processingreocket" Functionality
+
+see "Basic API Usage"
+
+
+** Create an API Instance
+
+see "Basic API Usage"
+
+
+** Configure the PIN functionality
+
+see "Basic API Usage"
+
+
+TODO
+
+
+

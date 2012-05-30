@@ -63,7 +63,7 @@ void setup() {
     // If something goes wrong while communication with the MCU
     // the catch block will be processed. Here the error handling
     // should be done. 
-    print(e.getMessage());
+    println(e.getMessage());
 	exit();
   }
 }
@@ -83,7 +83,8 @@ void draw() {
     // If something goes wrong while communication with the MCU
     // the catch block will be processed. Here the error handling
     // should be done. 
-    print(e.getMessage());
+    println(e.getMessage());
+	exit();
   }
   
   // wait a little
