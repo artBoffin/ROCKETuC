@@ -258,25 +258,25 @@ Our complete skatch which blinks the LED on P1.0 then looks like this:
     }
   }
 
-/**
- * draw is called cyclic from processing
- */
-void draw() {
-  try {
-    // toggle pin 1.0 between high/low state (LED on/off)
-    r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
-  }
-  catch(Exception e) {
-    // If something goes wrong while communication with the MCU
-    // the catch block will be processed. Here the error handling
-    // should be done. 
-    println(e.getMessage());
-	exit();
-  }
+  /**
+   * draw is called cyclic from processing
+   */
+  void draw() {
+    try {
+      // toggle pin 1.0 between high/low state (LED on/off)
+      r.digitalWrite(ROCKETuC.PIN_1_0, ROCKETuC.TOGGLE);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+      exit();
+    }
   
-  // wait a little 
-  delay(500);
-}
+    // wait a little 
+    delay(500);
+  }
 
 
 Digital Input
@@ -326,10 +326,10 @@ The operation that could be performed on a pin configured as digital input is
 read and returns the current state of the pin (high or low). E.g. to check if
 button at pin 1.3 is pressed, we could do the following: 
 
- // read pin 1.3 until state changed form high to low
- if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
-   println("Button pressed!");
- }
+  // read pin 1.3 until state changed form high to low
+  if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
+    println("Button pressed!");
+  }
 	
 
 ** The Complete Sketch
@@ -343,44 +343,45 @@ Our complete sketch which checks if button on  P1.3 was pressed may look like th
   // our instance of the ROCKETuC API referenced through variable r
   ROCKETuC r;
 
-  /**
-   * setup function called by processing on startup
-   */
-  void setup() {  
-    try {
-	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
-      r = new ROCKETuC(this, "/dev/ttyACM0");
+   /**
+    * setup function called by processing on startup
+    */
+   void setup() {  
+     try {
+ 	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+        r = new ROCKETuC(this, "/dev/ttyACM0");
     
-      // set P1.3 as digital input
-      r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+        // set P1.3 as digital input
+        r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+     }
+     catch(Exception e) {
+        // If something goes wrong while communication with the MCU
+        // the catch block will be processed. Here the error handling
+        // should be done. 
+        println(e.getMessage());
+        exit();
+      }
+   }
+
+  /**
+   * draw is called cyclic from processing
+   */
+  void draw() {
+    try {
+      // read pin 1.3 until state changed form high to low
+      if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
+        println("Button pressed!");
+      }
     }
     catch(Exception e) {
       // If something goes wrong while communication with the MCU
       // the catch block will be processed. Here the error handling
       // should be done. 
       println(e.getMessage());
-	  exit();
+      exit();
     }
+    delay(100);
   }
-
-/**
- * draw is called cyclic from processing
- */
-void draw() {
-  try {
-    // read pin 1.3 until state changed form high to low
-    if(r.digitalRead(ROCKETuC.PIN_1_3) == ROCKETuC.LOW) {
-      println("Button pressed!");
-    }
-  }
-  catch(Exception e) {
-    // If something goes wrong while communication with the MCU
-    // the catch block will be processed. Here the error handling
-    // should be done. 
-    println(e.getMessage());
-	exit();
-  }
-}
 
 External Interrupts
 -------------------
@@ -404,14 +405,14 @@ see "Basic API Usage"
 
 First pin 1.3 has to be configured to be an input:
  
- // set P1.3 as digital input
- r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
+  // set P1.3 as digital input
+  r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
 
 Additionally we use "" to configure interrupting for this pin. "" takes two argument: 
 the pin for which to receive interrupts, and the for which state change to receive interrupts.
 
- // enable external interrupt for p1.3 on high-low transition
- r.externalInterrupt(ROCKETuC.PIN_1_3, ROCKETuC.EDGE_HIGHLOW);
+  // enable external interrupt for p1.3 on high-low transition
+   r.externalInterrupt(ROCKETuC.PIN_1_3, ROCKETuC.EDGE_HIGHLOW);
 
 The API knows the following state change conditions: 
 
@@ -431,28 +432,28 @@ which the interrupt happened is passed in as parameter. In out skatch we now use
 "MyROCKETuC" instead of "ROCKETuC".
 
 
- /**
-  * We derive a class from ROCKETuC to override the
-  * event handler for the external interrupt.
-  */
- class MyROCKETuC extends ROCKETuC {
+  /**
+   * We derive a class from ROCKETuC to override the
+   * event handler for the external interrupt.
+   */
+  class MyROCKETuC extends ROCKETuC {
     
-   /**
-    * Constructor just passes values to parent class
-    */
-   MyROCKETuC(PApplet applet, String port) throws Exception {
-     super(applet, port);
-   }
+    /**
+     * Constructor just passes values to parent class
+     */
+    MyROCKETuC(PApplet applet, String port) throws Exception {
+      super(applet, port);
+    }
   
-   /**
-    * Interrupt handler, called every time p1.3 goes from high to low
-    */
-   void externalInterrupt(short pin) {
-     // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
-     // and 19 in dec.  
-     println("External interrupt on PIN: " + pin);
-   }  
- }
+    /**
+     * Interrupt handler, called every time p1.3 goes from high to low
+      */
+    void externalInterrupt(short pin) {
+      // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
+      // and 19 in dec.  
+      println("External interrupt on PIN: " + pin);
+    }  
+  }
 
 
 ** The Complete Sketch
@@ -487,32 +488,32 @@ Our complete sketch which handles presses on button on  P1.3 may look like this:
       // the catch block will be processed. Here the error handling
       // should be done. 
       println(e.getMessage());
-	  exit();
+      exit();
     }
   }
 
- /**
-  * We derive a class from ROCKETuC to override the
-  * event handler for the external interrupt.
-  */
- class MyROCKETuC extends ROCKETuC {
+  /**
+   * We derive a class from ROCKETuC to override the
+   * event handler for the external interrupt.
+   */
+  class MyROCKETuC extends ROCKETuC {
     
-   /**
-    * Constructor just passes values to parent class
-    */
-   MyROCKETuC(PApplet applet, String port) throws Exception {
-     super(applet, port);
-   }
+    /**
+     * Constructor just passes values to parent class
+     */
+    MyROCKETuC(PApplet applet, String port) throws Exception {
+      super(applet, port);
+    }
   
-   /**
-    * Interrupt handler, called every time p1.3 goes from high to low
-    */
-   void externalInterrupt(short pin) {
-     // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
-     // and 19 in dec.  
-     println("External interrupt on PIN: " + pin);
-   }  
- }
+    /**
+     * Interrupt handler, called every time p1.3 goes from high to low
+     */
+    void externalInterrupt(short pin) {
+      // The pin returned is in HEX notation. E.g. pin 1.3 is 0x13 in HEX,
+      // and 19 in dec.  
+      println("External interrupt on PIN: " + pin);
+    }  
+  }
 
 
 Analog Input
