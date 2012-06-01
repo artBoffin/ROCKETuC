@@ -13,6 +13,7 @@ It is assumed, that the following is in place:
 
 * Processing >= 2.0 
 * A copy of the ROCKETuC Processing Library Distribution
+* A copy of the ROCKETuC firmware for the Launchpad
 * A TI Launchpad equipped with the MSP430G2553 connected to the USB 
   port of your PC, and the virtual COM port it is using is known.
 * Your sketchbook location is known
@@ -23,7 +24,19 @@ Flashing the Firmware to your Launchpad
 
 ** On Linux
 
-TODO
+To perform this step, "mspdebug" tool is needed. On Ubuntu, the tool is available
+as installable package. 
+
+You should have downloaded the ROCKETuC firmware as a binary in ELF format.
+We assume, that this firmware has the name "ROCKETuC-serial-rocket-firmware.elf".
+
+To flash the firmware to the Launchpad, make sure the Launchpad is connect, the
+download the firmware to the device by using "mspdebug":
+
+  mspdebug rf2500 "prog ROCKETuC-serial-rocket-firmware.elf"
+
+After a short while, "mspdebug" should return with a success message. 
+
 
 ** On MacOSX
 
@@ -63,8 +76,8 @@ Some known default locations are:
 * For Mac users, the sketchbook folder is located inside ~/Documents/Processing.  
 * For Windows users, the sketchbook folder is located inside 'My Documents'/Processing.
 
-In the sketchbook folder create a subfolder "processingrocket". Then extract the contents 
-of the library distribution "processingrocket.zip" into this new subfolder. Your sketchbook
+In the sketchbook folder create a sub-folder "processingrocket". Then extract the contents 
+of the library distribution "processingrocket.zip" into this new sub-folder. Your sketchbook
 should look something like this after you extracted the library:
 
 sketchbook/
@@ -80,7 +93,7 @@ sketchbook/
 
 Now start processing, then select "Examples" from the "File" menu. In the examples window 
 navigate to "Contributed". There you should see an entry "processingrocket". When
-opening this entry, the available exmaples for processing should be shown. If you don't
+opening this entry, the available examples for processing should be shown. If you don't
 see the "processingrocket" entry at all, double check you extracted everything into the
 correct sketchbook location.   
 
@@ -93,10 +106,10 @@ sketch which blinks the build LED on pin 1.0 of the Launchpad. To follow the
 examples you may want to create a new sketch in processing. 
 
 
-** Import "processingreocket" Functionality
+** Import "processingrocket" Functionality
 
 Every sketch that wishes to use ROCKETuC functionality must import the corresponding
-library packet. This is done at the beginning of your skatch by using the import 
+library packet. This is done at the beginning of your sketch by using the import 
 statement:
 
   // import ROCKETuC API
@@ -106,10 +119,10 @@ statement:
 ** Create an API Instance
 
 Next an API instance to work on is needed. The instance needs to know, to which serial 
-port your Launchpad/MCU is connected (it is also possible to create multible instances
+port your Launchpad/MCU is connected (it is also possible to create multiple instances
 if you connected more then one Launchpad). The API functionality later on is called by
 referencing to the instance through its instance variable. Since we my want to use 
-ROCKETuC API functionality all accross out sketch, it is a good idea to make the instance
+ROCKETuC API functionality all across out sketch, it is a good idea to make the instance
 variable global: 
 
   // our instance of the ROCKETuC API referenced through variable r
@@ -135,25 +148,25 @@ called be processing once you run your sketch:
     }
   }
 
-The above example shows, that on instance creation (new ROCKERuC ...), the 
+The above example shows, that on instance creation (new ROCKETuC ...), the 
 serial port to which the MCU is connected has to be passed along, and that
 the instance creating is enclosed into a "try-catch" statement. This is 
-because the API imidiately tries to connect to the MCU through the serial 
-port given. If connection to the MCU fails, an exeption is thrown by the 
-API. The exception is then handled by the catch staement. Since it is
-pretty hoples to continue with the sketch if the initial connection fails,
-the error message from the exeption is printed out, and then the skatch 
+because the API  tries to connect to the MCU through the serial 
+port given. If connection to the MCU fails, an exception is thrown by the 
+API. The exception is then handled by the catch statement. Since it is
+pretty hopeless to continue with the sketch if the initial connection fails,
+the error message from the exception is printed out, and then the sketch 
 is terminated. 
 
 
-** Configure the PIN functionality
+** Configure the PIN Functionality
 
-Now that we have a connection to the MCU establised, we have to tell the MCU
-what pins we like to use in out skatch, and what functionality we intend
+Now that we have a connection to the MCU established, we have to tell the MCU
+what pins we like to use in out sketch, and what functionality we intend
 these pins to perform. Configuring the PIN functionality could also be done 
-in the "setup" method of your sketch since it has to be perfomred only once. 
+in the "setup" method of your sketch since it has to be performed only once. 
 
-The following code snipped shows how to configrure the build in LED on pin 1.0
+The following code snipped shows how to configure the build in LED on pin 1.0
 of the Launchpad as an digital output: 
 
  /**
@@ -178,23 +191,23 @@ of the Launchpad as an digital output:
 
 The API operation to configure pin functionality is "pinMode". It takes two parameters: 
 the pin to configure and the function which should be set for that pin. Again, this
-could go wrong, and thus the statement is also placed insed the "try-catch" block. 
+could go wrong, and thus the statement is also placed inside the "try-catch" block. 
 
-What should go wrong here you may ask? Well there are a lots of possiblilities: 
+What should go wrong here you may ask? Well there are a lots of possibilities: 
 
-* Connection of MCU droopped
+* Connection of MCU dropped
 * Not all pins support all functions
-* The pin you passed allong is reserved for internal use
-* The pin is not knwon on the particular MCU attached to the Launchpad
+* The pin you passed along is reserved for internal use
+* The pin is not known on the particular MCU attached to the Launchpad
 
 
 ** Perform an Operation on a Pin 
 
-Now that we configured our pin successfully, we wan' to do something whith it. For a pin 
+Now that we configured our pin successfully, we wan' to do something with it. For a pin 
 configured as digital output (as shown above), its state (high/low) could be changed
 by using the "digitalWrite" API functionality. If for example we want to toggle the 
 state of the digital output for blinking the build in LED, we could call "digitalWrite"
-within the "draw" method of out skatch. This method is called repeadedly from processing
+within the "draw" method of out sketch. This method is called repeatedly from processing
 (normally to do screen updates):
 
 /**
@@ -218,7 +231,7 @@ void draw() {
 }
 
 As for the other ROCKETuC API functions, digitalWrite could also thrown an exception if
-somethign went wrong. E.g. communication to the MCU could break down, or you where trying
+something went wrong. E.g. communication to the MCU could break down, or you where trying
 to perform an operation on a PIN for which it was not configured. E.g. if you configured 
 your pin for analog input, ant then later on try to perform a digital write on that pin, 
 an exception will be thrown. 
@@ -229,7 +242,7 @@ status is one of "ROCKETuC.HIGH", "ROCKETuC.LOW" or "ROCKETuC.TOGGLE".
 
 ** The Complete Sketch
 
-Our complete skatch which blinks the LED on P1.0 then looks like this:
+Our complete sketch which blinks the LED on P1.0 then looks like this:
 
 
   // import ROCKETuC API
@@ -283,7 +296,7 @@ Digital Input
 -------------
 
 In the previous section we configured a pin for digital output. Now we will 
-have a look on how to use digitail input. In this example we are going to 
+have a look on how to use digital input. In this example we are going to 
 configure pin 1.3 (the build in user button on the Launchpad) as digital input,
 and then read in its current state. 
 
@@ -298,7 +311,7 @@ see "Basic API Usage"
 see "Basic API Usage"
 
 
-** Configure the PIN functionality
+** Configure the PIN Functionality
 
 For configuring the pins functionality, again "pinMode" is used. This time we want 
 the pin 1.3 to be in mode "ROCKETuC.INPUT":
@@ -309,13 +322,13 @@ the pin 1.3 to be in mode "ROCKETuC.INPUT":
 ROCKETuC knows three different input configuration one could assign to pin:
 
 INPUT    : It is assumed, that an external pull-up/down resistor is provided. 
-           This mode is often reffered as floating. The internal button on P1.3
+           This mode is often referred as floating. The internal button on P1.3
            on the Launchpad has an external pull-up resistor.  
 
-PULLUP   : Internal pull-up resitor is enabled. Thus, initial state is high, 
+PULLUP   : Internal pull-up resistor is enabled. Thus, initial state is high, 
            and e.g. a connected button must connect to ground if closed. 
 
-PULLDOWN : Internal pull-down resitor is enabled. Thus, initial state is low, 
+PULLDOWN : Internal pull-down resistor is enabled. Thus, initial state is low, 
            and e.g. a connected button must connect to VCC if closed. 
 
 
@@ -383,12 +396,13 @@ Our complete sketch which checks if button on  P1.3 was pressed may look like th
     delay(100);
   }
 
+
 External Interrupts
 -------------------
 
 Since polling the state of an digital input is not very elegant nor very performant, 
 one could configure ROCKETuC to send and interrupt every time a monitored pin changes 
-its state. To reveive such an interrupt, one has to override the intrrupt handler
+its state. To receive such an interrupt, one has to override the interrupt handler
 by deriving a class from the ROCKETuC API class. 
 
 ** Import "processingreocket" Functionality
@@ -401,9 +415,9 @@ see "Basic API Usage"
 see "Basic API Usage"
 
 
-** Configure the PIN functionality
+** Configure the PIN Functionality
 
-First pin 1.3 has to be configured to be an input:
+First, pin 1.3 has to be configured to be an input:
  
   // set P1.3 as digital input
   r.pinMode(ROCKETuC.PIN_1_3, ROCKETuC.INPUT);
@@ -426,9 +440,9 @@ EDGE_NONE      disables previously enabled interrupting
 ** Write the Interrupt Handler
 
 Writing the interrupt handler is as simple as deriving a new class from ROCKETuC
-and then providing out own implementation of "externalInterrupt". Everytime an
+and then providing out own implementation of "externalInterrupt". Every time an
 external interrupt happens, this operation is called through the API. The pin on
-which the interrupt happened is passed in as parameter. In out skatch we now use 
+which the interrupt happened is passed in as parameter. In out sketch we now use 
 "MyROCKETuC" instead of "ROCKETuC".
 
 
@@ -519,6 +533,14 @@ Our complete sketch which handles presses on button on  P1.3 may look like this:
 Analog Input
 ------------
 
+With a pin configured for analog input, it is possible to measure a voltage on 
+that pin between 0 and VCC (where VCC ~3.3V on the Launchpad powered through USB). 
+For example a analog input could be used to measure the position of a potentiometer. 
+In order to be able to vary the voltage on pin 1.5 in out next example, the output
+of a 10k potentiometer to be connected to pin 1.5. The other two pins of the
+potentiometer are connected between VCC and GND. 
+ 
+
 ** Import "processingreocket" Functionality
 
 see "Basic API Usage"
@@ -529,17 +551,126 @@ see "Basic API Usage"
 see "Basic API Usage"
 
 
-** Configure the PIN functionality
+** Configure the PIN Functionality
 
-see "Basic API Usage"
+The pin is set to analog input by using the "pinMode" method and assigning
+ROCKETuC.ANALOG:
 
+  // configure p1.5 for analog input
+  r.pinMode(ROCKETuC.PIN_1_5, ROCKETuC.ANALOG);
 
-TODO
+Note: not all pins of the Launchpad are able to perform analog readings.
+Only pins 1.0 to 1.7 are allowed for analog input. Choosing anything else
+will throw an exception. 
+ 
+
+** Perform an Operation on a Pin 
+
+Next we could use "analogRead" to make the MCU sample the input and return th value.
+"analogRead" takes a single parameter, the pin for which to perform the read:
+
+  // perform analog read on p1.5
+  short a = r.analogRead(ROCKETuC.PIN_1_5);
+
+The MSP430 has an 10Bit ADC (Analog Digital Converter), thus the maximum value it
+could provide is 2^10 = 1024. To convert that value to an voltage, the following
+calculation could be used: 
+
+  // convert value from analog read to volts: 
+  // - assuming VCC = Vmax = 3.3V
+  // - max value from analog read is 2^10 = 1024
+  float v = (float) ((3.3 / 1024.0) * (float)a);
+    
+
+** The Complete Sketch
+
+Our complete sketch which samples pin 1.5 continuously might look like this:
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+  // our instance of the ROCKETuC API referenced through variable r
+  ROCKETuC r;
+
+   /**
+    * setup function called by processing on startup
+    */
+   void setup() {  
+     try {
+ 	  // connect to MCU, replace "/dev/ttyACM0" with you virtual COM port
+        r = new ROCKETuC(this, "/dev/ttyACM0");
+    
+        // configure p1.5 for analog input
+        r.pinMode(ROCKETuC.PIN_1_5, ROCKETuC.ANALOG);
+     }
+     catch(Exception e) {
+        // If something goes wrong while communication with the MCU
+        // the catch block will be processed. Here the error handling
+        // should be done. 
+        println(e.getMessage());
+        exit();
+      }
+   }
+
+  /**
+   * draw is called cyclic from processing
+   */
+  void draw() {
+    try {
+       // perform analog read on p1.5
+       short a = r.analogRead(ROCKETuC.PIN_1_5);
+
+       // convert value from analog read to volts: 
+       // - assuming VCC = Vmax = 3.3V
+       // - max value from analog read is 2^10 = 1024
+       float v = (float) ((3.3 / 1024.0) * (float)a);
+
+       println("~ volts: " + v + " (" + a + ")");
+     }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+      exit();
+    }
+    delay(100);
+  }
 
 
 Pulse Width Modulation
 ----------------------
 
+With pulse width modulation, it is possible to produce a signal on an output witch
+switches from high to low within a defined period for a defined time. This could be
+used e.g. to control the speed of DC motors, operate servos or dim the light of an
+LED. Lets first have a look at the output signal produces by an PWM to understand 
+the basic terms we are going to use later on: 
+
+     | dc |  - = 10usec.
+     |    |       |
+HIGH +----+    +----+    +----+    +----+
+     |    |    |    |    |    |    |    |
+LOW  +    +----+    +----+    +----+    +
+     |         |
+     | period  | 
+
+The time after which the output wave form starts again is called "period". The period in
+ROCKETuC is defined in usec. The time for which the output is kept high within the
+period is called duty-cycle (dc) and it is given in percent (of the period) in 
+ROCKETuC. The above figure shows a PWM with an period of 80usec. and a duty-cycle
+of 50% which is 40usec. Thus a dc of 0% means the output is completely switched off,
+and a dc of 100% means, the output is switched on permanently. The effect for all
+between 0 and 100% is, that e.g. a DC motor or a LED sees the average voltage which 
+results form the on/off ratio. If, for example we have an HIGH voltage of 3.3V, and 
+a duty-cycle of 50%, this looks for a LED like 1.65V. If the period is chosen small
+enough, the eye for example will not realize, that the LED in reality is switched on
+and off very fast (on the other hand, if you choose the period very big, the on/off
+will be realized as blinking).  
+
+In the next example we will dim the build in LED on pin 1.6 up and down (to get 
+a pulse effect).
+
 ** Import "processingreocket" Functionality
 
 see "Basic API Usage"
@@ -550,12 +681,110 @@ see "Basic API Usage"
 see "Basic API Usage"
 
 
-** Configure the PIN functionality
+** Configure the PIN Functionality
 
-see "Basic API Usage"
+  // configure p1.6 (build in LED) as PWM output
+  r.pinMode(ROCKETuC.PIN_1_6, ROCKETuC.PWM);
+
+Note, that only a few pins on the MSP430G2553 are able to perform hardware PWM:
+P1.2, P1.6, P2.1 and P2.2. Trying to configure any other pin for PWM will result
+in an exception. Also be aware of the fact, that for each port (1 or 2) only one
+pin out of the two available could produce a PWM at a time. Thus, if you configured
+P2.1 for PWM, you could not configure P2.2 as PWM at the same time. But it is
+valid, to e.g. configure P1.6 and P2.2 for PWM at the same time. 
 
 
-TODO
+** Set PWM Period 
+
+Next, we need to configure the PWM period. This is done through the "pwmPeriod" function
+which takes two arguments: the pin for which to set the period, and the periods duration
+in usec.
+
+  // set PWM period to 1000us on pin 1.6 
+  r.pwmPeriod(ROCKETuC.PIN_1_6, 1000);
+ 
+
+** Set PWM Duty-Cycle
+
+To adjust the PWM duty-cycle the "pwmDuty" operation is used. This operation takes 
+the pin for which to configure the duty-cycle, and the duty-cycle in percent. 
+
+   // set duty cycle to 50%
+   r.pwmDuty(ROCKETuC.PIN_1_6, 0x80);
+
+Note, that the duty cycle percentage goes from 0 to 0xFF, and that 0xFF means 100%.
+Thus, the value to pass to "pwmDuty" is: percentage * (0xFF / 100).
 
 
+** The Complete Sketch
 
+The following sketch fades the build in LED on P1.6 up/down by using hardware PWM:
+
+  // import ROCKETuC API
+  import rocketuc.processing.*;
+
+  // our instance of the ROCKETuC API referenced through variable r
+  ROCKETuC r;
+
+  // current duty cycle
+  short dc  = 0;
+
+  // direction in which to increase/decrease the duty cycle
+  short dir = 3;
+
+  /**
+   * setup function called by processing on startup
+   */
+  void setup() {  
+    try {
+      // connect to MCU
+      r = new ROCKETuC(this, "/dev/ttyACM0");
+    
+      // configure p1.6 (build in LED) as PWM output
+      r.pinMode(ROCKETuC.PIN_1_6, ROCKETuC.PWM);
+    
+      // set PWM period to 1000us on pin 1.6 
+      r.pwmPeriod(ROCKETuC.PIN_1_6, 1000);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
+
+  /**
+   * draw is called cyclic from processing
+   */
+  void draw() {
+    try {
+    
+      // modifiy duty cycle
+      dc += dir;
+    
+      // if max. duty cycle (0xFF) reached, reverse direction
+      if(dc >= 0xFF) {
+         dir *= -1;
+         // make sure DC is still valid
+         dc = 0xFF;
+      }
+      // if min. duty cycle (0x00) reached, reverse direction
+      else if(dc <= 0x00) {
+         dir *= -1;
+         // make sure DC is still valid
+         dc = 0x00;
+      }
+   
+      // write modified DC   
+      r.pwmDuty(ROCKETuC.PIN_1_6, dc);
+    }
+    catch(Exception e) {
+      // If something goes wrong while communication with the MCU
+      // the catch block will be processed. Here the error handling
+      // should be done. 
+      println(e.getMessage());
+	  exit();
+    }
+  }
