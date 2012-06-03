@@ -24,13 +24,15 @@ Flashing the Firmware to your Launchpad
 
 ** On Linux
 
+*** Using "mspdebug"
+
 To perform this step, "mspdebug" tool is needed. On Ubuntu, the tool is available
 as installable package. 
 
 You should have downloaded the ROCKETuC firmware as a binary in ELF format.
 We assume, that this firmware has the name "ROCKETuC-serial-rocket-firmware.elf".
 
-To flash the firmware to the Launchpad, make sure the Launchpad is connect, the
+To flash the firmware to the Launchpad, make sure the Launchpad is connecetd and
 download the firmware to the device by using "mspdebug":
 
   mspdebug rf2500 "prog ROCKETuC-serial-rocket-firmware.elf"
@@ -40,27 +42,57 @@ After a short while, "mspdebug" should return with a success message.
 
 ** On MacOSX
 
-TODO: I just don't know how
+*** Using "mspdebug"
+
+See the corresponding section under "On Linux". An easy to use toolchain installer
+for the Launchpad could be found here: 
+
+  http://code.google.com/p/osx-launchpad/
+
 
 ** On Windows
 
-TODO: I just don't know how
+*** Using MSP430 Flasher
+
+!!! WARNING !!!
+
+Since I don't have Windows (don't need it), this is NOT tested. Pleas report success
+or corrections if you successfully got this working.
+
+!!! WARNING !!!
+
+MSP430 Flasher is an open-source, shell-based interface for programming MSP430 devices
+provided by TI. By using this utility, it is not needed to install any IDE (CCS, IAR, ...).
+
+To use the utility, the USB dirvers for the Launchpad must be installed. You can get this
+drivers here:
+
+  https://github.com/energia/Energia/raw/gh-pages/files/EZ430-UART.zip
+
+Next get the MSP430 Flasher and install it as described here:
+
+  http://processors.wiki.ti.com/index.php/MSP430_Flasher_-_Command_Line_Programmer
+
+Next, download the ROCKETuC firmware as a binary in HEX format.
+We assume, that this firmware has the name "ROCKETuC-serial-rocket-firmware.hex".
+
+To flash the firmware to the Launchpad, make sure the Launchpad is connected and
+download the firmware to the device by using "MSP430Flasher":
+
+  MSP430Flasher.exe -n MSP430G2553 -v -w ROCKETuC-serial-rocket-firmware.hex
+
+After a short while, "MSP430Flasher" should return with a success message. 
 
 
 Installing Processing
 ---------------------
 
-** On Linux
+Get the latest binary for Linux x86 from here (Note: you need at least 
+version 2.0 Pre-Release):
 
-TODO
+  http://processing.org/download/
 
-** On MacOSX
-
-TODO
-
-** On Windows
-
-TODO
+Then extract the archive to a location of your choice.
 
 
 Installing the ROCKETuC Library
@@ -75,6 +107,9 @@ Some known default locations are:
 * For Linux users, the sketchbook folder is located under ~/sketchbook.
 * For Mac users, the sketchbook folder is located inside ~/Documents/Processing.  
 * For Windows users, the sketchbook folder is located inside 'My Documents'/Processing.
+
+Note: you could always check for your sketchbook location by opening "File/Preferences" 
+form the processing main menu. 
 
 In the sketchbook folder create a sub-folder "processingrocket". Then extract the contents 
 of the library distribution "processingrocket.zip" into this new sub-folder. Your sketchbook
