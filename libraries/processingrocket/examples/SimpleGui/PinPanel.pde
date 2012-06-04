@@ -1,15 +1,15 @@
 /* 
- * This file is part of the JRocket firmware project
+ * This file is part of the ROCKETuC Processing Library project
  *
  * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
- * The JRocket firmware is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * The ROCKETuC Processing Library is free software; you can redistribute 
+ * it and/or modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * JRocket firmware is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ROCKETuC Processing Library is distributed in the hope that it will 
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
@@ -21,6 +21,10 @@
 
 import rocketuc.processing.*;
 
+/**
+ * This class shows the main panel for a pin including the buttons
+ * for selecting the pin mode. 
+ */
 class PinPanel 
 {
   protected ROCKETuC r;
@@ -41,6 +45,15 @@ class PinPanel
   
   protected PinControl pc = null;
   
+  /**
+   * Contructor
+   * 
+   * @param r	 connected ROCKETuC instance
+   * @param pin	 ROCKETuC.PIN_x_y for which this panel is responsible
+   * @param name Display name of panel
+   * @param x    x-position of panel
+   * @param y    y-position of panel
+   */
   PinPanel(ROCKETuC r, byte pin, String name, int x, int y) {
     this.r = r;
     this.pin = pin;
@@ -53,6 +66,9 @@ class PinPanel
     pc = new PinControlIf(this);    
   }
   
+  /**
+   * Draw the panel an its current control object
+   */
   void draw() {
     fill(255);
     rect(x, y, w, h);
@@ -72,6 +88,11 @@ class PinPanel
     pc.draw();
   }
   
+  /**
+   * Check if one of the pin mode buttons was pressed.
+   * If one is pressed, select the pin mode accordingly
+   * by assigning an instance of the responsible PinControl.
+   */
   void checkPressed() {
     if(buttonHl != "_none_") {
       buttonAkt = buttonHl;
@@ -97,6 +118,15 @@ class PinPanel
     }
   }
 
+  /** 
+   * Draw a pin mode button
+   * 
+   * @param label the button label to dispaly
+   * @param dx    delta to parents x-position
+   * @param dy    delta to parents x-position
+   * @param w     button width 
+   * @param h     button height 
+   */
   protected void button(String label, int dx, int dy, int w, int h)  {
     
     if(overRect(label, x + dx, y + dy, w, h)) {
@@ -115,6 +145,16 @@ class PinPanel
     text(label, x +  dx + 5, y + dy + (h / 2) + (fntSize / 2));
   }
     
+  /**
+   * Check if mouse is over a rectangel, if so keep track of that rectangle.
+   * 
+   * @param label  label of the tracked button
+   * @param x      x-position of button
+   * @param y      y-position of button
+   * @param w      button width 
+   * @param h      button height 
+   * @return       true if mouse is in given rectangle
+   */
   protected boolean overRect(String label, int x, int y, int w, int h)  {
     if (mouseX >= x && mouseX <= x + w && 
         mouseY >= y && mouseY <= y + h) {

@@ -1,15 +1,15 @@
 /* 
- * This file is part of the JRocket firmware project
+ * This file is part of the ROCKETuC Processing Library project
  *
  * Copyright (C) 2012 Stefan Wendler <sw@kaltpost.de>
  *
- * The JRocket firmware is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * The ROCKETuC Processing Library is free software; you can redistribute 
+ * it and/or modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * JRocket firmware is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * ROCKETuC Processing Library is distributed in the hope that it will 
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
@@ -21,15 +21,27 @@
 
 import rocketuc.processing.*;
 
+/**
+ * Base class for all pin controls. Pin controls have a PinPanel 
+ * as a parent. 
+ */
 class PinControl {
 
   protected PinPanel parent;
   protected boolean  error = false; 
 
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControl(PinPanel parent) {
     this.parent = parent;
   }
 
+  /**
+   * Draw the pins status + controls.
+   */
   void draw() {
     fill(0);
     rect(parent.getX() + 220, parent.getY() + 10, 175, parent.getH() - 20);
@@ -41,9 +53,17 @@ class PinControl {
   }
 }
 
+/**
+ * Specific pin control for pins in mode INPUT-FLOAT.
+ */ 
 class PinControlIf extends PinControl {
 
-  PinControlIf(PinPanel parent) {
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
+   PinControlIf(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlIf");
 
@@ -58,6 +78,9 @@ class PinControlIf extends PinControl {
     }
   }
 
+  /**
+   * Draw the pins status + controls.
+   */
   void draw() {
     super.draw();
 
@@ -89,8 +112,16 @@ class PinControlIf extends PinControl {
   }
 }
 
+/**
+ * Specific pin control for pins in mode INPUT-PULL-UP.
+ */ 
 class PinControlIu extends PinControlIf {
 
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControlIu(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlIu");
@@ -107,8 +138,16 @@ class PinControlIu extends PinControlIf {
   }
 }
 
+/**
+ * Specific pin control for pins in mode INPUT-PULL-DOWN.
+ */ 
 class PinControlId extends PinControlIf {
 
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControlId(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlId");
@@ -125,8 +164,16 @@ class PinControlId extends PinControlIf {
   }
 }
 
+/**
+ * Specific pin control for pins in mode DIGITAL-OUTPUT.
+ */ 
 class PinControlDo extends PinControl {
 
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControlDo(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlDo");    
@@ -142,6 +189,9 @@ class PinControlDo extends PinControl {
     }
   }
 
+  /**
+   * Draw the pins status + controls.
+   */
   void draw() {
     super.draw();
 
@@ -184,8 +234,16 @@ class PinControlDo extends PinControl {
   }
 }
 
+/**
+ * Specific pin control for pins in mode ANALOG-READ.
+ */ 
 class PinControlAr extends PinControl {
 
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControlAr(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlAr");
@@ -201,6 +259,9 @@ class PinControlAr extends PinControl {
     }
   }
 
+  /**
+   * Draw the pins status + controls.
+   */
   void draw() {
     super.draw();
 
@@ -226,11 +287,19 @@ class PinControlAr extends PinControl {
   }
 }
 
+/**
+ * Specific pin control for pins in mode PWM.
+ */ 
 class PinControlPw extends PinControl {
 
   private int p  = 1000;
   private int dc = 100;
   
+  /**
+   * Constructor
+   * 
+   * @param parent the parent pin panel of this control
+   */
   PinControlPw(PinPanel parent) {
     super(parent);
     println(parent.getPinName() + " PinControlPw");
@@ -250,6 +319,9 @@ class PinControlPw extends PinControl {
     }
   }
 
+  /**
+   * Draw the pins status + controls.
+   */
   void draw() {    
     super.draw();
 
@@ -339,7 +411,7 @@ class PinControlPw extends PinControl {
                mouseY >= p2y1 && mouseY <= p2y2 && mousePressed) {
 
          println("P++");
-         p = p + 100;
+         p = p + 1000;
          if(p > 64000) p = 64000;         
        }       
        else if(mouseX >= p3x1 && mouseX <= p3x2 && 
@@ -352,7 +424,7 @@ class PinControlPw extends PinControl {
                mouseY >= p4y1 && mouseY <= p4y2 && mousePressed) {
 
          println("P--");
-         p = p - 100;
+         p = p - 1000;
          if(p < 0) p = 0;                  
        } 
        else if(mouseX >= dc1x1 && mouseX <= dc1x2 && 
