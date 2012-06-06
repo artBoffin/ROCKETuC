@@ -165,30 +165,66 @@ class PinPanel
     }
   }    
   
+  /**
+   * Get ROCKETuC API instance used by the panel.
+   * 
+   * @return ROCKETuC API instance
+   */
   public ROCKETuC getROCKETuC() {
     return r;
   }
 
+  /**
+   * Get ROCKETuC API pin definition which this panel
+   * controls. 
+   * 
+   * @return the pin controlled by this panel
+   */
   public byte getPin() {
     return pin;
   }
   
+  /**
+   * Displayable name of the pin that this panel controls.
+   * 
+   * @return readable pin name of pin controlled by this panel
+   */
   public String getPinName() {
     return name;
   }
   
+  /**
+   * Get X coordinate where this panels drawing area starts.
+   * 
+   * @return panels x-coordinate
+   */
   public int getX() {
     return x;
   }
-  
+
+  /**
+   * Get Y coordinate where this panels drawing area starts.
+   * 
+   * @return panels y-coordinate
+   */
   public int getY() {
     return y;
   }  
   
+  /**
+   * Get the width of this panels drawing area.
+   * 
+   * @return panels width
+   */
   public int getW() {
     return w;
   }  
-  
+
+  /**
+   * Get the height of this panels drawing area.
+   * 
+   * @return panels height 
+   */
   public int getH() {
     return h;
   }  
