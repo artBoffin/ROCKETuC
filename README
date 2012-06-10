@@ -1,15 +1,12 @@
 This is the ROCKETuC Project
 ----------------------------
 
-Library for fast prototyping of micro-controllers through serial protocols. 
+A Library for fast prototyping of micro-controllers through serial protocols. 
+Currently the TI Launchpad with an MSP430G2553 installe is the only supported 
+hardware. 
 
 For more information on the ROCKETuC Project, visit the projects
 homepage: http://rocketuc.com
-
-
-** Currently supported hardware:
-
-- TI Launchpad with MSP430G2553
 
 
 Project Structure
@@ -32,6 +29,11 @@ For more information on the firmware see the README of the corresponding
 sub-project:
 
 * https://github.com/areben/ROCKETuC/blob/master/firmware/README 
+
+A more detailed description of the firmware architecture coudl be found
+here:
+
+* https://github.com/areben/ROCKETuC/blob/master/firmware/doc/Architecutre.txt
 
 
 ** Supported Hardware
@@ -80,4 +82,14 @@ a stand-alone library for Processing (without eventing support) is also availabl
 For more details on this library see the sub-project:
 
 * https://github.com/areben/ROCKETuC/tree/master/libraries/processing 
+
+
+Develop your own ROCKETuC Client-Library
+----------------------------------------
+
+You are welcome, and we would love to hear from yout what library you came up with. 
+For a statring point, you may want to have a look at one of the existing implementations
+and/or at the client implementation hints:
+
+* https://github.com/areben/ROCKETuC/blob/master/firmware/doc/ClientImplementationHints.txt
 
