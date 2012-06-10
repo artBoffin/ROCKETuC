@@ -1,0 +1,70 @@
+This is the ROCKETuC Project
+----------------------------
+
+TODO: introduction
+
+For more information on the ROCKETuC Project, visit the porjects
+homepage: http://rocketuc.com
+
+
+Project Structure
+-----------------
+
+The ROCKETuC project mainly consits of two parts: 
+
+- the ROCKETuC firmware
+- the ROCKETuC libraries
+
+
+ROCKETuC Firmware
+-----------------
+
+The fimrware exposes the functionality of an MCU (e.g. like digitial IO, analog
+readings or pulse-width-modulation) through a protocol to a client. As physical
+transport, for the protocol, currently the serial line only is supported. 
+
+For more information on the firmware see the README of the corresponding 
+sub-project:
+
+* TODO: add link to readme 
+
+
+** Supported Hardware
+
+Currently the only supported hardware is the TI Launchpad equipped with an
+MSP430G2553 MCU. 
+
+For more information on the firmware implementation on specific hardware
+platforms see this README:
+
+* TODO: link to core-protocol-implementation
+
+
+ROCKETuC Libraries
+------------------
+
+A MCU loaded with the above mentioned fimrware could be used 
+through different client libraries, targeting different programming
+languages. Currently the following libraries are part of the ROCKETuC
+project:
+
+- libjrocket for Java
+- processingrocket for Processing
+
+
+** libjrocket
+
+This library provides a ROCKETuC binding for Java. For more details on 
+this library see the sub-projects README:
+
+* TODO: link to readme
+
+
+** processingrocket
+
+processingrocket provides a library for the Processing environment. It 
+uses libjrocket as core. For more details on this library see the 
+sub-projects README:
+
+* TODO: link to readme
+
