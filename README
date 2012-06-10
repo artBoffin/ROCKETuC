@@ -1,16 +1,21 @@
 This is the ROCKETuC Project
 ----------------------------
 
-TODO: introduction
+Library for fast prototyping of micro-controllers through serial protocols. 
 
-For more information on the ROCKETuC Project, visit the porjects
+For more information on the ROCKETuC Project, visit the projects
 homepage: http://rocketuc.com
+
+
+** Currently supported hardware:
+
+- TI Launchpad with MSP430G2553
 
 
 Project Structure
 -----------------
 
-The ROCKETuC project mainly consits of two parts: 
+The ROCKETuC project mainly consists of two parts: 
 
 - the ROCKETuC firmware
 - the ROCKETuC libraries
@@ -19,14 +24,14 @@ The ROCKETuC project mainly consits of two parts:
 ROCKETuC Firmware
 -----------------
 
-The fimrware exposes the functionality of an MCU (e.g. like digitial IO, analog
+The firmware exposes the functionality of an MCU (e.g. like digital IO, analog
 readings or pulse-width-modulation) through a protocol to a client. As physical
 transport, for the protocol, currently the serial line only is supported. 
 
 For more information on the firmware see the README of the corresponding 
 sub-project:
 
-* TODO: add link to readme 
+* https://github.com/areben/ROCKETuC/blob/master/firmware/README 
 
 
 ** Supported Hardware
@@ -37,13 +42,13 @@ MSP430G2553 MCU.
 For more information on the firmware implementation on specific hardware
 platforms see this README:
 
-* TODO: link to core-protocol-implementation
+* https://github.com/areben/ROCKETuC/blob/master/firmware/doc/CoreProtocolImplementation.txt 
 
 
 ROCKETuC Libraries
 ------------------
 
-A MCU loaded with the above mentioned fimrware could be used 
+A MCU loaded with the above mentioned firmware could be used 
 through different client libraries, targeting different programming
 languages. Currently the following libraries are part of the ROCKETuC
 project:
@@ -57,7 +62,7 @@ project:
 This library provides a ROCKETuC binding for Java. For more details on 
 this library see the sub-projects README:
 
-* TODO: link to readme
+* https://github.com/areben/ROCKETuC/blob/master/libraries/libjrocket/README 
 
 
 ** processingrocket
@@ -66,5 +71,13 @@ processingrocket provides a library for the Processing environment. It
 uses libjrocket as core. For more details on this library see the 
 sub-projects README:
 
-* TODO: link to readme
+* https://github.com/areben/ROCKETuC/blob/master/libraries/processingrocket/README
+
+
+** processing
+
+a stand-alone library for Processing (without eventing support) is also available. 
+For more details on this library see the sub-project:
+
+* https://github.com/areben/ROCKETuC/tree/master/libraries/processing 
 
