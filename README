@@ -2,7 +2,7 @@ This is the ROCKETuC Project
 ----------------------------
 
 A Library for fast prototyping of micro-controllers through serial protocols. 
-Currently the TI Launchpad with an MSP430G2553 installe is the only supported 
+Currently the TI Launchpad with an MSP430G2553 installed is the only supported 
 hardware. 
 
 For more information on the ROCKETuC Project, visit the projects
