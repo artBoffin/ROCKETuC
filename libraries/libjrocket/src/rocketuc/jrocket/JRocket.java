@@ -115,7 +115,7 @@ public class JRocket implements PacketEventHandler {
 	/**
  	 * IN-bound packet of type PULSE LENGTH READ 
  	 */
-	private final static byte PACKET_IN_PULSE_LEGHT_READ 				= (byte)0x05;
+	private final static byte PACKET_IN_PULSELENGTH_READ 				= (byte)0x05;
 
 	/**
  	 * Return status ACK for the STATUS OUT-bound packet
@@ -566,6 +566,34 @@ public class JRocket implements PacketEventHandler {
 		short msb = (short) (0x00FF & ret.getData()[2]);
 		short val = (short) (lsb | (msb << 8));
 		
+		return val;
+	}
+
+	/**
+	 * Read pulselenght from pin (the pin must have been put into input mode with
+	 * pinMode()). The function waits until the requested pin changes its state, 
+	 * then measures the time it takes until the original pin state is seen again. 
+	 * In case the state changes take longer then 0xFFFF, the function terminates,
+	 * with an exeption.
+	 *
+	 * @param pin the pin to read from 
+	 * @return value of pin
+ 	 * @throws 	JRocketException 
+	 */
+	public short pulselengthRead(byte pin) throws JRocketException {
+
+		Packet ret = xferAndCheckType(PACKET_OUT_PIN_CONTROL, 
+						new byte[] {pin, PIN_CONTROL_PULSELENGTH_READ}, 
+									PACKET_IN_PULSELENGTH_READ);
+
+		short lsb = (short) (0x00FF & ret.getData()[1]);
+		short msb = (short) (0x00FF & ret.getData()[2]);
+		short val = (short) (lsb | (msb << 8));
+		
+		if(val >= 0xFFFF) {
+			throw new JRocketException("Pulselength read timed out");
+		}
+
 		return val;
 	}
 
