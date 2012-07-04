@@ -113,7 +113,7 @@
 /**
  * OUT-bound packet of type PULSE LENGTH READ 
  */
-#define PACKET_OUT_PULSE_LEGHT_READ				0x05
+#define PACKET_OUT_PULSELENGHT_READ				0x05
 
 
 /**
@@ -344,6 +344,27 @@ typedef struct {
  	 */
 	unsigned char	value_msb;
 } packet_data_out_analog_pin_read;
+
+/**
+ * OUT-bound data for PULSELENGTH PIN READ packet
+ */
+typedef struct {
+	/**
+ 	 * PIN for which data was read
+ 	 */
+	unsigned char	pin;
+
+	/**
+ 	 * LSB of pulse-length
+ 	 */
+	unsigned char	value_lsb;
+
+	/**
+ 	 * MSB of pulse-length 
+ 	 */
+	unsigned char	value_msb;
+} packet_data_out_pulselength_read;
+
 
 /**
  * OUT-bound packets use this packet instance

@@ -163,8 +163,25 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 			}
 			break;
 		case PIN_CONTROL_PULSELENGTH_READ:
-			// TODO implement
-			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+			if((s = pin_pulselength_read(pd->pin)) < 0) {
+				send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);
+			}
+			else {
+				packet_data_out_pulselength_read *pdo = 
+							( packet_data_out_pulselength_read *)&outp.data[0];
+
+				outp.start	= PACKET_OUTBOUND_START;
+				outp.length	= 7;
+				outp.type 	= PACKET_OUT_PULSELENGHT_READ;
+	
+				pdo->pin   = pd->pin;
+				pdo->value_lsb = (0x00FF & s);
+				pdo->value_msb = (0x0F00 & s) >> 8;
+
+				outp.crc = packet_calc_crc(&outp);
+
+				packet_send(&outp);
+			}
 			break;
 		default:
 			send_status_packet(PACKET_RETURN_INVALID_PIN_COMMAND);

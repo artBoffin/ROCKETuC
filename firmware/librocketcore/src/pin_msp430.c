@@ -443,8 +443,39 @@ int pin_pulselength_read(unsigned char pin)
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
-	// TODO
-	return 0;
+	int to = 0xFFFF;
+	int t  = 0;
+
+	// 1. check current state s of pin
+	int s  = pin_digital_read(pin); 
+	
+	// 2. wait until pin toggeles to ~s
+    int ds = s;
+
+    if(s < 0) return s;
+
+   	while(ds == s) {
+		ds = pin_digital_read(pin);
+
+    	if(ds < 0) return ds;
+
+		// if max-t is reached, return (timeout)
+		if(t++ == to) return to;
+	}
+
+	// 3. wait until pin toggles back to s, measure time 
+	t = 0;
+
+   	while(ds != s) {
+		ds = pin_digital_read(pin);
+
+    	if(ds < 0) return ds;
+
+		// if max-t is reached, return (timeout)
+		if(t++ == to) return to;
+	}
+
+	return t;
 }
 
 int pin_pwm_function(unsigned char pin, int period)
