@@ -193,6 +193,32 @@ int main(void)
 	while(pin_digital_read(PIN_2_4)) __asm__("nop");
 
 	cio_print(" OK\n\r");
+
+	int pl = 0;
+
+	cio_print("Press button on P1.3 for pulselength read ...");
+
+	delay(50000);
+
+	pl = pin_pulselength_read(PIN_1_3);
+
+	cio_printf(" OK, pl=%i\n\r", pl);
+
+	cio_print("Press button on P2.3 for pulselength read ...");
+
+	delay(50000);
+
+	pl = pin_pulselength_read(PIN_2_3);
+
+	cio_printf(" OK, pl=%i\n\r", pl);
+
+	cio_print("Press button on P2.4 for pulselength read ...");
+
+	delay(50000);
+
+	pl = pin_pulselength_read(PIN_2_4);
+
+	cio_printf(" OK, pl=%i\n\r", pl);
 	
 	pin_set(PIN_1_0);
 	pin_clear(PIN_1_6);
