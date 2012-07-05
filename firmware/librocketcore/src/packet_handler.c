@@ -25,7 +25,7 @@
 // #include "conio.h"
 
 packet_rcv_handlers packet_handlers = {
-	.count = 12,
+	.count = 9,
 	.handlers = {
 		{ 
 			.type = PACKET_IN_NULL,	
@@ -38,10 +38,6 @@ packet_rcv_handlers packet_handlers = {
 		{ 
 			.type = PACKET_IN_SYSTEM_INFO,
 			.func = handle_packet_system_info,	
-		},
-		{ 
-			.type = PACKET_IN_DEVICE_CONTROL, 
-			.func = handle_packet_device_control,	
 		},
 		{ 
 			.type = PACKET_IN_PIN_FUNCTION,
@@ -58,14 +54,6 @@ packet_rcv_handlers packet_handlers = {
 		{ 
 			.type = PACKET_IN_PWM_CONTROL,
 			.func = handle_packet_pwm_control,
-		},
-		{ 
-			.type = PACKET_IN_SERIAL_FUNCTION, 
-			.func = handle_packet_serial_function,
-		},
-		{ 
-			.type = PACKET_IN_SERIAL_DATA, 
-			.func = handle_packet_serial_data,
 		},
 		{ 
 			.type = PACKET_IN_EXTERNAL_INTERRUPT_FUNCTION, 

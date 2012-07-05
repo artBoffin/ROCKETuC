@@ -98,13 +98,6 @@ int main(void)
 		}
 	}
 	
-	// onyl one PIN at a time is allowed to be soft UART RX/TX
-	cio_printf("Set UARTTX p1.4: %i\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTTX));
-	cio_printf("Set UARTTX p1.5: %i\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTTX));
-	cio_printf("Set UARTRX p1.4: %i\n\r",pin_setup(PIN_1_4, PIN_FUNCTION_UARTRX));
-	cio_printf("Set UARTRX p1.5: %i\n\r",pin_setup(PIN_1_5, PIN_FUNCTION_UARTRX));
-
-
 	// set P1.0 + P1.6 + P2.5 to output (the build in LEDs)
 	pin_setup(PIN_1_0, PIN_FUNCTION_OUTPUT);
 	pin_setup(PIN_1_6, PIN_FUNCTION_OUTPUT);

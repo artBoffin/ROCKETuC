@@ -40,11 +40,6 @@
 #define PACKET_IN_SYSTEM_INFO 					0x02
 
 /**
- * IN-bound packet of type DEVICE CONTROL 
- */
-#define PACKET_IN_DEVICE_CONTROL  				0x03
-
-/**
  * IN-bound packet of type PIN FUNCTION 
  */
 #define PACKET_IN_PIN_FUNCTION  				0x04
@@ -63,16 +58,6 @@
  * IN-bound packet of type PWM CONTROL 
  */
 #define PACKET_IN_PWM_CONTROL  					0x07
-
-/**
- * IN-bound packet of type SERIAL FUNCTION 
- */
-#define PACKET_IN_SERIAL_FUNCTION 				0x08
-
-/**
- * IN-bound packet of type SERIAL DATA 
- */
-#define PACKET_IN_SERIAL_DATA  					0x09
 
 /**
  * IN-bound packet of type EXTERNAL INTERRUPT FUNCTION 
@@ -241,28 +226,6 @@ typedef struct {
  	 */
 	unsigned char	duty_cycle;
 } packet_data_in_pwm_control;
-
-/**
- * IN-bound data for SERIAL FUNCTION packet
- */
-typedef struct {
-	/**
- 	 * PIN for which to apply serial function
- 	 */
-	unsigned char	pin;
-	// TODO define/implement
-} packet_data_in_serial_function;
-
-/**
- * IN-bound data for SERIAL DATA packet
- */
-typedef struct {
-	/**
- 	 * PIN for which send/receive serial data 
- 	 */
-	unsigned char	pin;
-	// TODO define/implement
-} packet_data_in_serial_data;
 
 /**
  * IN-bound data for EXTERNAL INTERRUPT FUNCTION packet

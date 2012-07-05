@@ -57,16 +57,6 @@
 #define PIN_FUNCTION_PWM			0x05
 
 /**
- * PIN function UART RX
- */
-#define PIN_FUNCTION_UARTRX			0x06
-
-/**
- * PIN function UART TX
- */
-#define PIN_FUNCTION_UARTTX			0x07
-
-/**
  * PIN function is reserved for internal use 
  */
 #define PIN_FUNCTION_RESERVED		0xFE
@@ -120,16 +110,6 @@
  * PIN has capability PWM output 
  */
 #define PIN_CAP_PWM					0b00010000
-
-/**
- * PIN has capability UART RX 
- */
-#define PIN_CAP_UARTRX				0b00100000
-
-/**
- * PIN has capability UART TX 
- */
-#define PIN_CAP_UARTTX				0b01000000
 
 
 /**

@@ -64,11 +64,6 @@ int pin2bit(unsigned char pin)
 	int bit_num = (0x0F & pin);
 	int bit 	=  0x01 << bit_num;
 
-	// RX/TX of uart1 are reserved, bits 0-7 are allowed 
-	if(pin == PIN_1_1 || pin == PIN_1_2 || bit_num > 7) {
-		return PIN_STAT_ERR_INVALPIN;
-	}
-
 	return bit;
 }
 
@@ -125,8 +120,6 @@ int pin_capabilities(unsigned char pin)
 
 	// PIN_CAP_INPUT
 	// PIN_CAP_OUTPUT
-	// PIN_CAP_UARTRX
-	// PIN_CAP_UARTTX
 	if( pin == PIN_1_0 || pin == PIN_1_1 || pin == PIN_1_2 ||
 		pin == PIN_1_3 || pin == PIN_1_4 || pin == PIN_1_5 || 
 		pin == PIN_1_6 || pin == PIN_1_7 ||	pin == PIN_2_0 || 
@@ -134,8 +127,7 @@ int pin_capabilities(unsigned char pin)
 		pin == PIN_2_4 || pin == PIN_2_5 || pin == PIN_2_6 || 
 		pin == PIN_2_7) {
 	
-		caps |= PIN_CAP_INPUT + PIN_CAP_INPUT_RE + PIN_CAP_OUTPUT + 
-				PIN_CAP_UARTTX + PIN_CAP_UARTRX;
+		caps |= PIN_CAP_INPUT + PIN_CAP_INPUT_RE + PIN_CAP_OUTPUT;
 	} 
 
 	// PIN_CAP_PWM
@@ -293,20 +285,6 @@ int pin_setup(unsigned char pin, unsigned char function)
 			P2REN &= ~bit; 	                // disable pull-up/down 
   			P2SEL |=  bit;                  // select TA option
 		}
-		break;
-	case PIN_FUNCTION_UARTRX:
-		if(!pin_has_capabilities(pin, PIN_CAP_UARTRX) ||
-			pin_with_function(PIN_1_0, function)) { 
-			return PIN_STAT_ERR_UNSUPFUNC;
-		}
-		// TODO	
-		break;
-	case PIN_FUNCTION_UARTTX:
-		if(!pin_has_capabilities(pin, PIN_CAP_UARTTX) ||
-			pin_with_function(PIN_1_0, function)) { 
-			return PIN_STAT_ERR_UNSUPFUNC;
-		}
-		// TODO
 		break;
 	default:
 		return PIN_STAT_ERR_UNSUPFUNC;
