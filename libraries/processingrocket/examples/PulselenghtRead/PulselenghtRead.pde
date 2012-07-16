@@ -51,7 +51,7 @@ void setup() {
     // the catch block will be processed. Here the error handling
     // should be done. 
     println(e.getMessage());
-	exit();
+    exit();
   }
 }
 
@@ -60,12 +60,18 @@ void setup() {
  */
 void draw() {
   try {
-	// read pin 1.3 until state changed form high to low
-	println("Read P1.3 DIGITAL (wait for button press)");
-
+    // read pin 1.3 until state changed form high to low
+    println("Read P1.3 DIGITAL (wait for button press)");
     short pl = r.pulselengthRead(ROCKETuC.PIN_1_3); 
 
-	println("Pulselenght was: " + pl);
+    // a pulse lenght of 0x7FFF indicates a timeout while waiting 
+    // for high-low or low-high transition
+    if(pl != 0x7FFF) {
+      println("Pulselenght was: " + pl);
+    }
+    else {
+      println("Timed out while waiting for state change");
+    }
   }
   catch(Exception e) {
     // If something goes wrong while communication with the MCU

@@ -421,7 +421,7 @@ int pin_pulselength_read(unsigned char pin)
 		return PIN_STAT_ERR_UNSUPFUNC;
 	}
 
-	int to = 0xFFFF;
+	int to = 32767;
 	int t  = 0;
 
 	// 1. check current state s of pin

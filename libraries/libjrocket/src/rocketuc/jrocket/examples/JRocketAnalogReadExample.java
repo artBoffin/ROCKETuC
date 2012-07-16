@@ -41,7 +41,7 @@ public class JRocketAnalogReadExample {
 		
 		try {						 
 			// connect through serial line to MCU
-			JRocket jr = new JRocketSerial("/dev/ttyACM0");
+			JRocket jr = new JRocketSerial("/dev/ttyUSB0");
 			
 			// configure pin 1.5 for analog read
  			System.out.print("Set P1.5 to ANALOG: ");

@@ -176,7 +176,7 @@ int handle_packet_pin_control(unsigned char length, unsigned char *data)
 	
 				pdo->pin   = pd->pin;
 				pdo->value_lsb = (0x00FF & s);
-				pdo->value_msb = (0x0F00 & s) >> 8;
+				pdo->value_msb = (0x7F00 & s) >> 8;
 
 				outp.crc = packet_calc_crc(&outp);
 
